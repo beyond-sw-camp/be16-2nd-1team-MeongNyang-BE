@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.domain.alarm.entity;
+package com.beyond.meongnyang.alarm.entity;
 
 public enum AlarmType {
     COMMENT, // 댓글

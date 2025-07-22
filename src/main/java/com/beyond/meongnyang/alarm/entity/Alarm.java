@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.domain.alarm.entity;
+package com.beyond.meongnyang.alarm.entity;
 
 import com.beyond.meongnyang.common.entity.CommonAt;
 import com.beyond.meongnyang.user.domain.User;
