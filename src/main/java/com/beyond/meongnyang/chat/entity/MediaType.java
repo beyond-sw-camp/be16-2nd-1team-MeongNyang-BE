@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.domain.chat.entity;
+package com.beyond.meongnyang.chat.entity;
 
 public enum MediaType {
     PHOTO,
