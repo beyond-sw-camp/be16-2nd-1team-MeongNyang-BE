@@ -1,10 +1,7 @@
-package com.beyond.meongnyang.post.domain;
+package com.beyond.meongnyang.post.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.DateTimeException;
 
 @Entity
 @Builder
@@ -17,8 +14,10 @@ public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-    @Column(name = "title")
+
+    @Column(name = "title", nullable = false)
     String title;
-    @Column(name = "content")
+
+    @Column(name = "content", nullable = false)
     String content;
 }

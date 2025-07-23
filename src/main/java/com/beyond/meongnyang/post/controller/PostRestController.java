@@ -10,7 +10,7 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/post/**")
+@RequestMapping("/posts/**")
 public class PostRestController {
     // 일기 작성
     @PostMapping("/")
@@ -55,10 +55,6 @@ public class PostRestController {
     }
 
     // 댓글 달기
-    @PostMapping("/comment/{id}")
-    public ResponseEntity<?> postComment(@PathVariable("id")Long id){
-        return null;
-    }
 
     // 댓글 수정
 
