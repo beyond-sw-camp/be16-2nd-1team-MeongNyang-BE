@@ -1,6 +1,6 @@
 package com.beyond.meongnyang.alarm.entity;
 
-import com.beyond.meongnyang.common.entity.CommonAt;
+import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

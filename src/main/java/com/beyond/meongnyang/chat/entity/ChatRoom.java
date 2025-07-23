@@ -1,6 +1,6 @@
 package com.beyond.meongnyang.chat.entity;
 
-import com.beyond.meongnyang.common.entity.CommonAt;
+import com.beyond.meongnyang.common.domain.CommonAt;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
