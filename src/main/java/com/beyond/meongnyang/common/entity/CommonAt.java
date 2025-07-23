@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 @Getter
 public class CommonAt {
     @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 }
