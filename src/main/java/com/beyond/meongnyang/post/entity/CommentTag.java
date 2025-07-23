@@ -1,0 +1,31 @@
+package com.beyond.meongnyang.post.entity;
+
+import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.user.domain.User;
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@ToString
+@Table(name = "comment_tag")
+public class CommentTag extends CommonAt {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "id")
+    private Comment comment;
+
+//    @ManyToOne
+//    @JoinColumn(name = "id")
+//    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "id")
+    private Post post;
+}

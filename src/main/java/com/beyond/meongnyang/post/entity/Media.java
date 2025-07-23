@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.post.entity;
 
+import com.beyond.meongnyang.common.domain.CommonAt;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,7 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @ToString
-public class Media {
+public class Media extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
