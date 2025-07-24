@@ -18,14 +18,14 @@ public class CommentTag extends CommonAt {
     Long id;
 
     @ManyToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "comment_id")
     private Comment comment;
 
 //    @ManyToOne
-//    @JoinColumn(name = "id")
+//    @JoinColumn(name = "user_id")
 //    private User user;
 
     @ManyToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "post_id")
     private Post post;
 }

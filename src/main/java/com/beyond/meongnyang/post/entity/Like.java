@@ -23,4 +23,7 @@ public class Like extends CommonAt {
 
     @OneToMany(mappedBy = "like")
     private List<Like> hashtags;
+
+//    @OneToMany(mappedBy = "user")
+//    private List<User> users;
 }

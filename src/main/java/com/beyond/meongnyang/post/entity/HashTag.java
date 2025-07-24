@@ -10,15 +10,16 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @ToString
-public class Media extends CommonAt {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "url", nullable = false)
-    private String url;
+@Table(name = "hash_tag")
+public class HashTag{
+    @EmbeddedId
+    private HashTagId id;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
+
+    @ManyToOne
+    @JoinColumn(name = "tag_id")
+    private Tag tag;
 }

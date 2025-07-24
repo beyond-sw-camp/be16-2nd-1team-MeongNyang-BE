@@ -21,4 +21,7 @@ public class Tag {
 
     @Column(name = "name", nullable = false)
     String name;
+
+    @OneToMany(mappedBy = "tag")
+    private List<HashTag> hashTags;
 }
