@@ -1,0 +1,57 @@
+# 프로젝트 이름 설정 예시
+# spring.application.name=basic
+
+# 서버 포트 기본값은 8080입니다
+# server.port=8080
+server:
+  port: 8080
+# yml은 들여쓰기 기반의 계층구조 표현
+
+spring:
+  #application.yml에서 찾게 해주는 설정
+  config:
+    activate:
+      on-profile: local
+  # 아래는 jdbc의 기본 db 관련 설정인데, jdbc뿐만 아니라 mybatis, jpa 등 spring의 대부분 db 기술에 동일하게 사용이 됨
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3307/service
+    username: root
+    password: test1234
+
+  jpa:
+    database: mysql
+    # innoDB를 쓰겠다는 설정
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    # ddl문을 자동 생성 여부 -> true 설정 / 테이블은 자동 생성(반영)해주나 스키마는 반드시 사전 생성 필요
+    generate-ddl: true
+    # jpa(인터페이스)의 실질적인 구현체는 hibernate
+    hibernate:
+      # create: 매번 table을 drop 후 재생성
+      # update: entity 변경사항만 alter를 적용하고 기존데이터 유지
+      # validate: 실제 DB와의 차이점을 check만 하고 DDL문 실행 안 함. 콘솔로만 변경사항 출력.
+      ddl-auto: create
+    # 콘솔창에 ddl, dml 등의 쿼리를 출력하여 보여주는 옵션
+    show_sql: true
+
+jwt:
+  expirationAt: 1000 #1000분
+  # 인코딩된 문자 32자 이상 필요.(특수문자)
+  # beyondaccesstokensecretkeybeyondaccesstokensecretkeybeyondaccesstokensecretkey
+  secretKeyAt: YmV5b25kYWNjZXNzdG9rZW5zZWNyZXRrZXliZXlvbmRhY2Nlc3N0b2tlbnNlY3JldGtleWJleW9uZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5
+
+# 스프링의 로그레벨 설정
+logging:
+  level:
+    #debug, info, error 로그 출력
+    root: info
+
+
+# mapper 파일(mybatis)의 위치를 명시하고 scan. 기본적으로 resources 폴더는 default.
+
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml
+
+# 요청 전체의 최대 허용 크기 (예: 100MB)
+# spring.servlet.multipart.max-file-size=100MB
+# spring.servlet.multipart.max-request-size=100MB

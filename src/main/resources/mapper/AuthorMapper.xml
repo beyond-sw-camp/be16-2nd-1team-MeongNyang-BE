@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.beyond.basic.b2_bold.Author.repository.AuthorMybatisRepository">
+    <insert id="save" parameterType="com.beyond.basic.b2_bold.Author.domain.Author">
+        insert into author(name, email, password) values(#{name}, #{email}, #{password});
+    </insert>
+    <select id="findAll" resultType="com.beyond.basic.b2_bold.Author.domain.Author">
+        select * from author;
+    </select>
+    <select id="findById" parameterType = "java.lang.Long" resultType="com.beyond.basic.b2_bold.Author.domain.Author">
+        select * from author where id = #{id};
+    </select>
+    <select id="findByEmail" parameterType ="java.lang.String" resultType="com.beyond.basic.b2_bold.Author.domain.Author">
+        select * from author where email = #{email};
+    </select>
+    <delete id="delete" parameterType = "java.lang.Long">
+        delete from author where id = #{id};
+    </delete>
+</mapper>
