@@ -35,6 +35,12 @@ public class Post extends CommonAt {
         this.mediaList.add(media);
     }
 
+    public void addHashTag(HashTag hashTag){
+        this.hashtags.add(hashTag);
+    }
+
+
+
 
 //    @ManyToOne
 //    @JoinColumn(name = "user_id")
