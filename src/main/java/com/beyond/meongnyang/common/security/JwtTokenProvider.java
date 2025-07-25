@@ -16,7 +16,7 @@ import java.util.Date;
 public class JwtTokenProvider {
     @Value("${jwt.expirationAt}")
     private int expirationAt;
-    @Value("${jwt.secretKeyAt}")
+    @Value("${jwt.securityAt}")
     private String secretKeyAt;
 
     private Key secret_at_key;

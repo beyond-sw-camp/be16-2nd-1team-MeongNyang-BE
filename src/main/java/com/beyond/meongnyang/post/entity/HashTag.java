@@ -16,10 +16,12 @@ public class HashTag{
     private HashTagId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("postId")
     @JoinColumn(name = "post_id")
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("tagId")
     @JoinColumn(name = "tag_id")
     private Tag tag;
 }
