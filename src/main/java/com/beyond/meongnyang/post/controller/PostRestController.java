@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,8 +21,8 @@ public class PostRestController {
     private final PostService postService;
     // 일기 작성
     @PostMapping("/")
-    public ResponseEntity<?> save(@RequestBody @Valid PostCreateRequest postCreateRequest){
-        postService.save(postCreateRequest);
+    public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateRequest postCreateRequest, @RequestPart(name = "files")List<MultipartFile> files){
+        postService.save(postCreateRequest, files);
         return new ResponseEntity<>(new CommonDto("ok", HttpStatus.CREATED.value(), "post is created"), HttpStatus.CREATED);
     };
 
