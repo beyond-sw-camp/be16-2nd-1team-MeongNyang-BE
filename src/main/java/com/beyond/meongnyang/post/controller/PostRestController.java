@@ -1,6 +1,5 @@
 package com.beyond.meongnyang.post.controller;
 
-import com.beyond.meongnyang.common.dto.CommonDto;
 import com.beyond.meongnyang.post.dto.PostCreateRequest;
 import com.beyond.meongnyang.post.service.PostService;
 import jakarta.validation.Valid;
