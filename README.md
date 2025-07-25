@@ -1,4 +1,3 @@
-# be16-2nd-1team-MeongNyang-BE
 # 🐾 멍멍냥냥
 <p align = "center">
     <img width="128" height="128" alt="image" src="https://github.com/user-attachments/assets/ec18fb22-4a1a-439c-92b6-ac0dc3cd1ac7" />
