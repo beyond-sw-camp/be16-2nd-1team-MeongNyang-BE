@@ -6,6 +6,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -37,6 +38,12 @@ public class CommonExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<?> handleConstraintViolationException(ConstraintViolationException e) {
         String message = e.getConstraintViolations().iterator().next().getMessage();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseDto.ofFailure(HttpStatus.BAD_REQUEST.value(), message));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().iterator().next().getDefaultMessage();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseDto.ofFailure(HttpStatus.BAD_REQUEST.value(), message));
     }
 }
