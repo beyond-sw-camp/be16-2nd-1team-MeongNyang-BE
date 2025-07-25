@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.post.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,17 +11,21 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @ToString
-public class Media extends CommonAt {
+@Table(name = "comment_tag")
+public class CommentTag extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
-    @Column(name = "url", nullable = false)
-    private String url;
+    @ManyToOne
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
+
+//    @ManyToOne
+//    @JoinColumn(name = "user_id")
+//    private User user;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
-
-
 }

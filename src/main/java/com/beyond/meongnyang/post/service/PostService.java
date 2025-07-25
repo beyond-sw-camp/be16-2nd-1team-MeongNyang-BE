@@ -1,20 +1,70 @@
 package com.beyond.meongnyang.post.service;
 
+import com.beyond.meongnyang.post.dto.PostCreateRequest;
+import com.beyond.meongnyang.common.S3UploadService;
+import com.beyond.meongnyang.post.entity.HashTag;
+import com.beyond.meongnyang.post.entity.Media;
+import com.beyond.meongnyang.post.entity.Post;
+import com.beyond.meongnyang.post.entity.Tag;
 import com.beyond.meongnyang.post.repository.PostRepository;
+import com.beyond.meongnyang.post.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    private final TagRepository tagRepository;
+    private final S3UploadService s3UploadService;
 
     // 일기 작성
+    public void save(PostCreateRequest postCreateRequest, List<MultipartFile> files){
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        String email = authentication.getName();
+        Post post = postCreateRequest.postToEntity();
 
+        // 해시태그 처리
+        String[] hashtags = Arrays.stream(postCreateRequest.getContent().split(" "))
+                .filter(s -> s.startsWith("#"))
+                .map(s -> s.substring(1))
+                .toArray(String[]::new);
+
+        for(String tagName : hashtags){
+            Tag tag = tagRepository.findByName(tagName)
+                    .orElseGet(() -> tagRepository.save(Tag.builder()
+                            .name(tagName)
+                            .build()));
+
+            HashTag hashTag = HashTag.builder()
+                    .post(post)
+                    .tag(tag)
+                    .build();
+            post.addHashTag(hashTag);
+        }
+
+        // 파일 처리
+        if(files != null && !files.isEmpty()){
+            List<String> urls = s3UploadService.upload(files);
+            for (String url : urls) {
+                Media media = Media.builder()
+                        .url(url)
+                        .post(post)
+                        .build();
+
+                post.addMedia(media);
+            }
+        }
+        postRepository.save(post);
+    }
     // 일기 상세 조회
 
     // 일기 목록 조회

@@ -1,7 +1,7 @@
 package com.beyond.meongnyang.user.controller;
 
 import com.beyond.meongnyang.common.dto.CommonDto;
-import com.beyond.meongnyang.security.JwtTokenProvider;
+import com.beyond.meongnyang.common.security.JwtTokenProvider;
 import com.beyond.meongnyang.user.domain.User;
 import com.beyond.meongnyang.user.dto.UserCreateDto;
 import com.beyond.meongnyang.user.dto.UserFindDto;

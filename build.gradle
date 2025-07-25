@@ -31,7 +31,7 @@ dependencies {
 //	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 //	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-//	implementation("com.amazonaws:aws-java-sdk-s3:1.12.174")
+	implementation 'software.amazon.awssdk:s3:2.17.58'
 
 //  JWT 관련 의존성
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
