@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.post.controller;
 
+import com.beyond.meongnyang.common.dto.ResponseDto;
 import com.beyond.meongnyang.post.dto.PostCreateRequest;
 import com.beyond.meongnyang.post.service.PostService;
 import jakarta.validation.Valid;
@@ -18,46 +19,55 @@ import java.util.List;
 @RequestMapping("/posts/**")
 public class PostRestController {
     private final PostService postService;
+
     // 일기 작성
     @PostMapping("/")
-    public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateRequest postCreateRequest, @RequestPart(name = "files", required = false)List<MultipartFile> files){
+    public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateRequest postCreateRequest, @RequestPart(name = "files", required = false) List<MultipartFile> files) {
         postService.save(postCreateRequest, files);
-        return new ResponseEntity<>(new CommonDto("ok", HttpStatus.CREATED.value(), "post is created"), HttpStatus.CREATED);
-    };
+        return new ResponseEntity<>(
+                ResponseDto.ofSuccess(
+                        "ok",
+                        HttpStatus.CREATED.value(),
+                        "post is created"
+                ), HttpStatus.CREATED
+        );
+    }
+
+    ;
 
     // 일기 상세 조회
     @GetMapping("/{id}")
-    public ResponseEntity<?> postDetail(@PathVariable("id")Long id){
+    public ResponseEntity<?> postDetail(@PathVariable("id") Long id) {
         return null;
     }
 
     // 일기 목록 조회
     @GetMapping("/")
-    public List<?> posts(){
+    public List<?> posts() {
         return null;
     }
 
     // 일기 수정
     @PatchMapping("/{id}")
-    public ResponseEntity<?> postUpdate(@PathVariable("id")Long id){
+    public ResponseEntity<?> postUpdate(@PathVariable("id") Long id) {
         return null;
     }
 
     // 일기 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> postDelete(@PathVariable("id")Long id){
+    public ResponseEntity<?> postDelete(@PathVariable("id") Long id) {
         return null;
     }
 
     // 좋아요
     @PostMapping("/like/{id}")
-    public ResponseEntity<?> postLike(@PathVariable("id")Long id){
+    public ResponseEntity<?> postLike(@PathVariable("id") Long id) {
         return null;
     }
 
     // 좋아요 수 카운트
     @GetMapping("/like/{id}")
-    public ResponseEntity<?> postLikeCount(@PathVariable("id")Long id){
+    public ResponseEntity<?> postLikeCount(@PathVariable("id") Long id) {
         return null;
     }
 
