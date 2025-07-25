@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.user.controller;
 
+import com.beyond.meongnyang.common.dto.ResponseDto;
 import com.beyond.meongnyang.common.security.JwtTokenProvider;
 import com.beyond.meongnyang.user.domain.User;
 import com.beyond.meongnyang.user.dto.UserCreateDto;
@@ -27,7 +28,7 @@ public class UserRestController {
     @PostMapping("/sign")
     public ResponseEntity<?> save(@Valid @RequestBody UserCreateDto dto) {
         this.userService.save(dto);
-        return new ResponseEntity<>(new CommonDto(dto, HttpStatus.CREATED.value(), "회원가입이 완료되었습니다."), HttpStatus.CREATED);
+        return new ResponseEntity<>(ResponseDto.ofSuccess(dto, HttpStatus.CREATED.value(), "회원가입이 완료되었습니다."), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
@@ -35,12 +36,12 @@ public class UserRestController {
         this.userService.accessLogin(request);
         User user = this.userService.accessLogin(request);
         String token = jwtTokenProvider.createAtToken(user);
-        return new ResponseEntity<>(new CommonDto(token, HttpStatus.OK.value(), "로그인되었습니다."), HttpStatus.OK);
+        return new ResponseEntity<>(ResponseDto.ofSuccess(token, HttpStatus.OK.value(), "로그인되었습니다."), HttpStatus.OK);
     }
 
     @PostMapping("/find/email")
     public ResponseEntity<?> findEmail(@Valid @RequestBody UserFindDto dto){
         String email = this.userService.findEmail(dto);
-        return new ResponseEntity<>(new CommonDto(email, HttpStatus.OK.value(), "이메일을 찾았습니다."), HttpStatus.OK);
+        return new ResponseEntity<>(ResponseDto.ofSuccess(email, HttpStatus.OK.value(), "이메일을 찾았습니다."), HttpStatus.OK);
     }
 }
