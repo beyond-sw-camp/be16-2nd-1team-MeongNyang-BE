@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.user.domain;
 
-import com.beyond.meongnyang.common.entity.CommonAt;
+
+import com.beyond.meongnyang.common.domain.CommonAt;
 import jakarta.persistence.*;
 import lombok.*;
 

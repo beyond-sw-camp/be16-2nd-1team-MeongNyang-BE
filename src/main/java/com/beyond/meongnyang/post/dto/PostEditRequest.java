@@ -8,4 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class PostEditRequest {
+    private String s;
 }

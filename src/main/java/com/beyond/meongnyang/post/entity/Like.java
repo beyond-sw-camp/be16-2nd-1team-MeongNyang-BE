@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @ToString
-@Table(name = "like")
+@Table(name = "`like`")
 public class Like {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

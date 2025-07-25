@@ -10,4 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/post/admin/**")
 public class PostAdminRestController {
+    private String s;
+
 }
