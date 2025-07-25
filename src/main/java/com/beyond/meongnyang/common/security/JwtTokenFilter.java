@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.security;
+package com.beyond.meongnyang.common.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
