@@ -5,6 +5,7 @@ import com.beyond.meongnyang.user.dto.UserCreateDto;
 import com.beyond.meongnyang.user.dto.UserFindDto;
 import com.beyond.meongnyang.user.dto.UserLoginRequest;
 import com.beyond.meongnyang.user.repository.UserRepository;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -27,13 +28,13 @@ public class UserService {
     public void save(UserCreateDto dto) {
         // 1. 이메일, 전화번호, 닉네임 중복 인증
         if(this.userRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("이미 사용중인 이메일입니다.");
+            throw new EntityExistsException("이미 사용중인 이메일입니다.");
         }
         if (this.userRepository.findByPhone(dto.getPhone()).isPresent()) {
-            throw new IllegalArgumentException("이미 사용중인 전화번호입니다.");
+            throw new EntityExistsException("이미 사용중인 전화번호입니다.");
         }
         if(this.userRepository.findByNickname(dto.getNickname()).isPresent()) {
-            throw new IllegalArgumentException("이미 사용중인 사용자명입니다.");
+            throw new EntityExistsException("이미 사용중인 사용자명입니다.");
         }
         // 중복없는 true값 db에 저장(회원가입)
         String encodedPassword = this.passwordEncoder.encode(dto.getPassword());
