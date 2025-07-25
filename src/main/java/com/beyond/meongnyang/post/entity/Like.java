@@ -1,10 +1,7 @@
 package com.beyond.meongnyang.post.entity;
 
-import com.beyond.meongnyang.common.domain.CommonAt;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.List;
 
 @Entity
 @Builder
@@ -12,8 +9,8 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @ToString
-@Table(name = "like")
-public class Like extends CommonAt {
+@Table(name = "`like`")
+public class Like {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
@@ -21,9 +18,4 @@ public class Like extends CommonAt {
     @Column(name = "title", nullable = false)
     String title;
 
-    @OneToMany(mappedBy = "like")
-    private List<Like> hashtags;
-
-//    @OneToMany(mappedBy = "user")
-//    private List<User> users;
 }
