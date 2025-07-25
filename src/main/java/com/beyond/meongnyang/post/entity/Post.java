@@ -1,7 +1,6 @@
 package com.beyond.meongnyang.post.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
-import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,8 +28,13 @@ public class Post extends CommonAt {
     @OneToMany(mappedBy = "post")
     private List<HashTag> hashtags;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> mediaList;
+
+    public void addMedia(Media media) {
+        this.mediaList.add(media);
+    }
+
 
 //    @ManyToOne
 //    @JoinColumn(name = "user_id")

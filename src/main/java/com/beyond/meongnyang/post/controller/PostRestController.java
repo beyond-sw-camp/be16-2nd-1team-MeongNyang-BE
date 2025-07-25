@@ -21,7 +21,7 @@ public class PostRestController {
     private final PostService postService;
     // 일기 작성
     @PostMapping("/")
-    public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateRequest postCreateRequest, @RequestPart(name = "files")List<MultipartFile> files){
+    public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateRequest postCreateRequest, @RequestPart(name = "files", required = false)List<MultipartFile> files){
         postService.save(postCreateRequest, files);
         return new ResponseEntity<>(new CommonDto("ok", HttpStatus.CREATED.value(), "post is created"), HttpStatus.CREATED);
     };

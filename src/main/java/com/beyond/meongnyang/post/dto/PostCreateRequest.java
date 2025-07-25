@@ -20,6 +20,7 @@ public class PostCreateRequest {
 
     public Post postToEntity(){
         return Post.builder()
+                .id(1L)
                 .title(this.title)
                 .content(this.content)
                 .build();

@@ -2,12 +2,13 @@ package com.beyond.meongnyang.post.service;
 
 import com.beyond.meongnyang.post.dto.PostCreateRequest;
 import com.beyond.meongnyang.common.S3UploadService;
-import com.beyond.meongnyang.post.dto.PostCreateRequest;
 import com.beyond.meongnyang.post.entity.Media;
 import com.beyond.meongnyang.post.entity.Post;
 import com.beyond.meongnyang.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,16 +23,20 @@ public class PostService {
 
     // 일기 작성
     public void save(PostCreateRequest postCreateRequest, List<MultipartFile> files){
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        String email = authentication.getName();
+        Post post = postCreateRequest.postToEntity();
         if(files != null && !files.isEmpty()){
             List<String> urls = s3UploadService.upload(files);
             for (String url : urls) {
+                Media media = Media.builder()
+                        .url(url)
+                        .post(post)
+                        .build();
 
+                post.addMedia(media);
             }
         }
-        Post post = Post.builder()
-                .title("안녕하세요")
-                .content(postCreateRequest.getContent())
-                .build();
         postRepository.save(post);
     }
     // 일기 상세 조회
