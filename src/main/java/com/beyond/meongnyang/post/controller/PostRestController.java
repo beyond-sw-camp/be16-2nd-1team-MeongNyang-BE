@@ -1,7 +1,12 @@
 package com.beyond.meongnyang.post.controller;
 
+import com.beyond.meongnyang.common.dto.CommonDto;
+import com.beyond.meongnyang.post.dto.PostCreateRequest;
+import com.beyond.meongnyang.post.service.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,10 +17,12 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/posts/**")
 public class PostRestController {
+    private final PostService postService;
     // 일기 작성
     @PostMapping("/")
-    public ResponseEntity<?> save(){
-        return null;
+    public ResponseEntity<?> save(@RequestBody @Valid PostCreateRequest postCreateRequest){
+        postService.save(postCreateRequest);
+        return new ResponseEntity<>(new CommonDto("ok", HttpStatus.CREATED.value(), "post is created"), HttpStatus.CREATED);
     };
 
     // 일기 상세 조회

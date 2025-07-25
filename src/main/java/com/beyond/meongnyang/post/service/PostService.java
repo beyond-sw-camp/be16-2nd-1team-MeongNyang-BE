@@ -1,5 +1,7 @@
 package com.beyond.meongnyang.post.service;
 
+import com.beyond.meongnyang.post.dto.PostCreateRequest;
+import com.beyond.meongnyang.post.entity.Post;
 import com.beyond.meongnyang.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +16,13 @@ public class PostService {
     private final PostRepository postRepository;
 
     // 일기 작성
-
+    public void save(PostCreateRequest postCreateRequest){
+        Post post = Post.builder()
+                .title("안녕하세요")
+                .content(postCreateRequest.getContent())
+                .build();
+        postRepository.save(post);
+    }
     // 일기 상세 조회
 
     // 일기 목록 조회
