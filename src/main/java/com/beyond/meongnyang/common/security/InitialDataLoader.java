@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.security;
+package com.beyond.meongnyang.common.security;
 
 import com.beyond.meongnyang.user.domain.Role;
 import com.beyond.meongnyang.user.domain.User;

@@ -25,5 +25,6 @@ public class ChatRoom extends CommonAt {
     private String name;
 
     @OneToMany(mappedBy = "message", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Message> messageList = new ArrayList<>();
 }

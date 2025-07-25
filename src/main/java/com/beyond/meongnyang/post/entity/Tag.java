@@ -3,6 +3,11 @@ package com.beyond.meongnyang.post.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 @Entity
 @Builder
 @NoArgsConstructor
@@ -15,5 +20,8 @@ public class Tag {
     Long id;
 
     @Column(name = "name", nullable = false)
-    private String name;
+    String name;
+
+    @OneToMany(mappedBy = "tag")
+    private List<HashTag> hashTags;
 }
