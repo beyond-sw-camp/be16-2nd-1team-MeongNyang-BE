@@ -16,12 +16,12 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/posts/**")
+@RequestMapping("/posts")
 public class PostRestController {
     private final PostService postService;
 
     // 일기 작성
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateRequest postCreateRequest, @RequestPart(name = "files", required = false) List<MultipartFile> files) {
         postService.save(postCreateRequest, files);
         return new ResponseEntity<>(
@@ -32,9 +32,6 @@ public class PostRestController {
                 ), HttpStatus.CREATED
         );
     }
-
-    ;
-
     // 일기 상세 조회
     @GetMapping("/{id}")
     public ResponseEntity<?> postDetail(@PathVariable("id") Long id) {

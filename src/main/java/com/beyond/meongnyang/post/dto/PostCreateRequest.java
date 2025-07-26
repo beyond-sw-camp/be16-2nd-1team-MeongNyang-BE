@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.post.dto;
 
 import com.beyond.meongnyang.post.entity.Post;
+import com.beyond.meongnyang.user.domain.User;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,6 @@ public class PostCreateRequest {
 
     public Post postToEntity(){
         return Post.builder()
-                .id(1L)
                 .title(this.title)
                 .content(this.content)
                 .build();

@@ -2,17 +2,18 @@ package com.beyond.meongnyang.post.service;
 
 import com.beyond.meongnyang.post.dto.PostCreateRequest;
 import com.beyond.meongnyang.common.S3UploadService;
-import com.beyond.meongnyang.post.entity.HashTag;
-import com.beyond.meongnyang.post.entity.Media;
-import com.beyond.meongnyang.post.entity.Post;
-import com.beyond.meongnyang.post.entity.Tag;
+import com.beyond.meongnyang.post.entity.*;
 import com.beyond.meongnyang.post.repository.PostRepository;
 import com.beyond.meongnyang.post.repository.TagRepository;
+import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,16 +22,21 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PostService {
     private final PostRepository postRepository;
     private final TagRepository tagRepository;
+    private final UserRepository userRepository;
     private final S3UploadService s3UploadService;
 
     // 일기 작성
     public void save(PostCreateRequest postCreateRequest, List<MultipartFile> files){
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        String email = authentication.getName();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("없는 사용자입니다."));
         Post post = postCreateRequest.postToEntity();
+
+        post.setUser(user);
 
         // 해시태그 처리
         String[] hashtags = Arrays.stream(postCreateRequest.getContent().split(" "))
@@ -43,8 +49,9 @@ public class PostService {
                     .orElseGet(() -> tagRepository.save(Tag.builder()
                             .name(tagName)
                             .build()));
-
+            HashTagId hashTagId = new HashTagId(post.getId(), tag.getId());
             HashTag hashTag = HashTag.builder()
+                    .id(hashTagId)
                     .post(post)
                     .tag(tag)
                     .build();

@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.post.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,11 +26,13 @@ public class Post extends CommonAt {
     @Column(name = "content", nullable = false)
     String content;
 
-    @OneToMany(mappedBy = "post")
-    private List<HashTag> hashtags;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.PERSIST)
+    @Builder.Default
+    private List<HashTag> hashtags = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Media> mediaList;
+    @Builder.Default
+    private List<Media> mediaList = new ArrayList<>();
 
     public void addMedia(Media media) {
         this.mediaList.add(media);
@@ -39,12 +42,13 @@ public class Post extends CommonAt {
         this.hashtags.add(hashTag);
     }
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-
-
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
+    public void setUser(User user) {
+        this.user = user;
+    }
 
 //    @OneToMany(mappedBy = "marketPost")
 //    private List<MarketPost> marketPosts;
