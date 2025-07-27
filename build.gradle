@@ -49,6 +49,8 @@ dependencies {
 	//validtion 관련 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+	//websocket을 위한 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
 }
 
