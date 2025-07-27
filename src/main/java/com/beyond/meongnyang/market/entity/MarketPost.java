@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.market.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,9 +17,9 @@ public class MarketPost extends CommonAt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long marketPostId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "seller_id", nullable = false)
-//    private User seller;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
@@ -42,4 +43,7 @@ public class MarketPost extends CommonAt {
 
     @Column(nullable = false)
     private boolean isResticted = false;
+
+    @Column(length = 255)
+    private String thumbnailUrl;
 }
