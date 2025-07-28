@@ -3,6 +3,7 @@ package com.beyond.meongnyang.user.service;
 import com.beyond.meongnyang.user.domain.User;
 import com.beyond.meongnyang.user.dto.UserCreateReq;
 import com.beyond.meongnyang.user.dto.UserFindEmailReq;
+import com.beyond.meongnyang.user.dto.UserListRes;
 import com.beyond.meongnyang.user.dto.UserLoginReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
@@ -13,11 +14,14 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.awt.print.Pageable;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -117,5 +121,13 @@ public class UserService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
         user.softDelete();
+    }
+
+
+    /* **************** 관리자 기능 **************** */
+    public List<UserListRes> findAll() {
+        List<User> users = this.userRepository.findAllBydelYn("N");
+        return users.stream().map(a -> UserListRes.fromEntity(a)).toList();
+
     }
 }

@@ -5,6 +5,7 @@ import com.beyond.meongnyang.common.security.JwtTokenProvider;
 import com.beyond.meongnyang.user.domain.User;
 import com.beyond.meongnyang.user.dto.UserCreateReq;
 import com.beyond.meongnyang.user.dto.UserFindEmailReq;
+import com.beyond.meongnyang.user.dto.UserListRes;
 import com.beyond.meongnyang.user.dto.UserLoginReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
@@ -13,12 +14,16 @@ import com.beyond.meongnyang.user.dto.check.UserCheckPhoneReq;
 import com.beyond.meongnyang.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.awt.print.Pageable;
+import java.util.List;
 
 
 @RequiredArgsConstructor
@@ -71,5 +76,15 @@ public class UserRestController {
     public ResponseEntity<?> deleteAccount(@Valid @RequestBody UserCheckPasswordReq dto) {
         this.userService.deleteAccount(dto);
         return new ResponseEntity<>(CommonRes.ofSuccess("회원 탈퇴되었습니다.", HttpStatus.OK.value(), "회원탈퇴 완료"), HttpStatus.OK);
+    }
+
+
+    /* ******************** 관리자 기능 ******************** */
+    // 탈퇴하지 않은 회원목록 조회
+    @GetMapping("/list")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> findAll () {
+        List<UserListRes>userList = this.userService.findAll();
+        return new ResponseEntity<>(CommonRes.ofSuccess(userList, HttpStatus.OK.value(), "회원 목록 조회 완료"), HttpStatus.OK);
     }
 }

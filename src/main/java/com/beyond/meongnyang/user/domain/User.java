@@ -54,26 +54,26 @@ public class User extends CommonAt {
     // TODO: 간편인증
     @Column(name = "third_party", nullable = true, length = 255)
     private String thirdParty;
-    // TODO: 계정 탈퇴시 관련 내용 처리해야 함.
-    @Column(name = "is_leaved", nullable = true, length = 255)
-    private String isLeaved;
 
-    @Column(name = "is_locked", nullable = true, length = 255)
-    private String isLocked;
+    @Column(name = "is_locked", nullable = false)
+    @Builder.Default
+    private boolean isLocked = false;
 
     // 변경사항 기록
     //TODO: 비밀번호 틀렸을 시에 계정잠금된 시점 기록.
     @Column(name = "is_locked_at", nullable = true)
-    private LocalDateTime isLockeAt;
+    private LocalDateTime isLockedAt;
 
     // TODO: 비밀번호 변경시각 기록. + 비밀번호 변경 알림일
-    @Column(name = "password_update_at", nullable = true)
-    private LocalDateTime passwordUpdateAt;
+    @Column(name = "password_change_at", nullable = true)
+    private LocalDateTime passwordChangeAt;
 
+    // 탈퇴 시 y로 변경
     @Column(name = "del_yn", nullable = false)
     @Builder.Default
     private String delYn = "N";
 
+    // 탈퇴 시에 기록
     @Column(name = "deleted_at", nullable = true)
     private LocalDateTime deletedAt;
     /* ***********메소드***********/
