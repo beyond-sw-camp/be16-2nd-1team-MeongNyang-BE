@@ -32,27 +32,32 @@ public class UserService {
 
     //회원 가입 시 이메일, 전화번호, 닉네임 각각 인증
     public void checkEmail(UserCheckEmailReq dto) {
-        if(this.userRepository.findByEmail(dto.getEmail()).isPresent()) {
-            if(this.userRepository.findBydelYn("Y").isPresent()) {
-                throw new EntityExistsException("탈퇴한 사용자의 이메일입니다.");
+        Optional<User> optionalUser = this.userRepository.findByEmail(dto.getEmail());
+        if(optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            if(user.getDelYn().equals("Y")) {
+                throw new EntityExistsException("탈퇴한 사용자이메일입니다.");
             }
             throw new EntityExistsException("이미 사용중인 이메일입니다.");
         }
-
     }
     public void checkNickname(UserCheckNicknameReq dto) {
-        if(this.userRepository.findByNickname(dto.getNickname()).isPresent()) {
-            if(this.userRepository.findBydelYn("Y").isPresent()) {
-                throw new EntityExistsException("탈퇴한 사용자의 사용자명입니다.");
+        Optional<User> optionalUser = this.userRepository.findByNickname(dto.getNickname());
+        if(optionalUser.isPresent()) {
+           User user = optionalUser.get();
+            if(user.getDelYn().equals("Y")) {
+                throw new EntityExistsException("탈퇴한 사용자명입니다.");
             }
             throw new EntityExistsException("이미 사용중인 사용자명입니다.");
         }
     }
 
     public void checkPhone (UserCheckPhoneReq dto) {
-        if (this.userRepository.findByPhone(dto.getPhone()).isPresent()) {
-            if(this.userRepository.findBydelYn("Y").isPresent()) {
-                throw new EntityExistsException("탈퇴한 사용자의 전화번호입니다.");
+        Optional<User> optionalUser = this.userRepository.findByPhone(dto.getPhone());
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            if(user.getDelYn().equals("Y")) {
+                throw new EntityExistsException("탈퇴한 전화번호입니다.");
             }
             throw new EntityExistsException("이미 사용중인 전화번호입니다.");
         }

@@ -4,6 +4,7 @@ import com.beyond.meongnyang.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,7 +15,7 @@ public interface UserRepository  extends JpaRepository<User, Long> {
 
     Optional<User> findByNickname(String nickname);
 
-    Optional<User> findByName(String name);
+    List<User> findAllBydelYn(String delYn);
 
-    Optional<User> findBydelYn(String delYn);
+    Optional<User> findByEmailAndDelYn(String email, String delYn);
 }
