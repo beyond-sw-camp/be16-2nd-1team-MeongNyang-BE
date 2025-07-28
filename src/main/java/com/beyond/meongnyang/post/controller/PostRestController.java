@@ -1,6 +1,6 @@
 package com.beyond.meongnyang.post.controller;
 
-import com.beyond.meongnyang.common.dto.ResponseDto;
+import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.post.dto.PostCreateRequest;
 import com.beyond.meongnyang.post.service.PostService;
 import jakarta.validation.Valid;
@@ -25,7 +25,7 @@ public class PostRestController {
     public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateRequest postCreateRequest, @RequestPart(name = "files", required = false) List<MultipartFile> files) {
         postService.save(postCreateRequest, files);
         return new ResponseEntity<>(
-                ResponseDto.ofSuccess(
+                CommonRes.ofSuccess(
                         "ok",
                         HttpStatus.CREATED.value(),
                         "post is created"
