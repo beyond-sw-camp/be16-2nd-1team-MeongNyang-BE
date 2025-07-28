@@ -1,10 +1,7 @@
 package com.beyond.meongnyang.user.service;
 
 import com.beyond.meongnyang.user.domain.User;
-import com.beyond.meongnyang.user.dto.UserCreateReq;
-import com.beyond.meongnyang.user.dto.UserFindEmailReq;
-import com.beyond.meongnyang.user.dto.UserListRes;
-import com.beyond.meongnyang.user.dto.UserLoginReq;
+import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckPasswordReq;
@@ -129,5 +126,14 @@ public class UserService {
         List<User> users = this.userRepository.findAllBydelYn("N");
         return users.stream().map(a -> UserListRes.fromEntity(a)).toList();
 
+    }
+
+    // 회원 상세조회
+    public UserDetailRes findById(Long id) {
+        User user = this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 회원입니다."));
+        if(user.getDelYn().equals("Y")) {
+            throw new EntityNotFoundException("탈퇴한 회원입니다.");
+        }
+        return UserDetailRes.fromEntity(user);
     }
 }

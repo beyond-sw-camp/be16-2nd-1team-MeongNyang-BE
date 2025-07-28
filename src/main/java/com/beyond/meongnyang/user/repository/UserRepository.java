@@ -18,4 +18,6 @@ public interface UserRepository  extends JpaRepository<User, Long> {
     List<User> findAllBydelYn(String delYn);
 
     Optional<User> findByEmailAndDelYn(String email, String delYn);
+
+    Optional<User> findByIdAndDelYn(Long userId, String delYn);
 }
