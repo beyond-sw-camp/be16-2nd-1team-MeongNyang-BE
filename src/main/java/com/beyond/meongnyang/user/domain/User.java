@@ -40,7 +40,8 @@ public class User extends CommonAt {
     // TODO: 역할 초기 설정 넣기
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
-    private Role role;
+    @Builder.Default
+    private Role role = Role.USER;
 
     //TODO 활동시 point 쌓기, 초기 설정 0으로 잡아두기
     @Column(name = "point", nullable = false)
@@ -69,7 +70,8 @@ public class User extends CommonAt {
     private LocalDateTime passwordUpdateAt;
 
     @Column(name = "delyn", nullable = false)
-    private String delYn;
+    @Builder.Default
+    private String delYn = "N";
 
     @Column(name = "deleted_at", nullable = true)
     private LocalDateTime deletedAt;

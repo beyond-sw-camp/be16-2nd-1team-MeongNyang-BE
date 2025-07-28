@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 
-public class PetCreateDto {
+public class PetCreateReq {
     public String name;
 }

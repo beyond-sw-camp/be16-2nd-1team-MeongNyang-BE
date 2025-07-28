@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.user.dto.check;
+package com.beyond.meongnyang.user.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -9,7 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class UserCheckPasswordDto {
+
+public class UserLoginReq {
+    @NotEmpty(message = "이메일 입력해주세요.")
+    private String email;
     @NotEmpty(message = "비밀번호를 입력해주세요")
     @Size(min = 8, message = "8자리 이상 입력해주세요")
     private String password;

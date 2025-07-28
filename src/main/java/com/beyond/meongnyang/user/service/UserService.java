@@ -1,13 +1,13 @@
 package com.beyond.meongnyang.user.service;
 
 import com.beyond.meongnyang.user.domain.User;
-import com.beyond.meongnyang.user.dto.UserCreateDto;
-import com.beyond.meongnyang.user.dto.UserFindDto;
-import com.beyond.meongnyang.user.dto.UserLoginRequest;
-import com.beyond.meongnyang.user.dto.check.UserCheckEmailDto;
-import com.beyond.meongnyang.user.dto.check.UserCheckNicknameDto;
-import com.beyond.meongnyang.user.dto.check.UserCheckPasswordDto;
-import com.beyond.meongnyang.user.dto.check.UserCheckPhoneDto;
+import com.beyond.meongnyang.user.dto.UserCreateReq;
+import com.beyond.meongnyang.user.dto.UserFindEmailReq;
+import com.beyond.meongnyang.user.dto.UserLoginReq;
+import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
+import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
+import com.beyond.meongnyang.user.dto.check.UserCheckPasswordReq;
+import com.beyond.meongnyang.user.dto.check.UserCheckPhoneReq;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,24 +31,24 @@ public class UserService {
 
 
     //회원 가입 시 이메일, 전화번호, 닉네임 각각 인증
-    public void checkEmail(UserCheckEmailDto dto) {
+    public void checkEmail(UserCheckEmailReq dto) {
         if(this.userRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new EntityExistsException("이미 사용중인 이메일입니다.");
         }
     }
-    public void checkNickname(UserCheckNicknameDto dto) {
+    public void checkNickname(UserCheckNicknameReq dto) {
         if(this.userRepository.findByNickname(dto.getNickname()).isPresent()) {
             throw new EntityExistsException("이미 사용중인 사용자명입니다.");
         }
     }
 
-    public void checkPhone (UserCheckPhoneDto dto) {
+    public void checkPhone (UserCheckPhoneReq dto) {
         if (this.userRepository.findByPhone(dto.getPhone()).isPresent()) {
             throw new EntityExistsException("이미 사용중인 전화번호입니다.");
         }
     }
     // 회원가입
-    public void save(UserCreateDto dto) {
+    public void save(UserCreateReq dto) {
         // 1. 이메일, 전화번호, 닉네임 중복 인증
         if(this.userRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new EntityExistsException("이미 사용중인 이메일입니다.");
@@ -67,7 +67,7 @@ public class UserService {
     }
 
     // 로그인
-    public User accessLogin(UserLoginRequest request) {
+    public User accessLogin(UserLoginReq request) {
         Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
         boolean check = true;
         if(!optionalUser.isPresent()) {
@@ -85,7 +85,7 @@ public class UserService {
 
     // 이메일 찾기
     // TODO: repo에서 삭제 하기
-    public String findEmail(UserFindDto dto) {
+    public String findEmail(UserFindEmailReq dto) {
         User user = this.userRepository.findByPhone(dto.getPhone()).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 전화번호입니다."));
         if(!user.getName().equals(dto.getName())) {
             throw new EntityNotFoundException("이름이 일치하지 않습니다.");
@@ -102,7 +102,7 @@ public class UserService {
 //    }
 
     // 계정 삭제
-    public void deleteAccount(UserCheckPasswordDto dto) {
+    public void deleteAccount(UserCheckPasswordReq dto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 이메일입니다."));
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {

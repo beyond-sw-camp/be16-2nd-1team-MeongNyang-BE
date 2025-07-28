@@ -1,6 +1,5 @@
 package com.beyond.meongnyang.user.dto;
 
-import com.beyond.meongnyang.user.domain.Role;
 import com.beyond.meongnyang.user.domain.User;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -12,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 
-public class UserCreateDto {
+public class UserCreateReq {
     @NotEmpty(message = "이메일 입력해주세요.")
     private String email;
     @NotEmpty(message = "비밀번호를 입력해주세요")
@@ -32,9 +31,6 @@ public class UserCreateDto {
                 .name(this.name)
                 .nickname(this.nickname)
                 .phone(this.phone)
-                .role(Role.USER)
-                .point(0)
-                .delYn("N")
                 .build();
     }
 }
