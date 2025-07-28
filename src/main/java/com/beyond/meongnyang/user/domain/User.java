@@ -3,6 +3,7 @@ package com.beyond.meongnyang.user.domain;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 
@@ -69,7 +70,7 @@ public class User extends CommonAt {
     @Column(name = "password_update_at", nullable = true)
     private LocalDateTime passwordUpdateAt;
 
-    @Column(name = "delyn", nullable = false)
+    @Column(name = "del_yn", nullable = false)
     @Builder.Default
     private String delYn = "N";
 
