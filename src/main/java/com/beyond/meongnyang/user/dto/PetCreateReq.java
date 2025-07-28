@@ -1,6 +1,5 @@
 package com.beyond.meongnyang.user.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 
-public class UserChangePasswordDto {
-    String name;
-    String password;
+public class PetCreateReq {
+    public String name;
 }

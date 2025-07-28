@@ -4,6 +4,7 @@ import com.beyond.meongnyang.user.domain.Role;
 import com.beyond.meongnyang.user.domain.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -15,19 +16,35 @@ public class InitialDataLoader implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${admin.name}")
+    private String name;
+
+    @Value("${admin.nickname}")
+    private String nickname;
+
+    @Value("${admin.password}")
+    private String password;
+
+    @Value("${admin.email}")
+    private String email;
+
+    @Value("${admin.phone}")
+    private String phone;
+
     @Override
     public void run(String... args) throws Exception {
-        if(this.userRepository.findByEmail("wooyoungking@gmail.com").isPresent()) {
+        if(this.userRepository.findByEmail(email).isPresent()) {
             return;
         }
         User admin = User.builder()
-                .email("wooyoungking0228@gmail.com")
-                .password(this.passwordEncoder.encode("우영킹왕짱맨이다이거야"))
-                .name("이우영")
-                .nickname("우영킹왕짱")
-                    .phone("01055598067")
+                .email(email)
+                .password(this.passwordEncoder.encode(password))
+                .name(name)
+                .nickname(nickname)
+                .phone(phone)
                 .role(Role.ADMIN)
                 .point(Integer.MAX_VALUE)
+                .delYn("N")
                 .build();
         this.userRepository.save(admin);
     }
