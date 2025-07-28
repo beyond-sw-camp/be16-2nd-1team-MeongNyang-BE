@@ -1,7 +1,7 @@
 package com.beyond.meongnyang.post.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
-import com.beyond.meongnyang.post.dto.PostCreateRequest;
+import com.beyond.meongnyang.post.dto.PostCreateReq;
 import com.beyond.meongnyang.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,25 +16,22 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/posts/**")
+@RequestMapping("/posts")
 public class PostRestController {
     private final PostService postService;
 
     // 일기 작성
-    @PostMapping("/")
-    public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateRequest postCreateRequest, @RequestPart(name = "files", required = false) List<MultipartFile> files) {
-        postService.save(postCreateRequest, files);
+    @PostMapping
+    public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateReq postCreateRequest, @RequestPart(name = "files", required = false) List<MultipartFile> files) {
+        Long id = postService.save(postCreateRequest, files);
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        "ok",
+                        id,
                         HttpStatus.CREATED.value(),
                         "post is created"
                 ), HttpStatus.CREATED
         );
     }
-
-    ;
-
     // 일기 상세 조회
     @GetMapping("/{id}")
     public ResponseEntity<?> postDetail(@PathVariable("id") Long id) {
