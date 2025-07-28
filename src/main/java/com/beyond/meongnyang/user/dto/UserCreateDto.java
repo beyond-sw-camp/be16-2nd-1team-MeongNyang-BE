@@ -34,6 +34,7 @@ public class UserCreateDto {
                 .phone(this.phone)
                 .role(Role.USER)
                 .point(0)
+                .delYn("N")
                 .build();
     }
 }

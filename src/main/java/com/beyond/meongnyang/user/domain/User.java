@@ -31,6 +31,7 @@ public class User extends CommonAt {
     // TODO: 전화번호로 비밀번호, 이메일 찾기? & 전화번호 입력받는 형싱 000-0000-0000으로 할지 -없이 받을지
     @Column(name = "phone", nullable = false, unique = true, length = 255)
     private String phone;
+
     // TODO: nickname 수정 사항 해야함
     @Column(name = "nickname", nullable = false, unique = true, length = 255)
     private String nickname;
@@ -46,7 +47,6 @@ public class User extends CommonAt {
     @Builder.Default
     private int point = 0;
 
-    // TODO what is mapAPI?
     @Column(name = "location",nullable = true, length = 255)
     private String location;
     // TODO: 간편인증
@@ -68,6 +68,16 @@ public class User extends CommonAt {
     @Column(name = "password_update_at", nullable = true)
     private LocalDateTime passwordUpdateAt;
 
+    @Column(name = "delyn", nullable = false)
+    private String delYn;
+
+    @Column(name = "deleted_at", nullable = true)
+    private LocalDateTime deletedAt;
+    /* ***********메소드***********/
+    public void softDelete() {
+        this.delYn = "Y";
+        this.deletedAt = LocalDateTime.now();
+    }
 
 
 }

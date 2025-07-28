@@ -4,11 +4,16 @@ import com.beyond.meongnyang.user.domain.User;
 import com.beyond.meongnyang.user.dto.UserCreateDto;
 import com.beyond.meongnyang.user.dto.UserFindDto;
 import com.beyond.meongnyang.user.dto.UserLoginRequest;
+import com.beyond.meongnyang.user.dto.check.UserCheckEmailDto;
+import com.beyond.meongnyang.user.dto.check.UserCheckNicknameDto;
+import com.beyond.meongnyang.user.dto.check.UserCheckPasswordDto;
+import com.beyond.meongnyang.user.dto.check.UserCheckPhoneDto;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +29,24 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+
+    //회원 가입 시 이메일, 전화번호, 닉네임 각각 인증
+    public void checkEmail(UserCheckEmailDto dto) {
+        if(this.userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new EntityExistsException("이미 사용중인 이메일입니다.");
+        }
+    }
+    public void checkNickname(UserCheckNicknameDto dto) {
+        if(this.userRepository.findByNickname(dto.getNickname()).isPresent()) {
+            throw new EntityExistsException("이미 사용중인 사용자명입니다.");
+        }
+    }
+
+    public void checkPhone (UserCheckPhoneDto dto) {
+        if (this.userRepository.findByPhone(dto.getPhone()).isPresent()) {
+            throw new EntityExistsException("이미 사용중인 전화번호입니다.");
+        }
+    }
     // 회원가입
     public void save(UserCreateDto dto) {
         // 1. 이메일, 전화번호, 닉네임 중복 인증
@@ -77,4 +100,14 @@ public class UserService {
 //            throw new EntityNotFoundException("전화번호가 일치하지 않습니다.");
 //        }
 //    }
+
+    // 계정 삭제
+    public void deleteAccount(UserCheckPasswordDto dto) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 이메일입니다."));
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+        user.softDelete();
+    }
 }

@@ -34,7 +34,9 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(a -> a.requestMatchers("/user/sign", "/user/login", "/user/find/email").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a -> a.requestMatchers(
+                        "/user/sign", "/user/login", "/user/find/email","/user/check-email", "/user/check-nickname", "/user/check-phone" )
+                        .permitAll().anyRequest().authenticated())
                 .build();
     }
 

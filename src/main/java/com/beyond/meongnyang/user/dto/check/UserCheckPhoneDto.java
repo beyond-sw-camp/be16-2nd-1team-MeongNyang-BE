@@ -1,8 +1,7 @@
-package com.beyond.meongnyang.user.dto;
+package com.beyond.meongnyang.user.dto.check;
 
-import com.beyond.meongnyang.user.domain.User;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,9 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class UserFindDto {
-    @NotEmpty(message = "이름을 입력해주세요")
-    private String name;
+public class UserCheckPhoneDto {
     @NotEmpty(message = "전화번호를 입력해주세요")
     private String phone;
 }
