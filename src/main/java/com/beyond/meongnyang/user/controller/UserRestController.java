@@ -32,18 +32,18 @@ public class UserRestController {
     @PostMapping("/check-email")
     public ResponseEntity<?> checkEmail(@Valid @RequestBody UserCheckEmailReq dto) {
         this.userService.checkEmail(dto);
-        return new ResponseEntity<>(ResponseDto.ofSuccess(dto.getEmail(), HttpStatus.OK.value(), "사용가능한 이메일입니다."), HttpStatus.OK);
+        return new ResponseEntity<>(CommonRes.ofSuccess(dto.getEmail(), HttpStatus.OK.value(), "사용가능한 이메일입니다."), HttpStatus.OK);
     }
     @PostMapping("/check-nickname")
     public ResponseEntity<?> checkNickname (@Valid @RequestBody UserCheckNicknameReq dto) {
         this.userService.checkNickname(dto);
-        return new ResponseEntity<>(ResponseDto.ofSuccess(dto.getNickname(), HttpStatus.OK.value(), "사용가능한 사용자명입니다."), HttpStatus.OK);
+        return new ResponseEntity<>(CommonRes.ofSuccess(dto.getNickname(), HttpStatus.OK.value(), "사용가능한 사용자명입니다."), HttpStatus.OK);
     }
 
     @PostMapping("/check-phone")
     public ResponseEntity<?> checkPhone(@Valid @RequestBody UserCheckPhoneReq dto) {
         this.userService.checkPhone(dto);
-        return new ResponseEntity<>(ResponseDto.ofSuccess(dto.getPhone(), HttpStatus.OK.value(), "사용가능한 전화번호입니다."), HttpStatus.OK);
+        return new ResponseEntity<>(CommonRes.ofSuccess(dto.getPhone(), HttpStatus.OK.value(), "사용가능한 전화번호입니다."), HttpStatus.OK);
     }
 
 
@@ -70,6 +70,6 @@ public class UserRestController {
     @PostMapping("/delete")
     public ResponseEntity<?> deleteAccount(@Valid @RequestBody UserCheckPasswordReq dto) {
         this.userService.deleteAccount(dto);
-        return new ResponseEntity<>(ResponseDto.ofSuccess("회원 탈퇴되었습니다.", HttpStatus.OK.value(), "회원탈퇴 완료"), HttpStatus.OK);
+        return new ResponseEntity<>(CommonRes.ofSuccess("회원 탈퇴되었습니다.", HttpStatus.OK.value(), "회원탈퇴 완료"), HttpStatus.OK);
     }
 }
