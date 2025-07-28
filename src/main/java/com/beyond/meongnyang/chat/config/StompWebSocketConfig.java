@@ -2,6 +2,7 @@ package com.beyond.meongnyang.chat.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -30,5 +31,11 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
         //
         registry.enableSimpleBroker("/topic");
 
+    }
+
+    // 웹소켓(connect, subscribe, disconnect)등의 요청 시에는 http header등 http메세지를 넣어올 수 있고, 이를 interceptor를 통해 가로채 토큰등을 검증할 수 있음
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors();
     }
 }
