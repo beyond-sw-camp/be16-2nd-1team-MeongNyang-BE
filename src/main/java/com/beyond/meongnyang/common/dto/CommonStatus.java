@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StatusDto {
-    private int statusCode;
-    private String statusMsg;
+public class CommonStatus {
+    private int code;
+    private String message;
 }

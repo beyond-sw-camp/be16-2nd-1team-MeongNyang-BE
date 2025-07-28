@@ -1,6 +1,6 @@
 package com.beyond.meongnyang.common;
 
-import com.beyond.meongnyang.common.dto.ResponseDto;
+import com.beyond.meongnyang.common.dto.CommonRes;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -17,33 +17,33 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseDto.ofFailure(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonRes.ofFailure(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<?> handleNoSuchElementException(NoSuchElementException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseDto.ofFailure(HttpStatus.NOT_FOUND.value(), e.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(CommonRes.ofFailure(HttpStatus.NOT_FOUND.value(), e.getMessage()));
     }
 
     @ExceptionHandler(EntityExistsException.class)
     public ResponseEntity<?> handleEntityExistsException(EntityExistsException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseDto.ofFailure(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonRes.ofFailure(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<?> handleEntityNotFoundException(EntityNotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseDto.ofFailure(HttpStatus.NOT_FOUND.value(), e.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(CommonRes.ofFailure(HttpStatus.NOT_FOUND.value(), e.getMessage()));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<?> handleConstraintViolationException(ConstraintViolationException e) {
         String message = e.getConstraintViolations().iterator().next().getMessage();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseDto.ofFailure(HttpStatus.BAD_REQUEST.value(), message));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonRes.ofFailure(HttpStatus.BAD_REQUEST.value(), message));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldErrors().iterator().next().getDefaultMessage();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseDto.ofFailure(HttpStatus.BAD_REQUEST.value(), message));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonRes.ofFailure(HttpStatus.BAD_REQUEST.value(), message));
     }
 }
