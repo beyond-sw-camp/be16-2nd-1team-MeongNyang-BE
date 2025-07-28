@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.chat.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -10,7 +11,11 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    private final StompHandler stompHandler;
+
     @Value("${cors.origin}")
     private String origin;
 
@@ -36,6 +41,6 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     // 웹소켓(connect, subscribe, disconnect)등의 요청 시에는 http header등 http메세지를 넣어올 수 있고, 이를 interceptor를 통해 가로채 토큰등을 검증할 수 있음
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors();
+        registration.interceptors(stompHandler);
     }
 }

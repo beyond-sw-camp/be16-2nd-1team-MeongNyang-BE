@@ -3,6 +3,7 @@ package com.beyond.meongnyang.user.domain;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 
