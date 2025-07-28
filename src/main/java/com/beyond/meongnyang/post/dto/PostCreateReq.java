@@ -1,7 +1,6 @@
 package com.beyond.meongnyang.post.dto;
 
 import com.beyond.meongnyang.post.entity.Post;
-import com.beyond.meongnyang.user.domain.User;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -11,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class PostCreateRequest {
+public class PostCreateReq {
     @NotEmpty(message = "제목을 입력해주세요.")
     @Size(max = 50,message = "제목은 최대 50자까지 입력 가능합니다.")
     private String title;

@@ -1,7 +1,7 @@
 package com.beyond.meongnyang.post.controller;
 
 import com.beyond.meongnyang.common.dto.ResponseDto;
-import com.beyond.meongnyang.post.dto.PostCreateRequest;
+import com.beyond.meongnyang.post.dto.PostCreateReq;
 import com.beyond.meongnyang.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +22,11 @@ public class PostRestController {
 
     // 일기 작성
     @PostMapping
-    public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateRequest postCreateRequest, @RequestPart(name = "files", required = false) List<MultipartFile> files) {
-        postService.save(postCreateRequest, files);
+    public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateReq postCreateRequest, @RequestPart(name = "files", required = false) List<MultipartFile> files) {
+        Long id = postService.save(postCreateRequest, files);
         return new ResponseEntity<>(
                 ResponseDto.ofSuccess(
-                        "ok",
+                        id,
                         HttpStatus.CREATED.value(),
                         "post is created"
                 ), HttpStatus.CREATED

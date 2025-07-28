@@ -1,6 +1,6 @@
 package com.beyond.meongnyang.post.service;
 
-import com.beyond.meongnyang.post.dto.PostCreateRequest;
+import com.beyond.meongnyang.post.dto.PostCreateReq;
 import com.beyond.meongnyang.common.S3UploadService;
 import com.beyond.meongnyang.post.entity.*;
 import com.beyond.meongnyang.post.repository.PostRepository;
@@ -9,12 +9,10 @@ import com.beyond.meongnyang.user.domain.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
@@ -30,7 +28,7 @@ public class PostService {
     private final S3UploadService s3UploadService;
 
     // 일기 작성
-    public void save(PostCreateRequest postCreateRequest, List<MultipartFile> files){
+    public Long save(PostCreateReq postCreateRequest, List<MultipartFile> files){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("없는 사용자입니다."));
@@ -39,9 +37,11 @@ public class PostService {
         post.setUser(user);
 
         // 해시태그 처리
-        String[] hashtags = Arrays.stream(postCreateRequest.getContent().split(" "))
-                .filter(s -> s.startsWith("#"))
-                .map(s -> s.substring(1))
+        String[] hashtags = Arrays.stream(postCreateRequest.getContent().split("#"))
+                .skip(1)
+                .map(s -> s.split("\\s|#")[0])
+                .filter(tag -> !tag.isBlank())
+                .distinct()
                 .toArray(String[]::new);
 
         for(String tagName : hashtags){
@@ -70,7 +70,7 @@ public class PostService {
                 post.addMedia(media);
             }
         }
-        postRepository.save(post);
+        return postRepository.save(post).getId();
     }
     // 일기 상세 조회
 
