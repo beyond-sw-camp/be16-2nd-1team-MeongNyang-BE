@@ -17,8 +17,8 @@ public class Species {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "order", nullable = false)
-    private String order; // 대분류
+    @Column(name = "pet_order", nullable = false)
+    private String petOrder; // 대분류
 
     @Column(name = "species", nullable = false)
     private String species;
