@@ -25,7 +25,7 @@ public class InitialDataLoader implements CommandLineRunner {
                 .password(this.passwordEncoder.encode("우영킹왕짱맨이다이거야"))
                 .name("이우영")
                 .nickname("우영킹왕짱")
-                .phone("01055598067")
+                    .phone("01055598067")
                 .role(Role.ADMIN)
                 .point(Integer.MAX_VALUE)
                 .build();

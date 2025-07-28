@@ -1,10 +1,14 @@
 package com.beyond.meongnyang.post.entity;
 
 import jakarta.persistence.Column;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Objects;
 
+@NoArgsConstructor
+@AllArgsConstructor
 public class HashTagId implements Serializable {
     @Column(name = "post_id")
     private Long postId;
