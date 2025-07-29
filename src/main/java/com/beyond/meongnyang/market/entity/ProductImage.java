@@ -14,7 +14,7 @@ import lombok.*;
 public class ProductImage extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long imageId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "market_post_id", nullable = false)
@@ -23,6 +23,4 @@ public class ProductImage extends CommonAt {
     @Column(length = 255, nullable = false)
     private String imageUrl;
 
-    @Column(nullable = false)
-    private boolean isMain;
 }

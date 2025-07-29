@@ -3,7 +3,7 @@ package com.beyond.meongnyang.market.dto;
 import com.beyond.meongnyang.market.entity.Category;
 import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.entity.SaleStatus;
-import com.beyond.meongnyang.user.domain.User;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,24 +13,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MarketPostCreateRequest {
+public class MarketPostCreateReq {
     private Integer mainImageIndex;
+    @NotEmpty(message = "제목을 입력해주세요.")
     private String title;
-    private Long categoryId;
+    private Category category;
     private Integer price;
     private String region;
+    @NotEmpty(message = "내용을 입력해주세요.")
     private String description;
 
-    public MarketPost toEntity(User seller, Category category, String thumbnailUrl) {
+    public MarketPost toEntity() {
         return MarketPost.builder()
                 .title(this.title)
+                .category(this.category)
                 .description(this.description)
                 .price(this.price)
                 .region(this.region)
-                .category(category)
-                .seller(seller)
                 .saleStatus(SaleStatus.SALE)
-                .thumbnailUrl(thumbnailUrl)
                 .build();
     }
 }

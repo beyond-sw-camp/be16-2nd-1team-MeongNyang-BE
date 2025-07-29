@@ -1,9 +1,13 @@
 package com.beyond.meongnyang.market.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.post.entity.Media;
 import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "market_post")
@@ -15,14 +19,14 @@ import lombok.*;
 public class MarketPost extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long marketPostId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Category category;
 
     @Column(length = 255, nullable = false)
@@ -46,4 +50,18 @@ public class MarketPost extends CommonAt {
 
     @Column(length = 255)
     private String thumbnailUrl;
+
+    @OneToMany(mappedBy = "marketPost", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ProductImage> productImageList = new ArrayList<>();
+
+    public void setUser(User user) {
+        this.seller = user;
+    }
+    public void setThumbnailImage(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
+    }
+    public void addProductImage(ProductImage productImage) {
+        this.productImageList.add(productImage);
+    }
 }

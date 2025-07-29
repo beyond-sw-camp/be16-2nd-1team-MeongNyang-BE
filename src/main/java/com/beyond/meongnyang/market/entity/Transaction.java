@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class Transaction extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long transactionId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "market_post_id", nullable = false)

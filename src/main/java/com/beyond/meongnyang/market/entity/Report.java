@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class Report extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long reportId;
+    private Long id;
 
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "reporter_id", nullable = false)

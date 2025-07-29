@@ -1,9 +1,8 @@
 package com.beyond.meongnyang.market.controller;
 
 import com.beyond.meongnyang.common.dto.ResponseDto;
-import com.beyond.meongnyang.market.dto.MarketPostCreateRequest;
+import com.beyond.meongnyang.market.dto.MarketPostCreateReq;
 import com.beyond.meongnyang.market.service.MarketService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +21,10 @@ public class MarketController {
     private final MarketService marketService;
 
     @PostMapping("/posts")
-    public ResponseEntity<?> createMarektPost
-            (@RequestPart(name = "post") MarketPostCreateRequest marketPostCreateRequest,
+    public ResponseEntity<?> createMarketPost
+            (@RequestPart(name = "post") MarketPostCreateReq marketPostCreateReq,
              @RequestPart(value = "imageFiles", required = false)List<MultipartFile> imageFiles) {
-        Long createdPostId = marketService.createMarketPost(marketPostCreateRequest, imageFiles);
+        Long createdPostId = marketService.createMarketPost(marketPostCreateReq, imageFiles);
         return new ResponseEntity<>(
                 ResponseDto.ofSuccess(createdPostId, HttpStatus.CREATED.value(), "post is created"),
                 HttpStatus.CREATED
