@@ -4,6 +4,7 @@ import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
 @Getter
 @ToString
 @Table(name = "post")
+@Where(clause = "del_yn = 'N'")
 public class Post extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +28,10 @@ public class Post extends CommonAt {
     @Column(name = "content", nullable = false)
     String content;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.PERSIST)
+    @Builder.Default
+    private String delYn="N";
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<HashTag> hashtags = new ArrayList<>();
 
@@ -48,6 +53,15 @@ public class Post extends CommonAt {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public void updatePost(String title, String content){
+        this.title = title;
+        this.content = content;
+    }
+
+    public void deletePost(String delYn){
+        this.delYn = delYn;
     }
 
 //    @OneToMany(mappedBy = "marketPost")

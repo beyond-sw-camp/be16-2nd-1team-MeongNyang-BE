@@ -2,6 +2,7 @@ package com.beyond.meongnyang.post.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.post.dto.PostCreateReq;
+import com.beyond.meongnyang.post.dto.PostEditReq;
 import com.beyond.meongnyang.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -28,10 +30,37 @@ public class PostRestController {
                 CommonRes.ofSuccess(
                         id,
                         HttpStatus.CREATED.value(),
-                        "post is created"
+                        "일기를 작성했습니다."
                 ), HttpStatus.CREATED
         );
     }
+
+    // 일기 수정
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> postUpdate(@PathVariable("id") Long id, @RequestPart PostEditReq postEditReq, @RequestPart List<MultipartFile> files) throws AccessDeniedException {
+        postService.updatePost(id, postEditReq, files);
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        id,
+                        HttpStatus.OK.value(),
+                        "일기를 수정했습니다."
+                ), HttpStatus.OK
+        );
+    }
+
+    // 일기 삭제
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> postDelete(@PathVariable("id") Long id) throws AccessDeniedException {
+        postService.deletePost(id);
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        id,
+                        HttpStatus.OK.value(),
+                        "일기를 삭제했습니다."
+                ), HttpStatus.OK
+        );
+    }
+
     // 일기 상세 조회
     @GetMapping("/{id}")
     public ResponseEntity<?> postDetail(@PathVariable("id") Long id) {
@@ -41,18 +70,6 @@ public class PostRestController {
     // 일기 목록 조회
     @GetMapping("/")
     public List<?> posts() {
-        return null;
-    }
-
-    // 일기 수정
-    @PatchMapping("/{id}")
-    public ResponseEntity<?> postUpdate(@PathVariable("id") Long id) {
-        return null;
-    }
-
-    // 일기 삭제
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> postDelete(@PathVariable("id") Long id) {
         return null;
     }
 
