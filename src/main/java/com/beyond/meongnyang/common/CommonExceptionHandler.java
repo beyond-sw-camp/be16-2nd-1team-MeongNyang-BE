@@ -50,6 +50,6 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<?> accessDeniedException(AccessDeniedException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonRes.ofFailure(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonRes.ofFailure(HttpStatus.FORBIDDEN.value(), e.getMessage()));
     }
 }
