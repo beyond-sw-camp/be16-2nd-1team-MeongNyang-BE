@@ -6,7 +6,7 @@ import com.beyond.meongnyang.post.dto.PostEditReq;
 import com.beyond.meongnyang.post.entity.*;
 import com.beyond.meongnyang.post.repository.PostRepository;
 import com.beyond.meongnyang.post.repository.TagRepository;
-import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;

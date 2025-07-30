@@ -1,6 +1,6 @@
 package com.beyond.meongnyang.user.service;
 
-import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
@@ -11,13 +11,11 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.domain.Page;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.awt.print.Pageable;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,20 +33,20 @@ public class UserService {
     public void checkEmail(UserCheckEmailReq dto) {
         Optional<User> optionalUser = this.userRepository.findByEmail(dto.getEmail());
         if(optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            if(user.getDelYn().equals("Y")) {
-                throw new EntityExistsException("탈퇴한 사용자이메일입니다.");
-            }
+//            User user = optionalUser.get();
+//            if(user.getDelYn().equals("Y")) {
+//                throw new EntityExistsException("탈퇴한 사용자이메일입니다.");
+//            }
             throw new EntityExistsException("이미 사용중인 이메일입니다.");
         }
     }
     public void checkNickname(UserCheckNicknameReq dto) {
         Optional<User> optionalUser = this.userRepository.findByNickname(dto.getNickname());
         if(optionalUser.isPresent()) {
-           User user = optionalUser.get();
-            if(user.getDelYn().equals("Y")) {
-                throw new EntityExistsException("탈퇴한 사용자명입니다.");
-            }
+//           User user = optionalUser.get();
+//            if(user.getDelYn().equals("Y")) {
+//                throw new EntityExistsException("탈퇴한 사용자명입니다.");
+//            }
             throw new EntityExistsException("이미 사용중인 사용자명입니다.");
         }
     }
@@ -56,10 +54,10 @@ public class UserService {
     public void checkPhone (UserCheckPhoneReq dto) {
         Optional<User> optionalUser = this.userRepository.findByPhone(dto.getPhone());
         if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            if(user.getDelYn().equals("Y")) {
-                throw new EntityExistsException("탈퇴한 전화번호입니다.");
-            }
+//            User user = optionalUser.get();
+//            if(user.getDelYn().equals("Y")) {
+//                throw new EntityExistsException("탈퇴한 전화번호입니다.");
+//            }
             throw new EntityExistsException("이미 사용중인 전화번호입니다.");
         }
 
@@ -102,13 +100,6 @@ public class UserService {
         return user.getEmail();
     }
 
-//    // 임시비밀번호 발급 -> 복호화가 안 된다!
-//    public String findPassword(UserFindDto dto) {
-//        User user = this.userRepository.findByEmail(dto.getEmail()).orElseThrow(() ->new EntityNotFoundException("등록되지 않은 이메일입니다."));
-//        if(!user.getPhone().equals(dto.getPhone())){
-//            throw new EntityNotFoundException("전화번호가 일치하지 않습니다.");
-//        }
-//    }
 
     // 계정 삭제
     public void deleteAccount(UserCheckPasswordReq dto) {
@@ -131,6 +122,7 @@ public class UserService {
     // 회원 상세조회
     public UserDetailRes findById(Long id) {
         User user = this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 회원입니다."));
+        // TODO: 관리자인데 굳이 필요하나?
         if(user.getDelYn().equals("Y")) {
             throw new EntityNotFoundException("탈퇴한 회원입니다.");
         }

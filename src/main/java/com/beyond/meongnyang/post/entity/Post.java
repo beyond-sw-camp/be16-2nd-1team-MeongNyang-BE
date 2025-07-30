@@ -1,7 +1,7 @@
 package com.beyond.meongnyang.post.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
-import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Where;
