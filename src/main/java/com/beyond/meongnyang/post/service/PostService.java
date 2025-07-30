@@ -1,77 +1,88 @@
 package com.beyond.meongnyang.post.service;
 
-import com.beyond.meongnyang.post.dto.PostCreateRequest;
+import com.beyond.meongnyang.post.dto.PostCreateReq;
 import com.beyond.meongnyang.common.S3UploadService;
-import com.beyond.meongnyang.post.entity.HashTag;
-import com.beyond.meongnyang.post.entity.Media;
-import com.beyond.meongnyang.post.entity.Post;
-import com.beyond.meongnyang.post.entity.Tag;
+import com.beyond.meongnyang.post.dto.PostEditReq;
+import com.beyond.meongnyang.post.entity.*;
 import com.beyond.meongnyang.post.repository.PostRepository;
 import com.beyond.meongnyang.post.repository.TagRepository;
+import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PostService {
     private final PostRepository postRepository;
     private final TagRepository tagRepository;
+    private final UserRepository userRepository;
     private final S3UploadService s3UploadService;
+    private final EntityManager em;
 
     // 일기 작성
-    public void save(PostCreateRequest postCreateRequest, List<MultipartFile> files){
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        String email = authentication.getName();
+    public Long save(PostCreateReq postCreateRequest, List<MultipartFile> files){
+        User user = getCurrentUser();
+
         Post post = postCreateRequest.postToEntity();
+        post.setUser(user);
 
-        // 해시태그 처리
-        String[] hashtags = Arrays.stream(postCreateRequest.getContent().split(" "))
-                .filter(s -> s.startsWith("#"))
-                .map(s -> s.substring(1))
-                .toArray(String[]::new);
+        handleHashtags(post, postCreateRequest.getContent());
+        handleFileUpload(post, files);
 
-        for(String tagName : hashtags){
-            Tag tag = tagRepository.findByName(tagName)
-                    .orElseGet(() -> tagRepository.save(Tag.builder()
-                            .name(tagName)
-                            .build()));
-
-            HashTag hashTag = HashTag.builder()
-                    .post(post)
-                    .tag(tag)
-                    .build();
-            post.addHashTag(hashTag);
-        }
-
-        // 파일 처리
-        if(files != null && !files.isEmpty()){
-            List<String> urls = s3UploadService.upload(files);
-            for (String url : urls) {
-                Media media = Media.builder()
-                        .url(url)
-                        .post(post)
-                        .build();
-
-                post.addMedia(media);
-            }
-        }
-        postRepository.save(post);
+        return postRepository.save(post).getId();
     }
+
+
+    // 일기 수정
+    public void updatePost(Long id, PostEditReq postEditReq, List<MultipartFile> files) throws AccessDeniedException {
+        User user = getCurrentUser();
+
+        // 원래 일기를 가져온다
+        Post post = postRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("글이 존재하지 않습니다."));
+
+        // 작성자 확인
+        if (!Objects.equals(user.getId(), post.getUser().getId())) {
+            throw new AccessDeniedException("작성자 또는 관리자만 수정 가능합니다.");
+        }
+
+        post.updatePost(postEditReq.getTitle(), postEditReq.getContent());
+        post.getHashtags().clear();
+        post.getMediaList().clear();
+        em.flush();
+        handleHashtags(post, postEditReq.getContent());
+        handleFileUpload(post, files);
+    }
+
+    // 일기 삭제(soft-delete)
+    public void deletePost(Long id) throws AccessDeniedException {
+        User user = getCurrentUser();
+        Post post = postRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("글이 존재하지 않습니다."));
+
+        // 작성자 확인
+        if (!Objects.equals(user.getId(), post.getUser().getId())) {
+            throw new AccessDeniedException("작성자 또는 관리자만 삭제 가능합니다.");
+        }
+
+        post.deletePost("Y");
+    }
+
     // 일기 상세 조회
 
     // 일기 목록 조회
-
-    // 일기 수정
-
-    // 일기 삭제
 
     // 좋아요
 
@@ -88,4 +99,50 @@ public class PostService {
     // 신고
 
     // 친구 추천
+
+    // 일기 생성 및 수정 시 해시태그 처리
+    private void handleHashtags(Post post, String content) {
+        String[] hashtags = Arrays.stream(content.split("#"))
+                .skip(1)
+                .map(s -> s.split("\\s|#")[0])
+                .filter(tag -> !tag.isBlank())
+                .distinct()
+                .toArray(String[]::new);
+
+        for (String tagName : hashtags) {
+            Tag tag = tagRepository.findByName(tagName)
+                    .orElseGet(() -> tagRepository.save(Tag.builder()
+                            .name(tagName)
+                            .build()));
+            HashTagId hashTagId = new HashTagId(post.getId(), tag.getId());
+            HashTag hashTag = HashTag.builder()
+                    .id(hashTagId)
+                    .post(post)
+                    .tag(tag)
+                    .build();
+            post.addHashTag(hashTag);
+        }
+    }
+    // 일기 생성 및 식제 시 파일 처리
+    private void handleFileUpload(Post post, List<MultipartFile> files){
+        if(files != null && !files.isEmpty()){
+            List<String> urls = s3UploadService.upload(files);
+            for (String url : urls) {
+                Media media = Media.builder()
+                        .url(url)
+                        .post(post)
+                        .build();
+
+                post.addMedia(media);
+            }
+        }
+    }
+
+    // 유효한 사용자인지 확인
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+    }
 }

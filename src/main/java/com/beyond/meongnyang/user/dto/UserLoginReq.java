@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 
-public class UserLoginRequest {
+public class UserLoginReq {
     @NotEmpty(message = "이메일 입력해주세요.")
     private String email;
     @NotEmpty(message = "비밀번호를 입력해주세요")
