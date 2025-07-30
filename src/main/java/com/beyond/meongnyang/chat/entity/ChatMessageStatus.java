@@ -13,18 +13,30 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "chat_participant")
-public class ChatParticipant extends CommonAt {
+@Table(name = "chat_message_status")
+public class ChatMessageStatus extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_room_id", nullable = false)
+    private ChatRoom chatRoom;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id", nullable = false)
-    private ChatRoom chatRoom;
+    @JoinColumn(name = "chat_message_id", nullable = false)
+    private ChatMessage chatMessage;
+
+    @Builder.Default
+    @Column(name = "is_read",  nullable = false)
+    private Boolean isRead = Boolean.FALSE;
+
+    public void read() {
+        this.isRead = Boolean.TRUE;
+    }
 }

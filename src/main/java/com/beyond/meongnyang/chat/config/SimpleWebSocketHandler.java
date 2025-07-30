@@ -22,9 +22,9 @@
 //    }
 //
 //    @Override
-//    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-//        String msg = message.getPayload();
-//        log.info("Received message: {}", msg);
+//    protected void handleTextMessage(WebSocketSession session, TextMessage chatMessage) throws Exception {
+//        String msg = chatMessage.getPayload();
+//        log.info("Received chatMessage: {}", msg);
 //        for (WebSocketSession s : webSocketSessions) {
 //            if (s.isOpen()) s.sendMessage(new TextMessage(msg));
 //        }
