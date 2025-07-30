@@ -1,9 +1,7 @@
 package com.beyond.meongnyang.user.service;
 
 import com.beyond.meongnyang.user.domain.User;
-import com.beyond.meongnyang.user.dto.UserCreateReq;
-import com.beyond.meongnyang.user.dto.UserFindEmailReq;
-import com.beyond.meongnyang.user.dto.UserLoginReq;
+import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckPasswordReq;
@@ -13,11 +11,14 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.awt.print.Pageable;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -32,34 +33,39 @@ public class UserService {
 
     //회원 가입 시 이메일, 전화번호, 닉네임 각각 인증
     public void checkEmail(UserCheckEmailReq dto) {
-        if(this.userRepository.findByEmail(dto.getEmail()).isPresent()) {
+        Optional<User> optionalUser = this.userRepository.findByEmail(dto.getEmail());
+        if(optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            if(user.getDelYn().equals("Y")) {
+                throw new EntityExistsException("탈퇴한 사용자이메일입니다.");
+            }
             throw new EntityExistsException("이미 사용중인 이메일입니다.");
         }
     }
     public void checkNickname(UserCheckNicknameReq dto) {
-        if(this.userRepository.findByNickname(dto.getNickname()).isPresent()) {
+        Optional<User> optionalUser = this.userRepository.findByNickname(dto.getNickname());
+        if(optionalUser.isPresent()) {
+           User user = optionalUser.get();
+            if(user.getDelYn().equals("Y")) {
+                throw new EntityExistsException("탈퇴한 사용자명입니다.");
+            }
             throw new EntityExistsException("이미 사용중인 사용자명입니다.");
         }
     }
 
     public void checkPhone (UserCheckPhoneReq dto) {
-        if (this.userRepository.findByPhone(dto.getPhone()).isPresent()) {
+        Optional<User> optionalUser = this.userRepository.findByPhone(dto.getPhone());
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            if(user.getDelYn().equals("Y")) {
+                throw new EntityExistsException("탈퇴한 전화번호입니다.");
+            }
             throw new EntityExistsException("이미 사용중인 전화번호입니다.");
         }
+
     }
     // 회원가입
     public void save(UserCreateReq dto) {
-        // 1. 이메일, 전화번호, 닉네임 중복 인증
-        if(this.userRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new EntityExistsException("이미 사용중인 이메일입니다.");
-        }
-        if (this.userRepository.findByPhone(dto.getPhone()).isPresent()) {
-            throw new EntityExistsException("이미 사용중인 전화번호입니다.");
-        }
-        if(this.userRepository.findByNickname(dto.getNickname()).isPresent()) {
-            throw new EntityExistsException("이미 사용중인 사용자명입니다.");
-        }
-        // 중복없는 true값 db에 저장(회원가입)
         String encodedPassword = this.passwordEncoder.encode(dto.getPassword());
         User user = dto.toCreateEntity(encodedPassword);
         this.userRepository.save(user);
@@ -79,6 +85,9 @@ public class UserService {
         }
         if(!check) {
             throw new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다.");
+        }
+        if(optionalUser.get().getDelYn().equals("Y"))  {
+            throw new IllegalArgumentException("사용하지 않는 계정입니다.");
         }
         return optionalUser.get();
     }
@@ -109,5 +118,22 @@ public class UserService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
         user.softDelete();
+    }
+
+
+    /* **************** 관리자 기능 **************** */
+    public List<UserListRes> findAll() {
+        List<User> users = this.userRepository.findAllBydelYn("N");
+        return users.stream().map(a -> UserListRes.fromEntity(a)).toList();
+
+    }
+
+    // 회원 상세조회
+    public UserDetailRes findById(Long id) {
+        User user = this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 회원입니다."));
+        if(user.getDelYn().equals("Y")) {
+            throw new EntityNotFoundException("탈퇴한 회원입니다.");
+        }
+        return UserDetailRes.fromEntity(user);
     }
 }
