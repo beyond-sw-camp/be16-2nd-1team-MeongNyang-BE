@@ -49,7 +49,6 @@ dependencies {
 	//validtion 관련 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-
 }
 
 tasks.named('test') {
