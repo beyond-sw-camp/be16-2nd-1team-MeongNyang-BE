@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.market.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,13 +19,13 @@ public class Report extends CommonAt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "reporter_id", nullable = false)
-//    private User reporter;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reporter_id", nullable = false)
+    private User reporter;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "reported_user_id")
-//    private User reportedUser;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reported_user_id")
+    private User reportedUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "market_post_id")

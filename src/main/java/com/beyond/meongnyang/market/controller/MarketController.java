@@ -22,7 +22,7 @@ public class MarketController {
                                                @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) {
         Long createdPostId = marketService.createMarketPost(marketPostCreateReq, imageFiles);
         return new ResponseEntity<>(
-                ResponseDto.ofSuccess(createdPostId, HttpStatus.CREATED.value(), "post is created"),
+                ResponseDto.ofSuccess(createdPostId, HttpStatus.CREATED.value(), "거래글이 작성되었습니다."),
                 HttpStatus.CREATED
         );
     }

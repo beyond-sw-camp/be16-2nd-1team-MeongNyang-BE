@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.market.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.cglib.core.Local;
@@ -23,13 +24,13 @@ public class Transaction extends CommonAt {
     @JoinColumn(name = "market_post_id", nullable = false)
     private MarketPost marketPost;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "seller_id", nullable = false)
-//    private User seller;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "buyer_id", nullable = false)
-//    private User buyer;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "buyer_id", nullable = false)
+    private User buyer;
 
     @Column(nullable = false)
     private int pricePoint;
@@ -47,7 +48,7 @@ public class Transaction extends CommonAt {
     private String paymentMethod;
 
     @Column(length = 100)
-    private String pgTid;
+    private String pgId;
 
     @Column(length = 50)
     private String pgStatus;
