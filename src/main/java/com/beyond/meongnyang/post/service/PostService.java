@@ -3,6 +3,7 @@ package com.beyond.meongnyang.post.service;
 import com.beyond.meongnyang.post.dto.PostCreateReq;
 import com.beyond.meongnyang.common.S3UploadService;
 import com.beyond.meongnyang.post.dto.PostEditReq;
+import com.beyond.meongnyang.post.dto.PostListReq;
 import com.beyond.meongnyang.post.entity.*;
 import com.beyond.meongnyang.post.repository.PostRepository;
 import com.beyond.meongnyang.post.repository.TagRepository;
@@ -11,6 +12,8 @@ import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -18,10 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -80,9 +81,14 @@ public class PostService {
         post.deletePost("Y");
     }
 
-    // 일기 상세 조회
-
     // 일기 목록 조회
+    public Page<PostListReq> myPosts(Pageable pageable, PostListReq postListReq){
+        User user = getCurrentUser();
+        Page<Post> postList = postRepository.findAll(pageable);
+        return postList.map(a->PostListReq.fromEntity(a));
+    }
+
+    // 일기 상세 조회
 
     // 좋아요
 

@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.post.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.post.dto.PostListReq;
 import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -62,6 +63,10 @@ public class Post extends CommonAt {
 
     public void deletePost(String delYn){
         this.delYn = delYn;
+    }
+
+    public PostListReq listFromEntity(){
+        return new PostListReq(id, title, user.getName());
     }
 
 //    @OneToMany(mappedBy = "marketPost")
