@@ -6,7 +6,6 @@ import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.entity.ProductImage;
 import com.beyond.meongnyang.market.repository.MarketPostRepository;
 import com.beyond.meongnyang.market.repository.ProductImageRepository;
-import com.beyond.meongnyang.post.entity.Media;
 import com.beyond.meongnyang.user.domain.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.*;

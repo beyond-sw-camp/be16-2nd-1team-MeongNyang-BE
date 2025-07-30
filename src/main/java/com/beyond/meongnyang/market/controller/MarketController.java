@@ -6,10 +6,7 @@ import com.beyond.meongnyang.market.service.MarketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -21,9 +18,8 @@ public class MarketController {
     private final MarketService marketService;
 
     @PostMapping("/posts")
-    public ResponseEntity<?> createMarketPost
-            (@RequestPart(name = "post") MarketPostCreateReq marketPostCreateReq,
-             @RequestPart(value = "imageFiles", required = false)List<MultipartFile> imageFiles) {
+    public ResponseEntity<?> createMarketPost (@RequestPart(name = "post") MarketPostCreateReq marketPostCreateReq,
+                                               @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) {
         Long createdPostId = marketService.createMarketPost(marketPostCreateReq, imageFiles);
         return new ResponseEntity<>(
                 ResponseDto.ofSuccess(createdPostId, HttpStatus.CREATED.value(), "post is created"),

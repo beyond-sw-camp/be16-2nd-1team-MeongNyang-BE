@@ -1,7 +1,6 @@
 package com.beyond.meongnyang.market.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
-import com.beyond.meongnyang.post.entity.Media;
 import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
