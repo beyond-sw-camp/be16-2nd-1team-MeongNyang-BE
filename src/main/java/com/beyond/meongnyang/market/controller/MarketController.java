@@ -1,6 +1,6 @@
 package com.beyond.meongnyang.market.controller;
 
-import com.beyond.meongnyang.common.dto.ResponseDto;
+import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.market.dto.MarketPostCreateReq;
 import com.beyond.meongnyang.market.service.MarketService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class MarketController {
                                                @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) {
         Long createdPostId = marketService.createMarketPost(marketPostCreateReq, imageFiles);
         return new ResponseEntity<>(
-                ResponseDto.ofSuccess(createdPostId, HttpStatus.CREATED.value(), "거래글이 작성되었습니다."),
+                CommonRes.ofSuccess(createdPostId, HttpStatus.CREATED.value(), "거래글이 작성되었습니다."),
                 HttpStatus.CREATED
         );
     }
