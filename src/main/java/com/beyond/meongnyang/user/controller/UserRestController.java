@@ -76,7 +76,6 @@ public class UserRestController {
         return new ResponseEntity<>(CommonRes.ofSuccess("회원 탈퇴되었습니다.", HttpStatus.OK.value(), "회원탈퇴 완료"), HttpStatus.OK);
     }
 
-
     /* ******************** 관리자 기능 ******************** */
     // 탈퇴하지 않은 회원목록 조회
     @GetMapping("/list")
