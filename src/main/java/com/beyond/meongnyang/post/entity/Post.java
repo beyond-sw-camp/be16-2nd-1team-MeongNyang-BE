@@ -3,6 +3,7 @@ package com.beyond.meongnyang.post.entity;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.post.dto.PostListReq;
 import com.beyond.meongnyang.user.domain.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Where;
@@ -33,6 +34,7 @@ public class Post extends CommonAt {
     private String delYn="N";
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     @Builder.Default
     private List<HashTag> hashtags = new ArrayList<>();
 
@@ -63,10 +65,6 @@ public class Post extends CommonAt {
 
     public void deletePost(String delYn){
         this.delYn = delYn;
-    }
-
-    public PostListReq listFromEntity(){
-        return new PostListReq(id, title, user.getName());
     }
 
 //    @OneToMany(mappedBy = "marketPost")

@@ -1,9 +1,7 @@
 package com.beyond.meongnyang.post.service;
 
-import com.beyond.meongnyang.post.dto.PostCreateReq;
+import com.beyond.meongnyang.post.dto.*;
 import com.beyond.meongnyang.common.S3UploadService;
-import com.beyond.meongnyang.post.dto.PostEditReq;
-import com.beyond.meongnyang.post.dto.PostListReq;
 import com.beyond.meongnyang.post.entity.*;
 import com.beyond.meongnyang.post.repository.PostRepository;
 import com.beyond.meongnyang.post.repository.TagRepository;
@@ -81,14 +79,18 @@ public class PostService {
         post.deletePost("Y");
     }
 
-    // 일기 목록 조회
-    public Page<PostListReq> myPosts(Pageable pageable, PostListReq postListReq){
+    // 내 일기 목록 조회
+    public Page<PostListReq> myPosts(Pageable pageable){
         User user = getCurrentUser();
-        Page<Post> postList = postRepository.findAll(pageable);
-        return postList.map(a->PostListReq.fromEntity(a));
+        Page<Post> postList = postRepository.findAllByUserId(user.getId(), pageable);
+        return postList.map(p->PostListReq.fromEntity(p));
     }
 
     // 일기 상세 조회
+    public PostDetailRes myPost(Long postId){
+        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
+        return new PostDetailRes().fromEntity(post);
+    }
 
     // 좋아요
 
