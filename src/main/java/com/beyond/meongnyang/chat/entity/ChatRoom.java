@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.chat.entity;
 
+import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,7 +28,8 @@ public class ChatRoom extends CommonAt {
 
     @Builder.Default
     @Column(name = "is_group_chat", nullable = false)
-    private Boolean isGroupChat = Boolean.FALSE;
+    @Enumerated(EnumType.STRING)
+    private Bool isGroupChat = Bool.FALSE;
 
     @Builder.Default
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -37,7 +39,7 @@ public class ChatRoom extends CommonAt {
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChatMessage> chatMessageList = new ArrayList<>();
 
-    public void updateIsGroupChat(Boolean isGroupChat) {
+    public void updateIsGroupChat(Bool isGroupChat) {
         this.isGroupChat = isGroupChat;
     }
 }

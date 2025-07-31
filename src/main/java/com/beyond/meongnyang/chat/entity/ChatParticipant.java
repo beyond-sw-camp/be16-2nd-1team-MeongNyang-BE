@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "chat_participant")
 public class ChatParticipant extends CommonAt {
+    // TODO : ChatParticipant를 @EqualsAndHashCode(of = {"user", "chatRoom"}) 어노테이션으로 추가 후 Set으로 변경하는 것 고민해보기
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

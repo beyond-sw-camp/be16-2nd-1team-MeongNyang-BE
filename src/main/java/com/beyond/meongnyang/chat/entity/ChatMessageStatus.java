@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.chat.entity;
 
+import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
@@ -34,9 +35,10 @@ public class ChatMessageStatus extends CommonAt {
 
     @Builder.Default
     @Column(name = "is_read",  nullable = false)
-    private Boolean isRead = Boolean.FALSE;
+    @Enumerated(EnumType.STRING)
+    private Bool isRead = Bool.FALSE;
 
     public void read() {
-        this.isRead = Boolean.TRUE;
+        this.isRead = Bool.TRUE;
     }
 }
