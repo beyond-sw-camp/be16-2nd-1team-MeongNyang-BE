@@ -1,7 +1,6 @@
-package com.beyond.meongnyang.pet.Service;
+package com.beyond.meongnyang.pet.service;
 
-import com.beyond.meongnyang.pet.Repository.PetRepository;
-import com.beyond.meongnyang.species.entity.Species;
+import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.species.repository.SpeciesRepository;
 import com.beyond.meongnyang.user.dto.PetCreateReq;
 import com.beyond.meongnyang.user.entity.User;

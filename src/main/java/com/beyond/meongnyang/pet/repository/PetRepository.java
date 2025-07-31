@@ -1,6 +1,6 @@
-package com.beyond.meongnyang.pet.Repository;
+package com.beyond.meongnyang.pet.repository;
 
-import com.beyond.meongnyang.pet.Entity.Pet;
+import com.beyond.meongnyang.pet.entity.Pet;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

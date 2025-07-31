@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.common.security;
+package com.beyond.meongnyang.common.loader;
 
 import com.beyond.meongnyang.user.entity.Role;
 import com.beyond.meongnyang.user.entity.User;

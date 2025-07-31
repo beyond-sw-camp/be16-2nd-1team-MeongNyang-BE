@@ -1,10 +1,7 @@
-package com.beyond.meongnyang.pet.Controller;
+package com.beyond.meongnyang.pet.controller;
 
-import com.beyond.meongnyang.pet.Service.PetService;
+import com.beyond.meongnyang.pet.service.PetService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

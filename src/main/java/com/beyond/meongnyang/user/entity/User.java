@@ -1,13 +1,10 @@
 package com.beyond.meongnyang.user.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
-import com.beyond.meongnyang.pet.Entity.Pet;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Table(name = "user")
 @NoArgsConstructor

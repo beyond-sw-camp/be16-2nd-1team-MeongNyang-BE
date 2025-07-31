@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.pet.Entity;
+package com.beyond.meongnyang.pet.entity;
 
 import com.beyond.meongnyang.species.entity.Species;
 import com.beyond.meongnyang.user.entity.User;
