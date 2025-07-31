@@ -2,6 +2,7 @@ package com.beyond.meongnyang.market.service;
 
 import com.beyond.meongnyang.common.S3UploadService;
 import com.beyond.meongnyang.market.dto.MarketPostCreateReq;
+import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
 import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.entity.ProductImage;
 import com.beyond.meongnyang.market.repository.MarketPostRepository;
@@ -27,13 +28,36 @@ public class MarketService {
     private final S3UploadService s3UploadService;
     private final UserRepository userRepository;
 
-    public Long createMarketPost(MarketPostCreateReq marketPostCreateReq, List<MultipartFile> imageFiles) {
+    public Long marketPostCreate(MarketPostCreateReq marketPostCreateReq, List<MultipartFile> imageFiles) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
 
         MarketPost marketPost = marketPostCreateReq.toEntity();
-        marketPost.setUser(user);
+        marketPost.setSeller(user);
+
+        if(imageFiles != null && !imageFiles.isEmpty()){
+            List<String> urls = s3UploadService.upload(imageFiles);
+            marketPost.setThumbnailImage(urls.get(0));
+
+            for (String url : urls) {
+                ProductImage productImage = ProductImage.builder()
+                        .marketPost(marketPost)
+                        .imageUrl(url)
+                        .build();
+                marketPost.addProductImage(productImage);
+            }
+        }
+        return marketPostRepository.save(marketPost).getId();
+    }
+
+    public Long marketPostUpdate(Long id, MarketPostUpdateReq marketPostUpdateReq, List<MultipartFile> imageFiles) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+
+        MarketPost marketPost = marketPostCreateReq.toEntity();
+        marketPost.setSeller(user);
 
         if(imageFiles != null && !imageFiles.isEmpty()){
             List<String> urls = s3UploadService.upload(imageFiles);

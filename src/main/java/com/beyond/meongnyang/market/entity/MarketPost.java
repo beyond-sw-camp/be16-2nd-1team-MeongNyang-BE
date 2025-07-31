@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.market.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
 import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,6 +21,7 @@ public class MarketPost extends CommonAt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+//    관계성 설정 MarketPost N : User 1
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
@@ -42,7 +44,7 @@ public class MarketPost extends CommonAt {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private SaleStatus saleStatus;
+    private SaleStatus saleStatus = SaleStatus.SALE;
 
     @Column(nullable = false)
     private boolean isResticted = false;
@@ -50,11 +52,12 @@ public class MarketPost extends CommonAt {
     @Column(length = 255)
     private String thumbnailUrl;
 
+//    관계성 설정 MarketPost 1 : ProductImage N
     @OneToMany(mappedBy = "marketPost", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ProductImage> productImageList = new ArrayList<>();
 
-    public void setUser(User user) {
+    public void setSeller(User user) {
         this.seller = user;
     }
     public void setThumbnailImage(String thumbnailUrl) {
@@ -62,5 +65,8 @@ public class MarketPost extends CommonAt {
     }
     public void addProductImage(ProductImage productImage) {
         this.productImageList.add(productImage);
+    }
+    public void updateFrom(MarketPostUpdateReq marketPostUpdateReq) {
+
     }
 }
