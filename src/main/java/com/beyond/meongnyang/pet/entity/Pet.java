@@ -27,7 +27,7 @@ public class Pet {
     private String name;
 
     @Column(name = "age", nullable = false)
-    private int age;
+    private Integer age;
 
     @Column(name = "gender", nullable = false, length = 255)
     @Enumerated(EnumType.STRING)
