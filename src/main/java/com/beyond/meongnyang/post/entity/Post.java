@@ -34,7 +34,6 @@ public class Post extends CommonAt {
     private String delYn="N";
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     @Builder.Default
     private List<HashTag> hashtags = new ArrayList<>();
 

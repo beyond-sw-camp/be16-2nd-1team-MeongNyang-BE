@@ -22,7 +22,7 @@ public class PostDetailRes {
     private List<String> mediaList;
     private String localDateTime;
 
-    public PostDetailRes fromEntity(Post post){
+    public static PostDetailRes fromEntity(Post post){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일");
 
         return PostDetailRes.builder()

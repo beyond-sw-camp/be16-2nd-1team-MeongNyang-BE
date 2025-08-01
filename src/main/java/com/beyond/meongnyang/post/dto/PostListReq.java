@@ -21,14 +21,14 @@ public class PostListReq {
 
     public static PostListReq fromEntity(Post post){
         return PostListReq.builder()
-                .id(post.getId())
-                .hashTagList(
-                        post.getHashtags().stream()
-                                .map(ht -> ht.getTag().getName()) // Tag → name
-                                .toList()
-                )
-                .thumbnail(
-                        post.getMediaList().isEmpty() ? null : post.getMediaList().get(0).getUrl())
-                .build();
+            .id(post.getId())
+            .hashTagList(
+                    post.getHashtags().stream()
+                            .map(ht -> ht.getTag().getName()) // Tag → name
+                            .toList()
+            )
+            .thumbnail(
+                    post.getMediaList().get(0).getUrl())
+            .build();
     }
 }

@@ -89,7 +89,7 @@ public class PostService {
     // 일기 상세 조회
     public PostDetailRes myPost(Long postId){
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
-        return new PostDetailRes().fromEntity(post);
+        return PostDetailRes.fromEntity(post);
     }
 
     // 좋아요
