@@ -1,9 +1,8 @@
-package com.beyond.meongnyang.user.domain;
+package com.beyond.meongnyang.user.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 
@@ -68,6 +67,7 @@ public class User extends CommonAt {
     @Column(name = "password_change_at", nullable = true)
     private LocalDateTime passwordChangeAt;
 
+
     // 탈퇴 시 y로 변경
     @Column(name = "del_yn", nullable = false)
     @Builder.Default
@@ -76,7 +76,8 @@ public class User extends CommonAt {
     // 탈퇴 시에 기록
     @Column(name = "deleted_at", nullable = true)
     private LocalDateTime deletedAt;
-    /* ***********메소드***********/
+
+    /* ******************메소드******************* */
     public void softDelete() {
         this.delYn = "Y";
         this.deletedAt = LocalDateTime.now();

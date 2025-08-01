@@ -1,6 +1,8 @@
-package com.beyond.meongnyang.user.domain.Pet;
+package com.beyond.meongnyang.pet.entity;
 
-import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.species.entity.Species;
+import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +19,7 @@ import java.time.LocalDate;
 @Builder
 
 @Table(name = "pet")
-public class Pet {
+public class Pet extends CommonAt {
     @Id
     @GeneratedValue()
     private Long id;
@@ -26,34 +28,45 @@ public class Pet {
     private String name;
 
     @Column(name = "age", nullable = false)
-    private int age;
+    private Integer age;
 
     @Column(name = "gender", nullable = false, length = 255)
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    // TODO: 공개 여부는 나중에
+    @Column(name = "weight", nullable = false, precision = 5, scale = 2)
+    private BigDecimal weight;
+
+    // TODO: 공개 여부는 후에
 
     @Column(name = "pet_profile", nullable = true, length = 255)
     private String petProfile;
-
-    @Column(name = "weight", nullable = false, precision = 5, scale = 2)
-    private BigDecimal weight;
 
     // TODO: 1년 뒤에 떡국 먹게 하기
     @Column(name = "birthday", nullable = true)
     private LocalDate birthday;
 
+    // pet 등록 관련 소프트 딜리트
+    @Column(name = "is_del", nullable = false)
+    @Builder.Default
+    private String isDel = "N";
+
+
+    /* ******************** 연관관계 ******************* */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User owner;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "species_id")
-    private  Species species;
+    private Species species;
 
     /* ******************** 매서드 ********************/
     public void updateImgUrl (String url) {
         this.petProfile = url;
+    }
+
+    public void delPet() {
+        this.isDel = "Y";
     }
 }
