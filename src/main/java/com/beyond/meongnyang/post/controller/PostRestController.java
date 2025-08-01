@@ -7,6 +7,9 @@ import com.beyond.meongnyang.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -61,17 +64,31 @@ public class PostRestController {
         );
     }
 
-    // 일기 상세 조회
-    @GetMapping("/{id}")
-    public ResponseEntity<?> postDetail(@PathVariable("id") Long id) {
-        return null;
+    // 일기 목록 조회
+    @GetMapping
+    public ResponseEntity<?> posts(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.myPosts(pageable),
+                        HttpStatus.OK.value(),
+                        "내 일기를 불러왔습니다."
+                ), HttpStatus.OK
+        );
     }
 
-    // 일기 목록 조회
-    @GetMapping("/")
-    public List<?> posts() {
-        return null;
+    // 일기 상세 조회
+    @GetMapping("/{id}")
+    public ResponseEntity<?> postDetail(@PathVariable("id") Long postId) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.myPost(postId),
+                        HttpStatus.OK.value(),
+                        "일기를 불러왔습니다."
+                ), HttpStatus.OK
+        );
     }
+
+
 
     // 좋아요
     @PostMapping("/like/{id}")
