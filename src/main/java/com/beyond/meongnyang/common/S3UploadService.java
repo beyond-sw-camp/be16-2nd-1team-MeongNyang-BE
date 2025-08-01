@@ -66,4 +66,8 @@ public class S3UploadService {
         }
         return urls;
     }
+
+    public void delete(String fileName){
+        s3Client.deleteObject(a->a.bucket(bucket).key(fileName));
+    }
 }

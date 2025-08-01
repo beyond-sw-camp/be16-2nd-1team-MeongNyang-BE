@@ -4,6 +4,7 @@ import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
 import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -44,10 +45,11 @@ public class MarketPost extends CommonAt {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private SaleStatus saleStatus = SaleStatus.SALE;
 
     @Column(nullable = false)
-    private boolean isResticted = false;
+    private boolean isResticted;
 
     @Column(length = 255)
     private String thumbnailUrl;
@@ -66,7 +68,11 @@ public class MarketPost extends CommonAt {
     public void addProductImage(ProductImage productImage) {
         this.productImageList.add(productImage);
     }
-    public void updateFrom(MarketPostUpdateReq marketPostUpdateReq) {
-
+    public void updateMarketPost(MarketPostUpdateReq marketPostUpdateReq) {
+        this.title = marketPostUpdateReq.getTitle();
+        this.category = marketPostUpdateReq.getCategory();
+        this.price = marketPostUpdateReq.getPrice();
+        this.region = marketPostUpdateReq.getRegion();
+        this.description = marketPostUpdateReq.getDescription();
     }
 }

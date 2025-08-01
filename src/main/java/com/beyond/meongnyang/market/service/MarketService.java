@@ -29,6 +29,8 @@ public class MarketService {
     private final UserRepository userRepository;
 
     public Long marketPostCreate(MarketPostCreateReq marketPostCreateReq, List<MultipartFile> imageFiles) {
+
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
@@ -56,11 +58,26 @@ public class MarketService {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
 
-        MarketPost marketPost = marketPostUpdateReq.toEntity();
-        marketPost.setSeller(user);
+
+//        거래글을 찾아와
+        MarketPost marketPost =  marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 아이디입니다."));
+
+        marketPost.updateMarketPost(marketPostUpdateReq);
 
         if(imageFiles != null && !imageFiles.isEmpty()){
+//            기존 이미지 삭제
+            List<ProductImage> productImageList = marketPost.getProductImageList();
+            for (ProductImage productImage : productImageList){
+                String imageUrl = productImage.getImageUrl();
+                String fileName = imageUrl.substring(imageUrl.lastIndexOf("/")+1);
+                s3UploadService.delete(fileName);
+            }
+//            기존 이미지 db 삭제 (db에서만 삭제하면 영속성컨텍스트로 다시 자바객체에 남아있던 이미지를 db에 업데이트함)
+            marketPost.getProductImageList().clear();
+
+//            이미지 재 업로드
             List<String> urls = s3UploadService.upload(imageFiles);
+            System.out.println("urls : " + urls);
             marketPost.setThumbnailImage(urls.get(0));
 
             for (String url : urls) {
@@ -68,9 +85,9 @@ public class MarketService {
                         .marketPost(marketPost)
                         .imageUrl(url)
                         .build();
-                marketPost.addProductImage(productImage);
+                productImageRepository.save(productImage);
             }
         }
-        return marketPostRepository.save(marketPost).getId();
+        return marketPost.getId();
     }
 }
