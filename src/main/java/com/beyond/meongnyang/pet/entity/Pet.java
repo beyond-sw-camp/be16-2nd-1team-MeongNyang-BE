@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.pet.entity;
 
+import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.species.entity.Species;
 import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
@@ -18,7 +19,7 @@ import java.time.LocalDate;
 @Builder
 
 @Table(name = "pet")
-public class Pet {
+public class Pet extends CommonAt {
     @Id
     @GeneratedValue()
     private Long id;
@@ -45,6 +46,10 @@ public class Pet {
     @Column(name = "birthday", nullable = true)
     private LocalDate birthday;
 
+    // pet 등록 관련 소프트 딜리트
+    @Column(name = "is_del", nullable = false)
+    @Builder.Default
+    private String isDel = "N";
 
 
     /* ******************** 연관관계 ******************* */
