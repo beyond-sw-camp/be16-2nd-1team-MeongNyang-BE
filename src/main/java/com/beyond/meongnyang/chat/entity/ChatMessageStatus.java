@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.chat.entity;
 
+import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
@@ -13,20 +14,31 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "chat_participant")
-public class ChatParticipant extends CommonAt {
-    // TODO : ChatParticipant를 @EqualsAndHashCode(of = {"user", "chatRoom"}) 어노테이션으로 추가 후 Set으로 변경하는 것 고민해보기
-
+@Table(name = "chat_message_status")
+public class ChatMessageStatus extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_room_id", nullable = false)
+    private ChatRoom chatRoom;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id", nullable = false)
-    private ChatRoom chatRoom;
+    @JoinColumn(name = "chat_message_id", nullable = false)
+    private ChatMessage chatMessage;
+
+    @Builder.Default
+    @Column(name = "is_read",  nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Bool isRead = Bool.FALSE;
+
+    public void read() {
+        this.isRead = Bool.TRUE;
+    }
 }
