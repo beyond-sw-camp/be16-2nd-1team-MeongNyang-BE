@@ -13,17 +13,20 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "chat_participant")
 public class ChatParticipant extends CommonAt {
+    // TODO : ChatParticipant를 @EqualsAndHashCode(of = {"user", "chatRoom"}) 어노테이션으로 추가 후 Set으로 변경하는 것 고민해보기
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id")
+    @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 }

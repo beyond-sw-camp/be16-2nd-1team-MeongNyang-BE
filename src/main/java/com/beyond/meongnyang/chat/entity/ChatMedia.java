@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "chat_media")
 public class ChatMedia extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +21,7 @@ public class ChatMedia extends CommonAt {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "message_id", nullable = false)
-    private Message message;
+    private ChatMessage chatMessage;
 
     @Column(name = "url", nullable = false, columnDefinition = "TEXT")
     private String url;
