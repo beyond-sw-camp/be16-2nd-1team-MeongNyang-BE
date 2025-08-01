@@ -56,7 +56,7 @@ public class MarketService {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
 
-        MarketPost marketPost = marketPostCreateReq.toEntity();
+        MarketPost marketPost = marketPostUpdateReq.toEntity();
         marketPost.setSeller(user);
 
         if(imageFiles != null && !imageFiles.isEmpty()){

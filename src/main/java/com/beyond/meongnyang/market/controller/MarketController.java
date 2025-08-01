@@ -46,7 +46,7 @@ public class MarketController {
         );
     }
 
-//    // 거래글 삭제
+//    // 거래글 삭제 -> softdelete로 만들기 delYn
 //    @DeleteMapping("/{id}")
 //    public ResponseEntity<?> marketPostDelete(@PathVariable("id") Long id) throws AccessDeniedException {
 //        marketService.marketPostDelete(id);
