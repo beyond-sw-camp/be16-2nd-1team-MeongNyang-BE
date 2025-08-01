@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.chat;
+package com.beyond.meongnyang.chat.service;
 
 import com.beyond.meongnyang.chat.dto.ChatMessageReq;
 import com.beyond.meongnyang.chat.dto.ChatParticipantAddReq;

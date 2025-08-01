@@ -1,6 +1,6 @@
 package com.beyond.meongnyang.chat.controller;
 
-import com.beyond.meongnyang.chat.ChatService;
+import com.beyond.meongnyang.chat.service.ChatService;
 import com.beyond.meongnyang.chat.dto.ChatMessageReq;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

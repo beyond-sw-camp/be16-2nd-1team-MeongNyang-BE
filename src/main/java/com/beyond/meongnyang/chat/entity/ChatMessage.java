@@ -32,7 +32,7 @@ public class ChatMessage extends CommonAt {
     @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
 
-    @Column(name = "content", length = 500)
+    @Column(name = "content", length = 500, nullable = true)
     private String content;
 
     @Column(name = "announced_at")

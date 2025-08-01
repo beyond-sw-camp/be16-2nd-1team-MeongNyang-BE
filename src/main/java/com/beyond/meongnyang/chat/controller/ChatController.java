@@ -1,6 +1,6 @@
 package com.beyond.meongnyang.chat.controller;
 
-import com.beyond.meongnyang.chat.ChatService;
+import com.beyond.meongnyang.chat.service.ChatService;
 import com.beyond.meongnyang.chat.dto.ChatParticipantAddReq;
 import com.beyond.meongnyang.chat.dto.ChatRoomCreateReq;
 import com.beyond.meongnyang.chat.dto.ChatRoomSummaryRes;
