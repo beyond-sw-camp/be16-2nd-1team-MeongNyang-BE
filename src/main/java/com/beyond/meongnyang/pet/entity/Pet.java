@@ -65,4 +65,8 @@ public class Pet extends CommonAt {
     public void updateImgUrl (String url) {
         this.petProfile = url;
     }
+
+    public void delPet() {
+        this.isDel = "Y";
+    }
 }

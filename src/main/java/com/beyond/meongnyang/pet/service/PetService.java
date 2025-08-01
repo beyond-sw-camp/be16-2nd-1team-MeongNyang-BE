@@ -39,4 +39,15 @@ public class PetService {
         List<Pet> pets =this.petRepository.findAllByUserAndIsDel(user, "N");
         return PetListRes.fromEntity(user, pets);
     }
+
+    // 등록한 애완동물 삭제
+    public String deletPet(Long id) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("사용자 정보가 틀립니다."));
+        Pet pet = this.petRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("펫 정보가 틀립니다."));
+        pet.delPet();
+        return pet.getName();
+    }
+
+
 }

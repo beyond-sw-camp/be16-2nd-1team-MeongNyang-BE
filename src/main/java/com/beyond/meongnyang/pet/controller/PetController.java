@@ -28,4 +28,13 @@ public class PetController {
     public ResponseEntity<?> findByUser() {
         return new ResponseEntity<>(CommonRes.ofSuccess(petService.findByUser(), HttpStatus.OK.value(), "Pet 목록 조회 완료"), HttpStatus.OK);
     }
+
+
+
+    // 유저가 등록한 펫 삭제
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deletePet(@PathVariable Long id) {
+        String petName = this.petService.deletPet(id);
+        return new ResponseEntity<>(CommonRes.ofSuccess("당신의 " + petName +"이 삭제되었습니다.", HttpStatus.OK.value(), "pet 삭제 완료"), HttpStatus.OK);
+    }
 }
