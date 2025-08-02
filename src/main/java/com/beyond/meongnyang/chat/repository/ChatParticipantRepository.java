@@ -1,7 +1,7 @@
 package com.beyond.meongnyang.chat.repository;
 
 import com.beyond.meongnyang.chat.entity.ChatParticipant;
-import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

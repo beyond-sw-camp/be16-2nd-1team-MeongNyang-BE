@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@ToString
+@ToString(exclude = {"user", "hashtags", "mediaList"})
 @Table(name = "post")
 @Where(clause = "del_yn = 'N'")
 public class Post extends CommonAt {

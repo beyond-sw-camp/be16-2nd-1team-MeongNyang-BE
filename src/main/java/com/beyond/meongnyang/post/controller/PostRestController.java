@@ -3,6 +3,7 @@ package com.beyond.meongnyang.post.controller;
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.post.dto.PostCreateReq;
 import com.beyond.meongnyang.post.dto.PostEditReq;
+import com.beyond.meongnyang.post.dto.PostLikeReq;
 import com.beyond.meongnyang.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -91,15 +92,15 @@ public class PostRestController {
 
 
     // 좋아요
-    @PostMapping("/like/{id}")
-    public ResponseEntity<?> postLike(@PathVariable("id") Long id) {
-        return null;
-    }
-
-    // 좋아요 수 카운트
-    @GetMapping("/like/{id}")
-    public ResponseEntity<?> postLikeCount(@PathVariable("id") Long id) {
-        return null;
+    @PostMapping("/like")
+    public ResponseEntity<?> postLike(@RequestBody PostLikeReq postLikeReq) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.postLike(postLikeReq),
+                        HttpStatus.OK.value(),
+                        "성공"
+                ), HttpStatus.OK
+        );
     }
 
     // 댓글 달기
@@ -108,11 +109,9 @@ public class PostRestController {
 
     // 대댓글 달기
 
-    // 검색
-
-    // 신고
-
     // 친구 추천
+
+    // 검색
 
     // 팔로워 수 조회
 
@@ -120,7 +119,7 @@ public class PostRestController {
 
     // 언팔로우
 
-    // 차단
+    // 신고
 
-    // 대표동물 변경
+    // 차단
 }

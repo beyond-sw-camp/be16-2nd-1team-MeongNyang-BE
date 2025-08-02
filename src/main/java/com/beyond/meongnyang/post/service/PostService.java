@@ -1,8 +1,11 @@
 package com.beyond.meongnyang.post.service;
 
+import com.beyond.meongnyang.pet.entity.Pet;
+import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.post.dto.*;
 import com.beyond.meongnyang.common.S3UploadService;
 import com.beyond.meongnyang.post.entity.*;
+import com.beyond.meongnyang.post.repository.LikeRepository;
 import com.beyond.meongnyang.post.repository.PostRepository;
 import com.beyond.meongnyang.post.repository.TagRepository;
 import com.beyond.meongnyang.user.entity.User;
@@ -29,6 +32,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final TagRepository tagRepository;
     private final UserRepository userRepository;
+    private final PetRepository petRepository;
+    private final LikeRepository likeRepository;
     private final S3UploadService s3UploadService;
     private final EntityManager em;
 
@@ -89,11 +94,23 @@ public class PostService {
     // 일기 상세 조회
     public PostDetailRes myPost(Long postId){
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
-        return PostDetailRes.fromEntity(post);
+        int likeCount = likeRepository.countByPostId(postId);
+        return PostDetailRes.fromEntity(post, likeCount);
     }
 
-    // 좋아요
-
+    // 좋아요 처리
+    public Long postLike(PostLikeReq postLikeReq){
+        User user = getCurrentUser();
+        Post post = postRepository.findById(postLikeReq.getPostId()).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
+        boolean isLike = likeRepository.existsByUserIdAndPostId(user.getId(), post.getId());
+        if(isLike){ // 좋아요를 하지 않았다면
+            likeRepository.deleteByPostIdAndUserId(postLikeReq.getPostId(), user.getId());
+            return null;
+        } else {
+            PostLikeRes postLikeRes = new PostLikeRes();
+            return likeRepository.save(postLikeRes.likeToEntity(post, user)).getId();
+        }
+    }
     // 좋아요 수 카운트
 
     // 댓글 달기
