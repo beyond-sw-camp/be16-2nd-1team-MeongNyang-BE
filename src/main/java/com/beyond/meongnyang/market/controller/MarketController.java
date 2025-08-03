@@ -4,14 +4,12 @@ import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.market.dto.MarketPostCreateReq;
 import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
 import com.beyond.meongnyang.market.service.MarketService;
-import com.beyond.meongnyang.post.dto.PostEditReq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -26,7 +24,10 @@ public class MarketController {
                                                @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) {
         Long createdPostId = marketService.marketPostCreate(marketPostCreateReq, imageFiles);
         return new ResponseEntity<>(
-                CommonRes.ofSuccess(createdPostId, HttpStatus.CREATED.value(), "거래글이 작성되었습니다."),
+                CommonRes.ofSuccess(
+                        createdPostId,
+                        HttpStatus.CREATED.value(),
+                        "거래글이 작성되었습니다."),
                 HttpStatus.CREATED
         );
     }
@@ -35,7 +36,7 @@ public class MarketController {
     @PatchMapping("/{id}")
     public ResponseEntity<?> marketPostUpdate(@PathVariable("id") Long id,
                                               @RequestPart(name = "post") MarketPostUpdateReq marketPostUpdateReq,
-                                              @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) throws AccessDeniedException {
+                                              @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) {
         marketService.marketPostUpdate(id, marketPostUpdateReq, imageFiles);
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
@@ -46,16 +47,16 @@ public class MarketController {
         );
     }
 
-//    // 거래글 삭제 -> softdelete로 만들기 delYn
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<?> marketPostDelete(@PathVariable("id") Long id) throws AccessDeniedException {
-//        marketService.marketPostDelete(id);
-//        return new ResponseEntity<>(
-//                CommonRes.ofSuccess(
-//                        id,
-//                        HttpStatus.OK.value(),
-//                        "거래글을 삭제했습니다."
-//                ), HttpStatus.OK
-//        );
-//    }
+    // 거래글 삭제
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> marketPostDelete(@PathVariable("id") Long id) {
+        marketService.marketPostDelete(id);
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        id,
+                        HttpStatus.OK.value(),
+                        "거래글을 삭제했습니다."
+                ), HttpStatus.OK
+        );
+    }
 }

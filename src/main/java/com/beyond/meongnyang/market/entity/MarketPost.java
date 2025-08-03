@@ -4,7 +4,6 @@ import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
 import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -48,8 +47,10 @@ public class MarketPost extends CommonAt {
     @Builder.Default
     private SaleStatus saleStatus = SaleStatus.SALE;
 
+    // 관리자 기능 : 게시글 접근 제한 여부
     @Column(nullable = false)
-    private boolean isResticted;
+    @Builder.Default
+    private boolean isRestricted = false;
 
     @Column(length = 255)
     private String thumbnailUrl;
@@ -58,6 +59,9 @@ public class MarketPost extends CommonAt {
     @OneToMany(mappedBy = "marketPost", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ProductImage> productImageList = new ArrayList<>();
+
+    @Builder.Default
+    private String delYn = "N";
 
     public void setSeller(User user) {
         this.seller = user;
@@ -74,5 +78,9 @@ public class MarketPost extends CommonAt {
         this.price = marketPostUpdateReq.getPrice();
         this.region = marketPostUpdateReq.getRegion();
         this.description = marketPostUpdateReq.getDescription();
+    }
+
+    public void deleteMarketPost(String delYn){
+        this.delYn = delYn;
     }
 }

@@ -7,10 +7,12 @@ import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.entity.ProductImage;
 import com.beyond.meongnyang.market.repository.MarketPostRepository;
 import com.beyond.meongnyang.market.repository.ProductImageRepository;
+import com.beyond.meongnyang.user.domain.Role;
 import com.beyond.meongnyang.user.domain.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -28,19 +31,30 @@ public class MarketService {
     private final S3UploadService s3UploadService;
     private final UserRepository userRepository;
 
-    public Long marketPostCreate(MarketPostCreateReq marketPostCreateReq, List<MultipartFile> imageFiles) {
-
-
+//    거래글 생성
+    public Long marketPostCreate(MarketPostCreateReq marketPostCreateReq,
+                                 List<MultipartFile> imageFiles) {
+//        1. 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
 
+//        2. 거래글 찾아오기
         MarketPost marketPost = marketPostCreateReq.toEntity();
+
+//        3. seller 컬럼 저장
         marketPost.setSeller(user);
 
+//        4. 이미지 컬럼 저장
         if(imageFiles != null && !imageFiles.isEmpty()){
+//            이미지 업로드 - s3
             List<String> urls = s3UploadService.upload(imageFiles);
-            marketPost.setThumbnailImage(urls.get(0));
+//            이미지 업로드 - db
+            Integer mainImageIndex = marketPostCreateReq.getMainImageIndex();
+            if (mainImageIndex < 0 || mainImageIndex >= urls.size()) {
+                throw new IllegalArgumentException("대표 이미지 인덱스가 유효하지 않습니다.");
+            }
+            marketPost.setThumbnailImage(urls.get(mainImageIndex));
 
             for (String url : urls) {
                 ProductImage productImage = ProductImage.builder()
@@ -50,36 +64,49 @@ public class MarketService {
                 marketPost.addProductImage(productImage);
             }
         }
+//        5. 거래글 저장 및 id 리턴
         return marketPostRepository.save(marketPost).getId();
     }
 
-    public Long marketPostUpdate(Long id, MarketPostUpdateReq marketPostUpdateReq, List<MultipartFile> imageFiles) {
+//    거래글 수정
+    public Long marketPostUpdate(Long id,
+                                 MarketPostUpdateReq marketPostUpdateReq,
+                                 List<MultipartFile> imageFiles) {
+//        1. 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
 
-
-//        거래글을 찾아와
+//        2. 거래글 찾아오기
         MarketPost marketPost =  marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 아이디입니다."));
 
+//        작성자 확인
+        if (!Objects.equals(user.getId(), marketPost.getSeller().getId())) {
+            throw new AccessDeniedException("작성자만 수정할 수 있습니다.");
+        }
+
+//        3. 텍스트 정보 업데이트
         marketPost.updateMarketPost(marketPostUpdateReq);
 
+//        4. 이미지 업데이트
         if(imageFiles != null && !imageFiles.isEmpty()){
-//            기존 이미지 삭제
+//            기존 이미지 S3 삭제
             List<ProductImage> productImageList = marketPost.getProductImageList();
-            for (ProductImage productImage : productImageList){
+            for (ProductImage productImage : productImageList) {
                 String imageUrl = productImage.getImageUrl();
                 String fileName = imageUrl.substring(imageUrl.lastIndexOf("/")+1);
                 s3UploadService.delete(fileName);
             }
 //            기존 이미지 db 삭제 (db에서만 삭제하면 영속성컨텍스트로 다시 자바객체에 남아있던 이미지를 db에 업데이트함)
             marketPost.getProductImageList().clear();
-
 //            이미지 재 업로드
             List<String> urls = s3UploadService.upload(imageFiles);
-            System.out.println("urls : " + urls);
-            marketPost.setThumbnailImage(urls.get(0));
-
+//            대표이미지 사용자 선택
+            Integer mainImageIndex = marketPostUpdateReq.getMainImageIndex();
+            if (mainImageIndex < 0 || mainImageIndex >= urls.size()) {
+                throw new IllegalArgumentException("대표 이미지 인덱스가 유효하지 않습니다.");
+            }
+            marketPost.setThumbnailImage(urls.get(mainImageIndex));
             for (String url : urls) {
                 ProductImage productImage = ProductImage.builder()
                         .marketPost(marketPost)
@@ -89,5 +116,22 @@ public class MarketService {
             }
         }
         return marketPost.getId();
+    }
+
+//    거래글 삭제
+    public void marketPostDelete(Long id) throws AccessDeniedException {
+//        1. 로그인한 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+
+//        2. 거래글 찾아오기
+        MarketPost marketPost =  marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 아이디입니다."));
+
+        // 작성자 확인 (로그인한 사용자, 거래글 작성자)
+        if (!Objects.equals(user.getId(), marketPost.getSeller().getId())) {
+            throw new AccessDeniedException("작성자 또는 관리자만 삭제 가능합니다.");
+        }
+        marketPost.deleteMarketPost("Y");
     }
 }
