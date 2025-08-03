@@ -10,14 +10,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatMessageDto {
+public class ChatMessageReq {
     private String message;
     private String senderEmail;
 
-    public static ChatMessageDto fromEntity(ChatMessage chatMessage) {
-        return ChatMessageDto.builder()
-                .message(chatMessage.getContent())
-                .senderEmail(chatMessage.getUser().getEmail())
-                .build();
-    }
+
 }

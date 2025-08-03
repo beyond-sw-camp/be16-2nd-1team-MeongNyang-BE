@@ -1,10 +1,7 @@
 package com.beyond.meongnyang.chat.controller;
 
-import com.beyond.meongnyang.chat.dto.ChatMessageDto;
+import com.beyond.meongnyang.chat.dto.*;
 import com.beyond.meongnyang.chat.service.ChatService;
-import com.beyond.meongnyang.chat.dto.ChatParticipantAddReq;
-import com.beyond.meongnyang.chat.dto.ChatRoomCreateReq;
-import com.beyond.meongnyang.chat.dto.ChatRoomSummaryRes;
 import com.beyond.meongnyang.common.dto.CommonRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -47,10 +44,10 @@ public class ChatController {
     // 메세지 목록 조회
     @GetMapping("/{roomId}/messages")
     public ResponseEntity<?> getChatMessages(@PathVariable Long roomId) {
-        List<ChatMessageDto> chatMessageDtoList = chatService.getChatMessages(roomId);
+        List<ChatMessageRes> chatMessageResList = chatService.getChatMessages(roomId);
 
         return ResponseEntity.ok(
-                CommonRes.ofSuccess(chatMessageDtoList, HttpStatus.OK.value(), "chat message list")
+                CommonRes.ofSuccess(chatMessageResList, HttpStatus.OK.value(), "chat message list")
         );
     }
 }

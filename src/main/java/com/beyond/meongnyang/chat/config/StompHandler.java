@@ -28,7 +28,7 @@ public class StompHandler implements ChannelInterceptor {
         final StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-            log.info("connect 요청시 토큰 유효성 검증");
+//            log.info("connect 요청시 토큰 유효성 검증");
             String bearerToken = accessor.getFirstNativeHeader("Authorization");
             String token = bearerToken.substring("Bearer ".length());
 
@@ -38,13 +38,12 @@ public class StompHandler implements ChannelInterceptor {
                     .parseClaimsJws(token)
                     .getBody();
 
-            log.info("토큰 검증 완료");
+//            log.info("토큰 검증 완료");
         }
 
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             String bearerToken = accessor.getFirstNativeHeader("Authorization");
             String token = bearerToken.substring("Bearer ".length());
-
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(jwtSecurityAt)
                     .build()
@@ -53,7 +52,6 @@ public class StompHandler implements ChannelInterceptor {
 
             String email = claims.getSubject();
             Long roomId = Long.parseLong(accessor.getDestination().split("/")[2]);
-
             if (!chatService.isChatRoomParticipant(roomId, email)) throw new AccessDeniedException("Access Denied");
         }
 
