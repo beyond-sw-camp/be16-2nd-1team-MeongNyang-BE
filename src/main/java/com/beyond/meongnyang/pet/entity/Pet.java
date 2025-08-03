@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.pet.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.pet.dto.PetRegisterReq;
 import com.beyond.meongnyang.species.entity.Species;
 import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
@@ -62,8 +63,17 @@ public class Pet extends CommonAt {
     private Species species;
 
     /* ******************** 매서드 ********************/
-    public void updateImgUrl (String url) {
-        this.petProfile = url;
+    // pet 인적 사항 업데이트
+    public void updatePet(PetRegisterReq req, Species species) {
+        this.name = req.getName();
+        this.age = req.getAge();
+        this.gender = req.getGender();
+        this.weight = req.getWeight();
+        this.petProfile = req.getPetProfile();
+        this.birthday = req.getBirthday();
+        this.petProfile = req.getPetProfile();
+        this.species = species;
+
     }
 
     public void delPet() {

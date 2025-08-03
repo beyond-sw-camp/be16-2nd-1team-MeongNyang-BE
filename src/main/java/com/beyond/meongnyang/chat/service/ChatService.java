@@ -12,7 +12,7 @@ import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
 import com.beyond.meongnyang.common.domain.Bool;
-import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

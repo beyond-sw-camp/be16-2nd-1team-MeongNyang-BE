@@ -30,6 +30,13 @@ public class PetController {
     }
 
 
+    // 유저가 등록한 펫 수정
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updatePet(@PathVariable Long id, @Valid @RequestBody PetRegisterReq req) {
+        PetRegisterReq petRegisterReq = this.petService.updatePet(id, req);
+        return new ResponseEntity<>(CommonRes.ofSuccess(req,
+                HttpStatus.OK.value(), "Pet 수정 완료"), HttpStatus.OK);
+    }
 
     // 유저가 등록한 펫 삭제
     @DeleteMapping("/delete/{id}")

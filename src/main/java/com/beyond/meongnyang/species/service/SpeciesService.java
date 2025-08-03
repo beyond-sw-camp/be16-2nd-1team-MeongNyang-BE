@@ -52,9 +52,7 @@ public class SpeciesService {
         };
 
         List<Species> speciesList = this.speciesRepository.findAll(specification);
-        if(speciesList.isEmpty()) {
-            throw new EntityNotFoundException("검색조건에 맞는 종이 없습니다.");
-        }
+
         return speciesList.stream().map(species -> SpeciesListRes.fromEntity(species)).toList();
     }
 }
