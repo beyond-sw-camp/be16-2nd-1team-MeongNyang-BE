@@ -1,6 +1,6 @@
 package com.beyond.meongnyang.chat.service;
 
-import com.beyond.meongnyang.chat.dto.ChatMessageReq;
+import com.beyond.meongnyang.chat.dto.ChatMessageDto;
 import com.beyond.meongnyang.chat.dto.ChatParticipantAddReq;
 import com.beyond.meongnyang.chat.dto.ChatRoomCreateReq;
 import com.beyond.meongnyang.chat.dto.ChatRoomSummaryRes;
@@ -12,10 +12,11 @@ import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
 import com.beyond.meongnyang.common.domain.Bool;
-import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,18 +34,18 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatParticipantRepository chatParticipantRepository;
 
-    public void saveMessage(Long id, ChatMessageReq chatMessageReq) {
+    public void saveMessage(Long id, ChatMessageDto chatMessageDto) {
         // 채팅방 조회
         ChatRoom chatRoom = chatRoomRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
 
         // 보낸사람 조회
-        User user = userRepository.findByEmail(chatMessageReq.getSenderEmail()).orElseThrow(() -> new EntityNotFoundException("Sender Email Not Found"));
+        User user = userRepository.findByEmail(chatMessageDto.getSenderEmail()).orElseThrow(() -> new EntityNotFoundException("Sender Email Not Found"));
 
         // 메세지 객체 생성
         ChatMessage chatMessage = ChatMessage.builder()
                 .user(user)
                 .chatRoom(chatRoom)
-                .content(chatMessageReq.getMessage())
+                .content(chatMessageDto.getMessage())
                 .build();
 
         // 유저별 메세지상태 여부 저장
@@ -94,8 +95,8 @@ public class ChatService {
     }
 
     public List<ChatRoomSummaryRes> getMyChatRooms() {
-        User user = this.userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
-        List<ChatParticipant> chatParticipantList = this.chatParticipantRepository.findAllByUser(user);
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
+        List<ChatParticipant> chatParticipantList = chatParticipantRepository.findAllByUser(user);
 
 //        return chatParticipantList.stream().map(chatParticipant -> ChatRoomSummaryRes.fromEntity(chatParticipant.getChatRoom())).toList();
         return chatParticipantList.stream().map(ChatParticipant::getChatRoom).map(ChatRoomSummaryRes::fromEntity).toList();
@@ -103,16 +104,19 @@ public class ChatService {
 
     // TODO : 응답해줄 것 고민하기
     public void inviteUsers(Long roomId, List<ChatParticipantAddReq> chatParticipantAddReqList) {
-        ChatRoom chatRoom = this.chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
 
-        User inviter = this.userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
+        User inviter = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
 
+        // 채팅 참여자 목록
         Set<Long> participantIdSet = chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getId).collect(Collectors.toSet());
-        if (!participantIdSet.contains(inviter.getId())) throw new EntityNotFoundException("Inviter Not Found"); // 초대한 유저 검증
+
+        if (!participantIdSet.contains(inviter.getId()))
+            throw new AccessDeniedException("Access Denied"); // 초대한 유저 검증(속해 있는 유저만 초대를 보낼 수 있게)
 
 
         chatParticipantAddReqList.forEach(chatParticipantAddReq -> {
-            User user = this.userRepository.findByEmail(chatParticipantAddReq.getInviteeEmail()).orElseThrow(() -> new EntityNotFoundException("Invitee Not Found"));
+            User user = userRepository.findByEmail(chatParticipantAddReq.getInviteeEmail()).orElseThrow(() -> new EntityNotFoundException("Invitee Not Found"));
 
             ChatParticipant chatParticipant = ChatParticipant.builder()
                     .chatRoom(chatRoom)
@@ -124,5 +128,24 @@ public class ChatService {
         });
 
         if (chatRoom.getChatParticipantList().size() > 2) chatRoom.updateIsGroupChat(Bool.TRUE);
+    }
+
+    public List<ChatMessageDto> getChatMessages(Long roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+
+        // 채팅방에 속해있는 유저인지 검증
+        chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getEmail)
+                .filter(pEmail -> pEmail.equals(SecurityContextHolder.getContext().getAuthentication().getName()))
+                .findFirst().orElseThrow(() -> new AccessDeniedException("Access Denied"));
+
+        return chatMessageRepository.findAllByChatRoomOrderByCreatedAt(chatRoom).stream().map(ChatMessageDto::fromEntity).toList();
+    }
+
+    public boolean isChatRoomParticipant(Long roomId, String email) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+
+        // 채팅방에 속해있는 유저인지 검증
+        return chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getEmail)
+                .anyMatch(pEmail -> pEmail.equals(email));
     }
 }

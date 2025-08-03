@@ -1,7 +1,7 @@
 package com.beyond.meongnyang.chat.controller;
 
 import com.beyond.meongnyang.chat.service.ChatService;
-import com.beyond.meongnyang.chat.dto.ChatMessageReq;
+import com.beyond.meongnyang.chat.dto.ChatMessageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -28,10 +28,9 @@ public class StompController {
     // 방법 2. MessageMapping 어노테이션만 활용
     // 추후 변경사항이 발생시 방법1에 비해 더욱 유연하게 개선 가능
     @MessageMapping("/{roomId}")
-    public void sendMessage(@DestinationVariable Long roomId, ChatMessageReq chatMessageReq) {
-        log.info(chatMessageReq.getMessage());
-        chatService.saveMessage(roomId, chatMessageReq);
-        messageTemplate.convertAndSend("/topic/" + roomId, chatMessageReq);
+    public void sendMessage(@DestinationVariable Long roomId, ChatMessageDto chatMessageDto) {
+        log.info(chatMessageDto.getMessage());
+        chatService.saveMessage(roomId, chatMessageDto);
+        messageTemplate.convertAndSend("/topic/" + roomId, chatMessageDto);
     }
-
 }
