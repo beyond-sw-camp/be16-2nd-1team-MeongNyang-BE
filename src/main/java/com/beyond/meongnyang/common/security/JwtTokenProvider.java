@@ -9,18 +9,24 @@ import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.Date;
 
-@RequiredArgsConstructor
+
 @Component
 public class JwtTokenProvider {
 
     private final UserRepository userRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
+    public JwtTokenProvider(UserRepository userRepository, RedisTemplate<String, String> redisTemplate) {
+        this.userRepository = userRepository;
+        this.redisTemplate = redisTemplate;
+    }
 
     @Value("${jwt.expirationAt}")
     private int expirationAt;
@@ -71,6 +77,7 @@ public class JwtTokenProvider {
                 .setExpiration(new Date(now.getTime() + expirationAt * 60 * 1000L))
                 .signWith(secretRtToken)
                 .compact();
+        redisTemplate.opsForValue().set(user.getEmail(), token);
         return token;
     }
 
@@ -83,6 +90,10 @@ public class JwtTokenProvider {
                 .getBody();
         String email = claims.getSubject();
         User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+        String redisRt = redisTemplate.opsForValue().get(user.getEmail());
+        if(!refreshToken.equals(redisRt)){
+            throw new IllegalArgumentException("rt 토큰가 일치하지 않습니다.");
+        }
         return user;
     }
 }

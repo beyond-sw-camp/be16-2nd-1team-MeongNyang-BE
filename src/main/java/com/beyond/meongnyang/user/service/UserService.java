@@ -64,6 +64,16 @@ public class UserService {
     }
     // 회원가입
     public void save(UserCreateReq dto) {
+        // 중복 체크
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new EntityExistsException("이미 사용중인 이메일입니다.");
+        }
+        if (userRepository.findByNickname(dto.getNickname()).isPresent()) {
+            throw new EntityExistsException("이미 사용중인 닉네임입니다.");
+        }
+        if (userRepository.findByPhone(dto.getPhone()).isPresent()) {
+            throw new EntityExistsException("이미 사용중인 전화번호입니다.");
+        }
         String encodedPassword = this.passwordEncoder.encode(dto.getPassword());
         User user = dto.toCreateEntity(encodedPassword);
         this.userRepository.save(user);
