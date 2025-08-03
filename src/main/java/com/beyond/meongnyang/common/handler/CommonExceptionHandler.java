@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.common;
+package com.beyond.meongnyang.common.handler;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
 import jakarta.persistence.EntityExistsException;
@@ -6,6 +6,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

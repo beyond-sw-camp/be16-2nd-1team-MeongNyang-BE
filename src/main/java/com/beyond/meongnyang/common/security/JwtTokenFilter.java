@@ -25,25 +25,26 @@ public class JwtTokenFilter extends GenericFilter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        log.info(response.toString());
-        HttpServletRequest req = (HttpServletRequest)request;
-        String bearerToken = req.getHeader("Authorization");
-        if(bearerToken == null) { // token이 없을 때 다시 돌아가기
-            chain.doFilter(request, response);
-            return;
+        try {
+            HttpServletRequest req = (HttpServletRequest)request;
+            String bearerToken = req.getHeader("Authorization");
+            if(bearerToken == null) { // jwt 토큰가 없을 때
+                chain.doFilter(request, response);
+                return;
+            }
+            String token = bearerToken.substring(7);
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            List<GrantedAuthority> authorities = new ArrayList<>();
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + claims.get("role")));
+            Authentication authentication  = new UsernamePasswordAuthenticationToken(claims.getSubject(), "", authorities);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
-
-        String token = bearerToken.substring(7);
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + claims.get("role")));
-        Authentication authentication  = new UsernamePasswordAuthenticationToken(claims.getSubject(), "", authorities);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
         chain.doFilter(request, response);
     }
 }
