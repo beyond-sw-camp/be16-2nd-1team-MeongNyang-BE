@@ -1,16 +1,17 @@
 package com.beyond.meongnyang.post.service;
 
-import com.beyond.meongnyang.post.dto.PostCreateReq;
+import com.beyond.meongnyang.post.dto.*;
 import com.beyond.meongnyang.common.S3UploadService;
-import com.beyond.meongnyang.post.dto.PostEditReq;
 import com.beyond.meongnyang.post.entity.*;
 import com.beyond.meongnyang.post.repository.PostRepository;
 import com.beyond.meongnyang.post.repository.TagRepository;
-import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -18,10 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -80,9 +79,18 @@ public class PostService {
         post.deletePost("Y");
     }
 
-    // 일기 상세 조회
+    // 내 일기 목록 조회
+    public Page<PostListReq> myPosts(Pageable pageable){
+        User user = getCurrentUser();
+        Page<Post> postList = postRepository.findAllByUserId(user.getId(), pageable);
+        return postList.map(p->PostListReq.fromEntity(p));
+    }
 
-    // 일기 목록 조회
+    // 일기 상세 조회
+    public PostDetailRes myPost(Long postId){
+        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
+        return PostDetailRes.fromEntity(post);
+    }
 
     // 좋아요
 

@@ -1,6 +1,6 @@
 package com.beyond.meongnyang.user.dto;
 
-import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

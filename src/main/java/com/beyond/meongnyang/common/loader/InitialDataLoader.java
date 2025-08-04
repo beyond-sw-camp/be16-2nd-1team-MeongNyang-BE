@@ -1,7 +1,7 @@
-package com.beyond.meongnyang.common.security;
+package com.beyond.meongnyang.common.loader;
 
-import com.beyond.meongnyang.user.domain.Role;
-import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.entity.Role;
+import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

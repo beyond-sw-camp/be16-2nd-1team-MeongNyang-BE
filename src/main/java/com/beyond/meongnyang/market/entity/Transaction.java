@@ -1,7 +1,7 @@
 package com.beyond.meongnyang.market.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
-import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.cglib.core.Local;
