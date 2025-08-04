@@ -2,7 +2,6 @@ package com.beyond.meongnyang.chat.service;
 
 import com.beyond.meongnyang.chat.dto.*;
 import com.beyond.meongnyang.chat.entity.ChatMessage;
-//import com.beyond.meongnyang.chat.entity.ChatMessageStatus;
 import com.beyond.meongnyang.chat.entity.ChatParticipant;
 import com.beyond.meongnyang.chat.entity.ChatRoom;
 import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
@@ -68,19 +67,7 @@ public class ChatService {
         chatMessageRepository.save(chatMessage);
         // TODO : 메세지에 파일(사진, 오디오, 동영상)이 있을 경우 처리해야 함
 
-
-
-
-        int unreadCount = chatRoom.getChatParticipantList().size();
-
-        for (ChatParticipant chatParticipant : chatRoom.getChatParticipantList()) {
-            if (chatParticipant.getLastReadMessage() == null) continue;
-
-            if (!chatParticipant.getLastReadMessage().getCreatedAt().isBefore(chatMessage.getCreatedAt()))
-                unreadCount--;
-        }
-
-        return ChatMessageRes.fromEntity(chatMessage, unreadCount);
+        return ChatMessageRes.fromEntity(chatMessage);
     }
 
     public Long createChatRoom(ChatRoomCreateReq chatRoomCreateReq) {
@@ -168,18 +155,7 @@ public class ChatService {
                 .findFirst().orElseThrow(() -> new AccessDeniedException("Access Denied"));
 
         return chatMessageRepository.findAllByChatRoomOrderByCreatedAt(chatRoom).stream()
-                .map(chatMessage -> {
-                    int unreadCount = chatRoom.getChatParticipantList().size();
-
-                    for (ChatParticipant chatParticipant : chatRoom.getChatParticipantList()) {
-                        if (chatParticipant.getLastReadMessage() == null) continue;
-
-                        if (!chatParticipant.getLastReadMessage().getCreatedAt().isBefore(chatMessage.getCreatedAt()))
-                            unreadCount--;
-                    }
-
-                    return ChatMessageRes.fromEntity(chatMessage, unreadCount);
-                }).toList();
+                .map(ChatMessageRes::fromEntity).toList();
     }
 
     public boolean isChatRoomParticipant(Long roomId, String email) {
