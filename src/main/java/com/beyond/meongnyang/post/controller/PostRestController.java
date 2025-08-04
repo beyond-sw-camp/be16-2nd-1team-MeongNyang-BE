@@ -3,6 +3,7 @@ package com.beyond.meongnyang.post.controller;
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.post.dto.PostCreateReq;
 import com.beyond.meongnyang.post.dto.PostEditReq;
+import com.beyond.meongnyang.post.dto.PostLikeListReq;
 import com.beyond.meongnyang.post.dto.PostLikeReq;
 import com.beyond.meongnyang.post.service.PostService;
 import jakarta.validation.Valid;
@@ -103,6 +104,17 @@ public class PostRestController {
         );
     }
 
+    // 좋아요 목록 조회
+    @GetMapping("/like")
+    public ResponseEntity<?> postLikes(@RequestBody PostLikeListReq postLikesReq, @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.postLikeList(postLikesReq, pageable),
+                        HttpStatus.OK.value(),
+                        "성공"
+                ), HttpStatus.OK
+        );
+    }
     // 댓글 달기
 
     // 댓글 수정

@@ -1,6 +1,5 @@
 package com.beyond.meongnyang.post.service;
 
-import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.post.dto.*;
 import com.beyond.meongnyang.common.S3UploadService;
@@ -23,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -111,7 +109,11 @@ public class PostService {
             return likeRepository.save(postLikeRes.likeToEntity(post, user)).getId();
         }
     }
-    // 좋아요 수 카운트
+    // 좋아요 목록
+    public Page<PostLikeListRes> postLikeList(PostLikeListReq postLikesReq, Pageable pageable) {
+        return likeRepository.findAllByPostId(postLikesReq.getPostId(), pageable)
+                .map(like -> PostLikeListRes.fromEntity(like.getPost(), like.getUser()));
+    }
 
     // 댓글 달기
 

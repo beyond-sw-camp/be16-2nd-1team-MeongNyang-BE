@@ -24,7 +24,7 @@ public class PostDetailRes {
     private int likeCount;
     private List<String> hashTagList;
     private List<String> mediaList;
-    private String localDateTime;
+    private String date;
 
     public static PostDetailRes fromEntity(Post post, int likeCount){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일");
@@ -45,7 +45,7 @@ public class PostDetailRes {
                             .map(Media::getUrl)
                             .toList()
                 )
-                .localDateTime(post.getCreatedAt().format(formatter))
+                .date(post.getCreatedAt().format(formatter))
                 .build();
     }
 }
