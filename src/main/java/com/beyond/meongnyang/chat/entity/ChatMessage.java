@@ -1,7 +1,7 @@
 package com.beyond.meongnyang.chat.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
-import com.beyond.meongnyang.user.domain.User;
+import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,9 +38,9 @@ public class ChatMessage extends CommonAt {
     @Column(name = "announced_at")
     private LocalDateTime announcedAt;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChatMessageStatus> chatMessageStatusList = new ArrayList<>();
+//    @Builder.Default
+//    @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<ChatMessageStatus> chatMessageStatusList = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL, orphanRemoval = true)
