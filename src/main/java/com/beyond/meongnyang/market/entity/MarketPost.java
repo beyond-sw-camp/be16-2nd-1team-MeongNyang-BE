@@ -1,7 +1,8 @@
 package com.beyond.meongnyang.market.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
-import com.beyond.meongnyang.user.entity.User;
+import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
+import com.beyond.meongnyang.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +21,7 @@ public class MarketPost extends CommonAt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+//    관계성 설정 MarketPost N : User 1
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
@@ -42,19 +44,26 @@ public class MarketPost extends CommonAt {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private SaleStatus saleStatus;
+    @Builder.Default
+    private SaleStatus saleStatus = SaleStatus.SALE;
 
+    // 관리자 기능 : 게시글 접근 제한 여부
     @Column(nullable = false)
-    private boolean isResticted = false;
+    @Builder.Default
+    private boolean isRestricted = false;
 
     @Column(length = 255)
     private String thumbnailUrl;
 
+//    관계성 설정 MarketPost 1 : ProductImage N
     @OneToMany(mappedBy = "marketPost", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ProductImage> productImageList = new ArrayList<>();
 
-    public void setUser(User user) {
+    @Builder.Default
+    private String delYn = "N";
+
+    public void setSeller(User user) {
         this.seller = user;
     }
     public void setThumbnailImage(String thumbnailUrl) {
@@ -62,5 +71,16 @@ public class MarketPost extends CommonAt {
     }
     public void addProductImage(ProductImage productImage) {
         this.productImageList.add(productImage);
+    }
+    public void updateMarketPost(MarketPostUpdateReq marketPostUpdateReq) {
+        this.title = marketPostUpdateReq.getTitle();
+        this.category = marketPostUpdateReq.getCategory();
+        this.price = marketPostUpdateReq.getPrice();
+        this.region = marketPostUpdateReq.getRegion();
+        this.description = marketPostUpdateReq.getDescription();
+    }
+
+    public void deleteMarketPost(String delYn){
+        this.delYn = delYn;
     }
 }
