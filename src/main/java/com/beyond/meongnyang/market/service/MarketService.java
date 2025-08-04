@@ -78,7 +78,7 @@ public class MarketService {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
 
 //        2. 거래글 찾아오기
-        MarketPost marketPost =  marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 아이디입니다."));
+        MarketPost marketPost =  marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 거래글입니다."));
 
 //        작성자 확인
         if (!Objects.equals(user.getId(), marketPost.getSeller().getId())) {
@@ -89,12 +89,12 @@ public class MarketService {
         marketPost.updateMarketPost(marketPostUpdateReq);
 
 //        4. 이미지 업데이트
-        if(imageFiles != null && !imageFiles.isEmpty()){
+        if(imageFiles != null && !imageFiles.isEmpty()) {
 //            기존 이미지 S3 삭제
             List<ProductImage> productImageList = marketPost.getProductImageList();
             for (ProductImage productImage : productImageList) {
                 String imageUrl = productImage.getImageUrl();
-                String fileName = imageUrl.substring(imageUrl.lastIndexOf("/")+1);
+                String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
                 s3UploadService.delete(fileName);
             }
 //            기존 이미지 db 삭제 (db에서만 삭제하면 영속성컨텍스트로 다시 자바객체에 남아있던 이미지를 db에 업데이트함)
