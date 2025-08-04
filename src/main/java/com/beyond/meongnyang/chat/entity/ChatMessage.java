@@ -38,9 +38,9 @@ public class ChatMessage extends CommonAt {
     @Column(name = "announced_at")
     private LocalDateTime announcedAt;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChatMessageStatus> chatMessageStatusList = new ArrayList<>();
+//    @Builder.Default
+//    @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<ChatMessageStatus> chatMessageStatusList = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL, orphanRemoval = true)

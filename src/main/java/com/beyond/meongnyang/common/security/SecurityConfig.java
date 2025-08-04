@@ -26,21 +26,21 @@ public class SecurityConfig {
     private final JwtTokenFilter jwtTokenFilter;
 
     @Bean
-    public SecurityFilterChain filterChain (HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 
         return httpSecurity
-                .cors( c -> c.configurationSource(corsConfiguration()))
+                .cors(c -> c.configurationSource(corsConfiguration()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(a -> a.requestMatchers(
-                        "/user/sign", "/user/login", "/user/find/email","/user/check-email", "/user/check-nickname", "/user/check-phone", "/connect/**" )
+                                "/user/sign", "/user/login", "/user/find/email", "/user/check-email", "/user/check-nickname", "/user/check-phone", "/connect/**")
                         .permitAll().anyRequest().authenticated())
                 .build();
     }
 
-    private CorsConfigurationSource corsConfiguration(){
+    private CorsConfigurationSource corsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("*"));

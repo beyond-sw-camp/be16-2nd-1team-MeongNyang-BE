@@ -29,4 +29,12 @@ public class ChatParticipant extends CommonAt {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
+
+    @ManyToOne
+    @JoinColumn(name = "chat_message_id")
+    private ChatMessage lastReadMessage;
+
+    public void read(ChatMessage lastReadMessage) {
+        this.lastReadMessage = lastReadMessage;
+    }
 }
