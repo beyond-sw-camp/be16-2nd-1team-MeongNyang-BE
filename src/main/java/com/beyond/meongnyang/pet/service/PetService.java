@@ -41,13 +41,12 @@ public class PetService {
     }
 
     // 애완동물 수정 펫 수정하기 선택 시 해당 petId 가져옴
-    public PetRegisterReq updatePet(Long petId, PetRegisterReq req) {
+    public void updatePet(Long petId, PetRegisterReq req) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("사용자 정보가 틀립니다."));
         Pet pet = this.petRepository.findById(petId).orElseThrow(() -> new EntityNotFoundException("펫 정보가 틀립니다."));
         Species species = this.speciesRepository.findById(req.getSpeciesId()).orElseThrow(() -> new EntityNotFoundException("종 정보가 없습니다."));
         pet.updatePet(req, species);
-        return null;
     }
 
     // 등록한 애완동물 삭제

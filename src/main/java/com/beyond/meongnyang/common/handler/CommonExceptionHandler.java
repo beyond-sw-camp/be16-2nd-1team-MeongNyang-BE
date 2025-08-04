@@ -53,4 +53,9 @@ public class CommonExceptionHandler {
     public ResponseEntity<?> accessDeniedException(AccessDeniedException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonRes.ofFailure(HttpStatus.FORBIDDEN.value(), e.getMessage()));
     }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<?> authorizationDeniedException(AuthorizationDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonRes.ofFailure(HttpStatus.FORBIDDEN.value(), e.getMessage()));
+    }
 }

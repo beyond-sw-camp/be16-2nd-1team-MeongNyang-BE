@@ -43,10 +43,10 @@ public class UserService {
     public void checkNickname(UserCheckNicknameReq dto) {
         Optional<User> optionalUser = this.userRepository.findByNickname(dto.getNickname());
         if(optionalUser.isPresent()) {
-           User user = optionalUser.get();
-            if(user.getDelYn().equals("Y")) {
-                throw new EntityExistsException("탈퇴한 사용자명입니다.");
-            }
+//           User user = optionalUser.get();
+//            if(user.getDelYn().equals("Y")) {
+//                throw new EntityExistsException("탈퇴한 사용자명입니다.");
+//            }
             throw new EntityExistsException("이미 사용중인 사용자명입니다.");
         }
     }

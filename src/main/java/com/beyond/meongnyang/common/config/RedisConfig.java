@@ -20,7 +20,7 @@ public class RedisConfig {
     private int port;
 
     @Bean
-    @Qualifier("refrshTokenRedisInventory")
+    @Qualifier("rtInventory")
     public RedisConnectionFactory refrshTokenRedisInventory() {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
         configuration.setHostName(host);
@@ -30,8 +30,8 @@ public class RedisConfig {
     }
 
     @Bean
-    @Qualifier("refrshTokenRedisInventory")
-    public RedisTemplate<String, String> redisTemplate(@Qualifier("refrshTokenRedisInventory") RedisConnectionFactory redisConnectionFactory) {
+    @Qualifier("rtInventory")
+    public RedisTemplate<String, String> redisTemplate(@Qualifier("rtInventory") RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());

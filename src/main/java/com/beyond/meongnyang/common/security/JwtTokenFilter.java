@@ -28,10 +28,6 @@ public class JwtTokenFilter extends GenericFilter {
         try {
             HttpServletRequest req = (HttpServletRequest)request;
             String bearerToken = req.getHeader("Authorization");
-            if(bearerToken == null) { // jwt 토큰가 없을 때
-                chain.doFilter(request, response);
-                return;
-            }
             String token = bearerToken.substring(7);
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(secretKey)

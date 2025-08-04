@@ -22,7 +22,7 @@ import java.time.LocalDate;
 @Table(name = "pet")
 public class Pet extends CommonAt {
     @Id
-    @GeneratedValue()
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "name", nullable = false, length = 255)

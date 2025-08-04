@@ -92,7 +92,7 @@ public class JwtTokenProvider {
         User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
         String redisRt = redisTemplate.opsForValue().get(user.getEmail());
         if(!refreshToken.equals(redisRt)){
-            throw new IllegalArgumentException("rt 토큰가 일치하지 않습니다.");
+            throw new IllegalArgumentException("rt 토큰이 일치하지 않습니다.");
         }
         return user;
     }
