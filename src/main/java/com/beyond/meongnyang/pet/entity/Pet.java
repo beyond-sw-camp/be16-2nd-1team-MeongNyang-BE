@@ -40,6 +40,11 @@ public class Pet extends CommonAt {
 
     // TODO: 공개 여부는 후에
 
+
+    // 대표동물 설정
+    @Column(name = "first_pet", nullable = true)
+    private boolean firstPet;
+
     @Column(name = "pet_profile", nullable = true, length = 255)
     private String petProfile;
 
