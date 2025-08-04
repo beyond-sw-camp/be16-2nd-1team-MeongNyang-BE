@@ -1,8 +1,7 @@
 package com.beyond.meongnyang.post.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
-import com.beyond.meongnyang.post.dto.PostCreateReq;
-import com.beyond.meongnyang.post.dto.PostEditReq;
+import com.beyond.meongnyang.post.dto.*;
 import com.beyond.meongnyang.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -91,28 +90,103 @@ public class PostRestController {
 
 
     // 좋아요
-    @PostMapping("/like/{id}")
-    public ResponseEntity<?> postLike(@PathVariable("id") Long id) {
-        return null;
+    @PostMapping("/like")
+    public ResponseEntity<?> postLike(@RequestBody PostLikeReq postLikeReq) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.postLike(postLikeReq.getPostId()),
+                        HttpStatus.OK.value(),
+                        "성공"
+                ), HttpStatus.OK
+        );
     }
 
-    // 좋아요 수 카운트
-    @GetMapping("/like/{id}")
-    public ResponseEntity<?> postLikeCount(@PathVariable("id") Long id) {
-        return null;
+    // 좋아요 취소
+    @DeleteMapping("/{id}/like")
+    public ResponseEntity<?> postLikeCancel(@PathVariable("id") Long id) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.postLikeCancel(id),
+                        HttpStatus.OK.value(),
+                        "성공"
+                ), HttpStatus.OK
+        );
     }
 
-    // 댓글 달기
+    // 좋아요 목록 조회
+    @GetMapping("/{id}/like")
+    public ResponseEntity<?> postLikes(@PathVariable("id") Long postId, @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.postLikeList(postId, pageable),
+                        HttpStatus.OK.value(),
+                        "좋아요 목록 조회 완료"
+                ), HttpStatus.OK
+        );
+    }
 
-    // 댓글 수정
-
-    // 대댓글 달기
-
-    // 검색
-
-    // 신고
+//    // 댓글 달기
+//    @PostMapping("/comment")
+//    public ResponseEntity<?> postCreateComment(@RequestBody PostCommentCreateReq postCommentCreateReq){
+//        return new ResponseEntity<>(
+//                CommonRes.ofSuccess(
+//                        postService.createComment(postCommentCreateReq),
+//                        HttpStatus.OK.value(),
+//                        "댓글을 작성했습니다."
+//                ), HttpStatus.OK
+//        );
+//    }
+//
+//    // 댓글 수정
+//    @PatchMapping("/comment")
+//    public ResponseEntity<?> postEditComment(@RequestBody PostCommentEditReq postCommentEditReq){
+//        return new ResponseEntity<>(
+//                CommonRes.ofSuccess(
+//                        postService.editComment(postCommentEditReq),
+//                        HttpStatus.OK.value(),
+//                        "댓글을 수정했습니다."
+//                ), HttpStatus.OK
+//        );
+//    }
+//
+//    // 댓글 삭제
+//    @DeleteMapping("/comment")
+//    public ResponseEntity<?> postCreateCommentReply(){
+//        return new ResponseEntity<>(
+//                CommonRes.ofSuccess(
+//                        postService.deleteComment(postLikesReq, pageable),
+//                        HttpStatus.OK.value(),
+//                        "성공"
+//                ), HttpStatus.OK
+//        );
+//    }
+//
+//    @PostMapping("/comment/{id}")
+//    public ResponseEntity<?> postCreateCommentReply(@PathVariable("id") Long commentId){
+//        return new ResponseEntity<>(
+//                CommonRes.ofSuccess(
+//                        postService.deleteComment(postLikesReq, pageable),
+//                        HttpStatus.OK.value(),
+//                        "성공"
+//                ), HttpStatus.OK
+//        );
+//    }
+//
+//    // 댓글 목록 조회
+//    @GetMapping("/comment")
+//    public ResponseEntity<?> postComments(){
+//        return new ResponseEntity<>(
+//                CommonRes.ofSuccess(
+//                        postService.commentList(postLikesReq, pageable),
+//                        HttpStatus.OK.value(),
+//                        "성공"
+//                ), HttpStatus.OK
+//        );
+//    }
 
     // 친구 추천
+
+    // 검색
 
     // 팔로워 수 조회
 
@@ -120,7 +194,7 @@ public class PostRestController {
 
     // 언팔로우
 
-    // 차단
+    // 신고
 
-    // 대표동물 변경
+    // 차단
 }

@@ -1,11 +1,14 @@
 package com.beyond.meongnyang.post.dto;
 
+import com.beyond.meongnyang.post.entity.Like;
+import com.beyond.meongnyang.post.entity.Media;
 import com.beyond.meongnyang.post.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -18,11 +21,12 @@ public class PostDetailRes {
     private String userName;
     private String title;
     private String content;
+    private int likeCount;
     private List<String> hashTagList;
     private List<String> mediaList;
-    private String localDateTime;
+    private String date;
 
-    public static PostDetailRes fromEntity(Post post){
+    public static PostDetailRes fromEntity(Post post, int likeCount){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일");
 
         return PostDetailRes.builder()
@@ -30,6 +34,7 @@ public class PostDetailRes {
                 .userName(post.getUser().getName())
                 .title(post.getTitle())
                 .content(post.getContent())
+                .likeCount(likeCount)
                 .hashTagList(
                         post.getHashtags().stream()
                                 .map(ht -> ht.getTag().getName()) // Tag → name
@@ -37,10 +42,10 @@ public class PostDetailRes {
                 )
                 .mediaList(
                         post.getMediaList().stream()
-                            .map(md -> md.getUrl())
+                            .map(Media::getUrl)
                             .toList()
                 )
-                .localDateTime(post.getCreatedAt().format(formatter))
+                .date(post.getCreatedAt().format(formatter))
                 .build();
     }
 }
