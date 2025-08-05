@@ -12,6 +12,10 @@ import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -23,12 +27,21 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class ChatService {
     private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatParticipantRepository chatParticipantRepository;
+    private final RedisTemplate<String, String> chatRedisTemplate;
+
+    @Autowired
+    public ChatService(UserRepository userRepository, ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, ChatParticipantRepository chatParticipantRepository, @Qualifier("chat") RedisTemplate<String, String> chatRedisTemplate) {
+        this.userRepository = userRepository;
+        this.chatRoomRepository = chatRoomRepository;
+        this.chatMessageRepository = chatMessageRepository;
+        this.chatParticipantRepository = chatParticipantRepository;
+        this.chatRedisTemplate = chatRedisTemplate;
+    }
 
     public ChatMessageRes saveMessage(Long id, ChatMessageReq chatMessageReq) {
         // 채팅방 조회
@@ -164,5 +177,13 @@ public class ChatService {
         // 채팅방에 속해있는 유저인지 검증
         return chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getEmail)
                 .anyMatch(pEmail -> pEmail.equals(email));
+    }
+
+    public void leaveChatRoom(Long roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        chatRoom.getChatParticipantList().removeIf(chatParticipant -> chatParticipant.getUser().getEmail().equals(userEmail));
+
+        if (chatRoom.getChatParticipantList().isEmpty()) chatRoomRepository.delete(chatRoom);
     }
 }

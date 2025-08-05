@@ -35,9 +35,16 @@ public class ChatController {
     }
 
     // 참여자 추가
-    @PostMapping("{roomId}/participants")
+    @PostMapping("/{roomId}/participants")
     public ResponseEntity<?> inviteUsers(@PathVariable Long roomId, @RequestBody List<ChatParticipantAddReq> chatParticipantAddReqList) {
         chatService.inviteUsers(roomId, chatParticipantAddReqList);
+        return null;
+    }
+
+    // 채팅방 나가기
+    @DeleteMapping("/{roomId}/participants/me")
+    public ResponseEntity<?> leaveChatRoom(@PathVariable Long roomId) {
+        chatService.leaveChatRoom(roomId);
         return null;
     }
 
