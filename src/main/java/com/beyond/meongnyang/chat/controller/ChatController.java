@@ -57,4 +57,14 @@ public class ChatController {
                 CommonRes.ofSuccess(chatMessageResList, HttpStatus.OK.value(), "chat message list")
         );
     }
+
+    // 참여자 목록 조회
+    @GetMapping("/{roomId}/participants")
+    public ResponseEntity<?> getChatParticipants(@PathVariable Long roomId) {
+        List<ChatParticipantRes> chatParticipantResList = chatService.getChatParticipants(roomId);
+
+        return ResponseEntity.ok(
+                CommonRes.ofSuccess(chatParticipantResList, HttpStatus.OK.value(), "participant list")
+        );
+    }
 }

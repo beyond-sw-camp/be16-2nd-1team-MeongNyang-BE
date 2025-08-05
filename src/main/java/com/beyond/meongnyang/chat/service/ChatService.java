@@ -186,4 +186,10 @@ public class ChatService {
 
         if (chatRoom.getChatParticipantList().isEmpty()) chatRoomRepository.delete(chatRoom);
     }
+
+    public List<ChatParticipantRes> getChatParticipants(Long roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+
+        return chatParticipantRepository.findAllByChatRoom(chatRoom).stream().map(ChatParticipantRes::fromEntity).toList();
+    }
 }
