@@ -1,12 +1,16 @@
 package com.beyond.meongnyang.post.service;
 
+import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.post.dto.*;
 import com.beyond.meongnyang.common.S3UploadService;
 import com.beyond.meongnyang.post.entity.*;
+import com.beyond.meongnyang.post.repository.CommentRepository;
+import com.beyond.meongnyang.post.repository.LikeRepository;
 import com.beyond.meongnyang.post.repository.PostRepository;
 import com.beyond.meongnyang.post.repository.TagRepository;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -14,13 +18,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +33,9 @@ public class PostService {
     private final PostRepository postRepository;
     private final TagRepository tagRepository;
     private final UserRepository userRepository;
+//    private final PetRepository petRepository;
+    private final LikeRepository likeRepository;
+    private final CommentRepository commentRepository;
     private final S3UploadService s3UploadService;
     private final EntityManager em;
 
@@ -89,16 +96,68 @@ public class PostService {
     // 일기 상세 조회
     public PostDetailRes myPost(Long postId){
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
-        return PostDetailRes.fromEntity(post);
+        int likeCount = likeRepository.countByPostId(postId);
+        return PostDetailRes.fromEntity(post, likeCount);
     }
 
-    // 좋아요
+    // 좋아요 처리
+    public Long postLike(Long postId){
+        User user = getCurrentUser();
+        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
+        boolean isLike = likeRepository.existsByUserIdAndPostId(user.getId(), post.getId());
+        if(isLike){
+            throw new EntityExistsException("이미 좋아요를 누른 포스트입니다.");
+        } else {
+            PostLikeRes postLikeRes = new PostLikeRes();
+            return likeRepository.save(postLikeRes.likeToEntity(post, user)).getId();
+        }
+    }
 
-    // 좋아요 수 카운트
+    // 좋아요 취소
+    public Long postLikeCancel(Long postId){
+        User user = getCurrentUser();
+        likeRepository.deleteByPostIdAndUserId(postId, user.getId());
+        return postId;
+    }
+    // 좋아요 목록
+    public Page<PostLikeListRes> postLikeList(Long postId, Pageable pageable) {
+        return likeRepository.findAllByPostId(postId, pageable)
+                .map(like -> PostLikeListRes.fromEntity(like.getPost(), like.getUser()));
+    }
 
     // 댓글 달기
+    public Long createComment(PostCommentCreateReq postCommentCreateReq){
+        User user = getCurrentUser();
+        Post post = postRepository.findById(postCommentCreateReq.getPostId()).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
+        Comment comment = postCommentCreateReq.toEntity(post, user);
+        return commentRepository.save(comment).getId();
+    }
 
     // 댓글 수정
+    public Long editComment(PostCommentCreateReq postCommentCreateReq) throws AccessDeniedException {
+        User user = getCurrentUser();
+        Comment comment = commentRepository.findByPostIdAndUserId(postCommentCreateReq.getPostId(), user.getId()).orElseThrow(() -> new EntityNotFoundException("해당 댓글이 존재하지 않습니다"));
+
+        // 작성자 확인
+        if (!Objects.equals(user.getId(), comment.getUser().getId())) {
+            throw new AccessDeniedException("작성자 또는 관리자만 삭제 가능합니다.");
+        }
+        comment.updateComment(postCommentCreateReq.getContent());
+        return comment.getId();
+    }
+
+    // 댓글 삭제
+//    public Long deleteComment(PostCommentDeleteReq postCommentDeleteReq) throws AccessDeniedException {
+//        User user = getCurrentUser();
+//        Comment comment = commentRepository.findByPostIdAndUserId(postCommentCreateReq.getPostId(), user.getId()).orElseThrow(() -> new EntityNotFoundException("해당 댓글이 존재하지 않습니다"));
+//
+//        // 작성자 확인
+//        if (!Objects.equals(user.getId(), comment.getUser().getId())) {
+//            throw new AccessDeniedException("작성자 또는 관리자만 삭제 가능합니다.");
+//        }
+//        comment.updateComment(postCommentCreateReq.getContent());
+//        return comment.getId();
+//    }
 
     // 대댓글 달기
 

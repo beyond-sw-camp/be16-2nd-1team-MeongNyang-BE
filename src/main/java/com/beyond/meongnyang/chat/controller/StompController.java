@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.chat.controller;
 
+import com.beyond.meongnyang.chat.dto.ChatMessageRes;
 import com.beyond.meongnyang.chat.service.ChatService;
 import com.beyond.meongnyang.chat.dto.ChatMessageReq;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +31,7 @@ public class StompController {
     @MessageMapping("/{roomId}")
     public void sendMessage(@DestinationVariable Long roomId, ChatMessageReq chatMessageReq) {
         log.info(chatMessageReq.getMessage());
-        chatService.saveMessage(roomId, chatMessageReq);
-        messageTemplate.convertAndSend("/topic/" + roomId, chatMessageReq);
+        ChatMessageRes chatMessageRes = chatService.saveMessage(roomId, chatMessageReq);
+        messageTemplate.convertAndSend("/topic/" + roomId, chatMessageRes);
     }
-
 }

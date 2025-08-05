@@ -44,6 +44,7 @@ public class Transaction extends CommonAt {
 
     private LocalDateTime completedAt;          //거래완료
 
+//    pg사 결제용 컬럼
     @Column(length = 50)
     private String paymentMethod;
 
