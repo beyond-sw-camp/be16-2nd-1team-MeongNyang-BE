@@ -56,7 +56,14 @@ public class UserRestController {
     public ResponseEntity<?> accessLogin(@Valid @RequestBody UserLoginReq request) {
         this.userService.accessLogin(request);
         User user = this.userService.accessLogin(request);
-        String token = jwtTokenProvider.createAtToken(user);
+        String atToken = jwtTokenProvider.createAtToken(user);
+        String rtToken = jwtTokenProvider.createRtToken(user);
+
+        UserLoginRes token = UserLoginRes.builder()
+                .accessToken(atToken)
+                .refreshToken(rtToken)
+                .build();
+
         return new ResponseEntity<>(CommonRes.ofSuccess(token, HttpStatus.OK.value(), "로그인되었습니다."), HttpStatus.OK);
     }
 

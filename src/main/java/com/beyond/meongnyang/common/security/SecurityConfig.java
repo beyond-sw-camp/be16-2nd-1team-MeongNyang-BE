@@ -1,5 +1,7 @@
 package com.beyond.meongnyang.common.security;
 
+import com.beyond.meongnyang.common.handler.JwtAuthenticationHandler;
+import com.beyond.meongnyang.common.handler.JwtAuthorizationHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +26,8 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtTokenFilter jwtTokenFilter;
+    private final JwtAuthorizationHandler jwtAuthorizationHandler;
+    private final JwtAuthenticationHandler jwtAuthenticationHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -34,6 +38,9 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(e ->
+                        e.authenticationEntryPoint(jwtAuthenticationHandler) // 401error
+                        .accessDeniedHandler(jwtAuthorizationHandler))  // 403error
                 .authorizeHttpRequests(a -> a.requestMatchers(
                                 "/user/sign", "/user/login", "/user/find/email", "/user/check-email", "/user/check-nickname", "/user/check-phone", "/connect/**")
                         .permitAll().anyRequest().authenticated())

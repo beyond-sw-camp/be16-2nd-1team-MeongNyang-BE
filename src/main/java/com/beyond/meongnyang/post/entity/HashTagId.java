@@ -10,10 +10,10 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HashTagId implements Serializable {
-    @Column(name = "post_id")
+    @Column(name = "post_id", nullable = false)
     private Long postId;
 
-    @Column(name = "tag_id")
+    @Column(name = "tag_id", nullable = false)
     private Long tagId;
 
     // equals(), hashCode() 필수!
