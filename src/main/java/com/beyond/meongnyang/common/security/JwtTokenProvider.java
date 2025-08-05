@@ -8,6 +8,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,7 @@ public class JwtTokenProvider {
     private final UserRepository userRepository;
     private final RedisTemplate<String, String> redisTemplate;
 
-    public JwtTokenProvider(UserRepository userRepository, RedisTemplate<String, String> redisTemplate) {
+    public JwtTokenProvider(UserRepository userRepository, @Qualifier("rtInventory") RedisTemplate<String, String> redisTemplate) {
         this.userRepository = userRepository;
         this.redisTemplate = redisTemplate;
     }
