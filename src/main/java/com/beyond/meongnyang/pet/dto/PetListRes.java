@@ -17,12 +17,12 @@ import java.util.List;
 
 public class PetListRes {
     private String userName;
-    private List<PetOneRes> pets;
+    private List<PetDetailRes> pets;
 
     public static PetListRes fromEntity (User user, List<Pet> petList) {
         return PetListRes.builder()
                 .userName(user.getName())
-                .pets(petList.stream().map(pet -> PetOneRes.fromEntity(pet)).toList())
+                .pets(petList.stream().map(pet -> PetDetailRes.fromEntity(pet)).toList())
                 .build();
     }
 }

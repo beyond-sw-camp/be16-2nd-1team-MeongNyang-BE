@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Data
 @Builder
 
-public class PetOneRes {
+public class PetDetailRes {
     private String petOrder;
     private String species;
     private String name;
@@ -25,8 +25,8 @@ public class PetOneRes {
     private String petProfile;
     private LocalDate birthday;
 
-    public static PetOneRes fromEntity(Pet pet) {
-        return PetOneRes.builder()
+    public static PetDetailRes fromEntity(Pet pet) {
+        return PetDetailRes.builder()
                 .petOrder(pet.getSpecies().getPetOrder())
                 .species(pet.getSpecies().getSpecies())
                 .name(pet.getName())

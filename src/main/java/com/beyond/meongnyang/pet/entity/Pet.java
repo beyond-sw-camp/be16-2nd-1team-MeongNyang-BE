@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.pet.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.pet.dto.PetRegisterReq;
 import com.beyond.meongnyang.species.entity.Species;
 import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
@@ -21,7 +22,7 @@ import java.time.LocalDate;
 @Table(name = "pet")
 public class Pet extends CommonAt {
     @Id
-    @GeneratedValue()
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "name", nullable = false, length = 255)
@@ -38,6 +39,11 @@ public class Pet extends CommonAt {
     private BigDecimal weight;
 
     // TODO: 공개 여부는 후에
+
+
+    // 대표동물 설정
+    @Column(name = "first_pet", nullable = true)
+    private boolean firstPet;
 
     @Column(name = "pet_profile", nullable = true, length = 255)
     private String petProfile;
@@ -62,8 +68,17 @@ public class Pet extends CommonAt {
     private Species species;
 
     /* ******************** 매서드 ********************/
-    public void updateImgUrl (String url) {
-        this.petProfile = url;
+    // pet 인적 사항 업데이트
+    public void updatePet(PetRegisterReq req, Species species) {
+        this.name = req.getName();
+        this.age = req.getAge();
+        this.gender = req.getGender();
+        this.weight = req.getWeight();
+        this.petProfile = req.getPetProfile();
+        this.birthday = req.getBirthday();
+        this.petProfile = req.getPetProfile();
+        this.species = species;
+
     }
 
     public void delPet() {

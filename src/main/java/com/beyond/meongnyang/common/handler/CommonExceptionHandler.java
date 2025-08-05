@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.common;
+package com.beyond.meongnyang.common.handler;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
 import jakarta.persistence.EntityExistsException;
@@ -7,6 +7,7 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -66,6 +67,11 @@ public class CommonExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> exception(Exception e) {
         e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonRes.ofFailure(HttpStatus.FORBIDDEN.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<?> authorizationDeniedException(AuthorizationDeniedException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonRes.ofFailure(HttpStatus.FORBIDDEN.value(), e.getMessage()));
     }
 }
