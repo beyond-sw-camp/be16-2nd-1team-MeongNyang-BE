@@ -11,10 +11,8 @@ import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -171,15 +169,7 @@ public class ChatService {
                 .map(ChatMessageRes::fromEntity).toList();
     }
 
-    public boolean isChatRoomParticipant(Long roomId, String email) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
-
-        // 채팅방에 속해있는 유저인지 검증
-        return chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getEmail)
-                .anyMatch(pEmail -> pEmail.equals(email));
-    }
-
-    public void leaveChatRoom(Long roomId) {
+    public void leaveChatRoomAndRemoveIfEmpty(Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         chatRoom.getChatParticipantList().removeIf(chatParticipant -> chatParticipant.getUser().getEmail().equals(userEmail));
@@ -188,8 +178,27 @@ public class ChatService {
     }
 
     public List<ChatParticipantRes> getChatParticipants(Long roomId) {
+        validChatRoomParticipant(roomId);
+
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
 
-        return chatParticipantRepository.findAllByChatRoom(chatRoom).stream().map(ChatParticipantRes::fromEntity).toList();
+        return chatRoom.getChatParticipantList().stream().map(ChatParticipantRes::fromEntity).toList();
+    }
+
+    public void validChatRoomParticipant(Long roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+
+        chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getEmail)
+                .filter(pEmail -> pEmail.equals(SecurityContextHolder.getContext().getAuthentication().getName()))
+                .findFirst().orElseThrow(() -> new AccessDeniedException("Access Denied"));
+    }
+
+    public void validChatRoomParticipant(Long roomId, String email) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+
+        // 채팅방에 속해있는 유저인지 검증
+        chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getEmail)
+                .filter(pEmail -> pEmail.equals(email))
+                .findFirst().orElseThrow(() -> new AccessDeniedException("Access Denied"));
     }
 }

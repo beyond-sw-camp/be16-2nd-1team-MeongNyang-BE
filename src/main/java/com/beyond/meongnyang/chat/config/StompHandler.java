@@ -52,7 +52,7 @@ public class StompHandler implements ChannelInterceptor {
 
             String email = claims.getSubject();
             Long roomId = Long.parseLong(accessor.getDestination().split("/")[2]);
-            if (!chatService.isChatRoomParticipant(roomId, email)) throw new AccessDeniedException("Access Denied");
+            chatService.validChatRoomParticipant(roomId, email);
         }
 
         return message;
