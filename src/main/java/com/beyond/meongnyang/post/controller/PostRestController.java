@@ -128,7 +128,7 @@ public class PostRestController {
     }
 
     // 댓글 달기
-    @PostMapping("/{id}/comment")
+    @PostMapping("/{id}/comments")
     public ResponseEntity<?> postCreateComment(@PathVariable("id")Long id, @RequestBody PostCommentCreateReq postCommentCreateReq){
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
@@ -140,7 +140,7 @@ public class PostRestController {
     }
 
     // 대댓글 달기
-    @PostMapping("/comment/{id}/reply")
+    @PostMapping("/comments/{id}/reply")
     public ResponseEntity<?> postCreateReply(@PathVariable("id") Long id, @RequestBody PostCommentReplyReq postCommentReplyReq){
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
@@ -152,7 +152,7 @@ public class PostRestController {
     }
 
     // 댓글 수정
-    @PatchMapping("/comment/{id}")
+    @PatchMapping("/comments/{id}")
     public ResponseEntity<?> postEditComment(@PathVariable("id") Long commentId, @RequestBody PostCommentEditReq postCommentEditReq) throws AccessDeniedException {
         Long id = postService.editComment(commentId, postCommentEditReq);
         return new ResponseEntity<>(
@@ -165,7 +165,7 @@ public class PostRestController {
     }
 
 //     댓글 삭제
-    @DeleteMapping("/comment/{id}")
+    @DeleteMapping("/comments/{id}")
     public ResponseEntity<?> postDeleteComment(@PathVariable("id") Long commentId) throws AccessDeniedException {
         Long id = postService.deleteComment(commentId);
         return new ResponseEntity<>(
