@@ -8,6 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class PostCommentEditReq {
-    private Long postId;
-    private Long commentId;
+    private String content;
 }
