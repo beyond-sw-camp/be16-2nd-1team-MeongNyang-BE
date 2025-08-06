@@ -87,12 +87,21 @@ public class UserRestController {
         this.userService.deleteAccount(dto);
         return new ResponseEntity<>(CommonRes.ofSuccess("회원 탈퇴되었습니다.", HttpStatus.OK.value(), "회원탈퇴 완료"), HttpStatus.OK);
     }
-    /* *******************pet 관련 ********************** */
+    /* ****************마이페이지&설정 관련- (pet) ********************* */
+    // 대표동물 설정
     @PutMapping("/my-page/{id}/main-pet")
     public ResponseEntity<?> changeMainPet(@PathVariable Long id) {
         Long mainPetId = this.userService.setMainPet(id);
         return new ResponseEntity<>(CommonRes.ofSuccess(
                 "mainPetId :" + mainPetId, HttpStatus.OK.value(), "대표동물 설정"
+        ), HttpStatus.OK);
+    }
+    //
+    @GetMapping("my-page")
+    public ResponseEntity<?> enterMyPage() {
+        MyPageRes myPageRes = this.userService.enterMyPage();
+        return new ResponseEntity<>(CommonRes.ofSuccess(
+                myPageRes, HttpStatus.OK.value(), "마이페이지-기본"
         ), HttpStatus.OK);
     }
 

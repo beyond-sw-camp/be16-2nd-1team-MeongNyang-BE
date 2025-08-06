@@ -158,7 +158,7 @@ public class UserService {
     }
 
     // 계정 락 풀기
-    //TODO: 수정 읽음 동시성 문제 해결하기
+    //TODO: 수정 읽음 동시성 문제 해결하기, 비밀번호 변경 , 임시 비밀번호 시간은?
     public String unlock(UserUnlockReq req) {
         User user = this.userRepository.findByNameAndPhone(req.getName(), req.getPhone())
                 .orElseThrow(() -> new EntityNotFoundException("등록된 회원정보가 없습니다."));
@@ -184,7 +184,8 @@ public class UserService {
         user.softDelete();
     }
 
-    /* ****************펫 관련 ********************* */
+    /* ****************마이페이지&설정 관련- (pet) ********************* */
+    // 대표동물 설정
     public Long setMainPet(Long petId) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 사용자입니다."));
@@ -194,6 +195,22 @@ public class UserService {
         }
         user.changeMainPet(petId);
         return petId;
+    }
+    public MyPageRes enterMyPage() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 사용자입니다."));
+        Pet mainPet = null;
+        // 펫을 등록하지 않은 사용자일 수도 있음
+        if(user.getMainPetId() != null) {
+            mainPet = this.petRepository.findById(user.getMainPetId()).orElse(null);
+        }
+        return MyPageRes.builder()
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .createdAt(user.getCreatedAt())
+                .mainPetId(mainPet != null ? mainPet.getId() : null)
+                .mainPetImage(mainPet != null ? mainPet.getPetProfileUrl() : null)
+                .build();
     }
 
     /* **************** 관리자 기능 **************** */
