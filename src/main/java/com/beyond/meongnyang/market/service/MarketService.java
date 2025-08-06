@@ -168,7 +168,7 @@ public class MarketService {
                 .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
 
 //        2. 거래글 객체를 구매자id로 가져오기
-        Page<MarketPost> marketPostList = marketPostRepository.findAllByBuyer_Id(user.getId(), pageable);
+        Page<MarketPost> marketPostList = marketPostRepository.findAllByBuyerId(user.getId(), pageable);
 
 //        3. 각 거래글 객체를 dto로 변환해서 반환
         return marketPostList.map(MarketPostListReq::fromEntity);
@@ -184,7 +184,7 @@ public class MarketService {
             .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
 
 //        2. 거래글 객체를 판매자id로 가져오기
-        Page<MarketPost> marketPostList = marketPostRepository.findAllBySeller_Id(user.getId(), pageable);
+        Page<MarketPost> marketPostList = marketPostRepository.findAllBySellerId(user.getId(), pageable);
 
 //        3. 각 거래글 객체를 dto로 변환해서 반환
         return marketPostList.map(MarketPostListReq::fromEntity);
