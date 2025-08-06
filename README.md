@@ -16,7 +16,7 @@
     </td>
     <td align="center"><a href="https://github.com/FOJF" target="_blank"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/></a>
     </td>
-    <td align="center"><a href="https://github.com/Jihyeon0804" target="_blank"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/></a> 
+    <td align="center"><a href="https://github.com/userkimjihyeon" target="_blank"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/></a> 
     </td>
     <td align="center"><a href="https://github.com/ggj0228" target="_blank"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/></a>
     </td>
