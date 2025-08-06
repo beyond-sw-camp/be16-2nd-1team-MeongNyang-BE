@@ -12,6 +12,7 @@ import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,7 +41,6 @@ public class PetService {
             imageUrl = s3UploadService.upload(file);
         }
 
-        // 업로드한 URL을 DTO에 반영
         req.setUrl(imageUrl);
 
         petRepository.save(req.toEntity(user, species));
@@ -67,19 +67,20 @@ public class PetService {
         Species species = speciesRepository.findById(req.getSpeciesId())
                 .orElseThrow(() -> new EntityNotFoundException("종 정보가 없습니다."));
 
-        // 전체 교체 방식일 경우 기존 이미지 삭제
+        if (!pet.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("본인 소유의 반려동물만 수정할 수 있습니다.");
+        }
+
         if (file != null && !file.isEmpty()) {
             if (pet.getPetProfileUrl() != null) {
-                s3UploadService.delete(pet.getPetProfileUrl()); // 기존 이미지 삭제
+                s3UploadService.delete(pet.getPetProfileUrl());
             }
             String newImageUrl = s3UploadService.upload(file);
             req.setUrl(newImageUrl);
         } else {
-            // 이미지 안 보냈으면 기존 이미지 유지
             req.setUrl(pet.getPetProfileUrl());
         }
 
-        // 엔티티 수정
         pet.updatePet(req, species);
     }
 
