@@ -108,7 +108,7 @@ public class MarketController {
                 CommonRes.ofSuccess(
                         marketService.getSales(pageable),
                         HttpStatus.OK.value(),
-                        "구매목록 조회에 성공했습니다."
+                        "판매목록 조회에 성공했습니다."
                 ), HttpStatus.OK
         );
     }
