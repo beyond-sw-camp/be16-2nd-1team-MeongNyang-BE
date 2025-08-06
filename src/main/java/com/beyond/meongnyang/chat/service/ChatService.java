@@ -12,8 +12,6 @@ import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -30,15 +28,13 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatParticipantRepository chatParticipantRepository;
-    private final RedisTemplate<String, String> chatRedisTemplate;
 
     @Autowired
-    public ChatService(UserRepository userRepository, ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, ChatParticipantRepository chatParticipantRepository, @Qualifier("chat") RedisTemplate<String, String> chatRedisTemplate) {
+    public ChatService(UserRepository userRepository, ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, ChatParticipantRepository chatParticipantRepository) {
         this.userRepository = userRepository;
         this.chatRoomRepository = chatRoomRepository;
         this.chatMessageRepository = chatMessageRepository;
         this.chatParticipantRepository = chatParticipantRepository;
-        this.chatRedisTemplate = chatRedisTemplate;
     }
 
     public ChatMessageRes saveMessage(Long id, ChatMessageReq chatMessageReq) {
@@ -129,7 +125,6 @@ public class ChatService {
 //                .toList();
     }
 
-    // TODO : 응답해줄 것 고민하기
     public List<ChatParticipantAddRes> inviteUsers(Long roomId, List<ChatParticipantAddReq> chatParticipantAddReqList) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
 
