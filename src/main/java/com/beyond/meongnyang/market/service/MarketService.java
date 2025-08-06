@@ -9,6 +9,7 @@ import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.entity.ProductImage;
 import com.beyond.meongnyang.market.repository.MarketPostRepository;
 import com.beyond.meongnyang.market.repository.ProductImageRepository;
+import com.beyond.meongnyang.market.repository.WishlistRepository;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.*;
@@ -33,6 +34,7 @@ public class MarketService {
     private final ProductImageRepository productImageRepository;
     private final S3UploadService s3UploadService;
     private final UserRepository userRepository;
+    private final WishlistRepository wishlistRepository;
 
 //    거래글 생성
     public Long marketPostCreate(MarketPostCreateReq marketPostCreateReq,
@@ -186,5 +188,10 @@ public class MarketService {
 
 //        3. 각 거래글 객체를 dto로 변환해서 반환
         return marketPostList.map(MarketPostListReq::fromEntity);
+    }
+
+//    찜하기
+    public void marketPostLike(Long postId) {
+
     }
 }

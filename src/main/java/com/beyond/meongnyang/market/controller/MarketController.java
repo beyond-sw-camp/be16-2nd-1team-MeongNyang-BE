@@ -113,16 +113,21 @@ public class MarketController {
         );
     }
 
-////    찜하기
-//    @PostMapping("/{id}/like")
-//    public ResponseEntity<?> marketPostWishlist (@PathVariable("id") Long id) {
-//        Long id = marketService.marketPostCreate(marketPostCreateReq);
-//        return new ResponseEntity<>(
-//                CommonRes.ofSuccess(
-//                        id,
-//                        HttpStatus.CREATED.value(),
-//                        "찜목록에 추가되었습니다."),
-//                HttpStatus.CREATED
-//        );
-//    }
+//    찜하기
+    @PostMapping("/{id}/like")
+    public ResponseEntity<?> marketPostLike(@PathVariable("id") Long id) {
+        Long postId = marketService.marketPostLike(id);
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postId,
+                        HttpStatus.CREATED.value(),
+                        "찜목록에 추가되었습니다."),
+                HttpStatus.CREATED
+        );
+    }
+
+////    찜 취소
+//    @DeleteMapping("/{id}/like")
+////    찜 목록조회
+//    @GetMapping("/like")
 }
