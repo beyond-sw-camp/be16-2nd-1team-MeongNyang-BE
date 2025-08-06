@@ -87,7 +87,7 @@ public class ChatService {
                 .name(chatRoomCreateReq.getRoomName())
                 .build();
 
-        // 채팅방 참여자 객체(채팅방 개설을 요구한 유저의 객체) 생성
+        // 채팅방 참여자 객체 생성
         chatRoomCreateReq.getUserEmailList().forEach(userEmail -> {
             ChatParticipant chatParticipant = ChatParticipant.builder()
                     .chatRoom(chatRoom)
@@ -130,7 +130,7 @@ public class ChatService {
     }
 
     // TODO : 응답해줄 것 고민하기
-    public void inviteUsers(Long roomId, List<ChatParticipantAddReq> chatParticipantAddReqList) {
+    public List<ChatParticipantAddRes> inviteUsers(Long roomId, List<ChatParticipantAddReq> chatParticipantAddReqList) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
 
         User inviter = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
@@ -155,26 +155,30 @@ public class ChatService {
         });
 
         if (chatRoom.getChatParticipantList().size() > 2) chatRoom.updateIsGroupChat(Bool.TRUE);
+
+        return chatParticipantAddReqList.stream()
+                .map(req ->
+                        ChatParticipantAddRes.builder().inviteeEmail(req.getInviteeEmail()).build()
+                ).toList();
     }
 
     public List<ChatMessageRes> getChatMessages(Long roomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+        validChatRoomParticipant(roomId);
 
-        // 채팅방에 속해있는 유저인지 검증
-        chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getEmail)
-                .filter(pEmail -> pEmail.equals(SecurityContextHolder.getContext().getAuthentication().getName()))
-                .findFirst().orElseThrow(() -> new AccessDeniedException("Access Denied"));
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
 
         return chatMessageRepository.findAllByChatRoomOrderByCreatedAt(chatRoom).stream()
                 .map(ChatMessageRes::fromEntity).toList();
     }
 
-    public void leaveChatRoomAndRemoveIfEmpty(Long roomId) {
+    public ChatParticipantRemRes leaveChatRoomAndRemoveIfEmpty(Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         chatRoom.getChatParticipantList().removeIf(chatParticipant -> chatParticipant.getUser().getEmail().equals(userEmail));
 
         if (chatRoom.getChatParticipantList().isEmpty()) chatRoomRepository.delete(chatRoom);
+
+        return ChatParticipantRemRes.builder().leftUserEmail(userEmail).build();
     }
 
     public List<ChatParticipantRes> getChatParticipants(Long roomId) {
