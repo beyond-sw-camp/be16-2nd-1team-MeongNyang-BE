@@ -18,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Where(clause = "deleted = false")
+@Where(clause = "del_yn = false")
 public class Comment extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +36,7 @@ public class Comment extends CommonAt {
     private String content;
 
     @Column(nullable = false)
-    private boolean deleted = false;
+    private boolean delYn = false;
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommentTag> commentTags = new ArrayList<>();
@@ -46,6 +46,6 @@ public class Comment extends CommonAt {
     }
 
     public void softDelete() {
-        this.deleted = true;
+        this.delYn = true;
     }
 }
