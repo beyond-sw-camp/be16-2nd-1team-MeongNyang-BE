@@ -45,13 +45,13 @@ public class UserRestController {
         return new ResponseEntity<>(CommonRes.ofSuccess(dto.getPhone(), HttpStatus.OK.value(), "사용가능한 전화번호입니다."), HttpStatus.OK);
     }
 
-
+    // 회원가입
     @PostMapping("/sign")
     public ResponseEntity<?> save(@Valid @RequestBody UserCreateReq dto) {
         this.userService.save(dto);
         return new ResponseEntity<>(CommonRes.ofSuccess(dto, HttpStatus.CREATED.value(), "회원가입이 완료되었습니다."), HttpStatus.CREATED);
     }
-
+    // 일반 로그인
     @PostMapping("/login")
     public ResponseEntity<?> accessLogin(@Valid @RequestBody UserLoginReq request) {
         this.userService.accessLogin(request);
@@ -66,13 +66,22 @@ public class UserRestController {
 
         return new ResponseEntity<>(CommonRes.ofSuccess(token, HttpStatus.OK.value(), "로그인되었습니다."), HttpStatus.OK);
     }
-
+    // 이메일 찾기
     @PostMapping("/find/email")
     public ResponseEntity<?> findEmail(@Valid @RequestBody UserFindEmailReq dto) {
         String email = this.userService.findEmail(dto);
         return new ResponseEntity<>(CommonRes.ofSuccess(email, HttpStatus.OK.value(), "이메일을 찾았습니다."), HttpStatus.OK);
     }
 
+    @PostMapping("/unlock")
+    public ResponseEntity<?> unlock(@Valid @RequestBody UserUnlockReq req) {
+        String tempPassword = this.userService.unlock(req);
+        return new ResponseEntity<>(CommonRes.ofSuccess(
+                "임시 비밀번호: " + tempPassword, HttpStatus.OK.value(), "임시비밀번호 발급 완료"
+        ), HttpStatus.OK);
+    }
+
+    //계정 삭제
     @PostMapping("/delete")
     public ResponseEntity<?> deleteAccount(@Valid @RequestBody UserCheckPasswordReq dto) {
         this.userService.deleteAccount(dto);

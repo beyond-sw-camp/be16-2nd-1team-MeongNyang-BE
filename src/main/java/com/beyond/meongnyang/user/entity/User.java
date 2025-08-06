@@ -3,6 +3,7 @@ package com.beyond.meongnyang.user.entity;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 
@@ -83,18 +84,29 @@ public class User extends CommonAt {
     private LocalDateTime deletedAt;
 
     /* ******************메소드******************* */
+    // 계정 삭제
     public void softDelete() {
         this.delYn = "Y";
         this.deletedAt = LocalDateTime.now();
     }
 
-    // 잠금 관련
+    // 잠금 관련 로그인 시도 횟수
     public void updateCount(int count) {
         this.failedCount = count;
     }
+    // 계정 잠금
     public void lockedAccount() {
         this.isLocked = "Y";
         this.isLockedAt = LocalDateTime.now();
+    }
+    // 잠금 해제
+    public void unlockedAccount() {
+        this.isLocked = "N";
+    }
+
+    // 비밀번호 변경
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
     }
 
 

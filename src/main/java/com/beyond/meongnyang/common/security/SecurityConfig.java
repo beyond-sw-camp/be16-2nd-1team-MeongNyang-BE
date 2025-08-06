@@ -42,7 +42,7 @@ public class SecurityConfig {
                         e.authenticationEntryPoint(jwtAuthenticationHandler) // 401error
                         .accessDeniedHandler(jwtAuthorizationHandler))  // 403error
                 .authorizeHttpRequests(a -> a.requestMatchers(
-                                "/user/sign", "/user/login", "/user/find/email", "/user/check-email", "/user/check-nickname", "/user/check-phone", "/connect/**")
+                                "/user/sign", "/user/login", "/user/find/email", "/user/check-email", "/user/check-nickname", "/user/check-phone", "/connect/**", "/user/unlock")
                         .permitAll().anyRequest().authenticated())
                 .build();
     }

@@ -9,8 +9,10 @@ import com.beyond.meongnyang.user.dto.check.UserCheckPhoneReq;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -150,6 +152,22 @@ public class UserService {
             throw new EntityNotFoundException("이름이 일치하지 않습니다.");
         }
         return user.getEmail();
+    }
+
+    // 계정 락 풀기
+    //TODO: 수정 읽음 동시성 문제 해결하기
+    public String unlock(UserUnlockReq req) {
+        User user = this.userRepository.findByNameAndPhone(req.getName(), req.getPhone())
+                .orElseThrow(() -> new EntityNotFoundException("등록된 회원정보가 없습니다."));
+        if(user.getDelYn().equals("Y")) {
+            throw new IllegalArgumentException("이미 탈퇴한 계정입니다.");
+        }
+        userLockedService.resetFailedCount(user.getId());
+        user.unlockedAccount();
+        String tempPassword = userLockedService.generateTempPassword();
+        user.updatePassword(passwordEncoder.encode(tempPassword));
+
+        return tempPassword;
     }
 
 
