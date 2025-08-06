@@ -1,11 +1,14 @@
 package com.beyond.meongnyang.user.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.pet.entity.Pet;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Table(name = "user")
 @NoArgsConstructor
@@ -55,11 +58,12 @@ public class User extends CommonAt {
     @Column(name = "third_party", nullable = true, length = 255)
     private String thirdParty;
 
+    // 계정 잠금 여부 : Y면 계정 잠금 상태
     @Column(name = "is_locked", nullable = false)
     @Builder.Default
     private String isLocked = "N";
 
-    // 비밀번호 틀린 횟수 카운트
+    // 비밀번호 틀린 횟수 카운트 : 계정 잠금 . 사용
     @Column(name = "failed_count", nullable = false)
     @Builder.Default
     private int failedCount = 0;
@@ -82,6 +86,14 @@ public class User extends CommonAt {
     // 탈퇴 시에 기록
     @Column(name = "deleted_at", nullable = true)
     private LocalDateTime deletedAt;
+
+    /* ******************연관관계***************** */
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Pet> pets = new ArrayList<>();
+
+    @Column(name = "main_pet_id", nullable = true)
+    private Long mainPetId;
+
 
     /* ******************메소드******************* */
     // 계정 삭제
@@ -109,5 +121,7 @@ public class User extends CommonAt {
         this.password = newPassword;
     }
 
-
+    public void changeMainPet(Long petId) {
+        this.mainPetId = petId;
+    }
 }

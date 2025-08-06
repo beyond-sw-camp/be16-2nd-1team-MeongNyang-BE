@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class PetController {
     private final PetService petService;
 
-
+    // 유저가 펫 등록
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestPart("PetRegisterReq") PetRegisterReq req, @RequestPart(value = "url", required = false) MultipartFile petImg) {
         this.petService.register(req, petImg);
@@ -29,7 +29,6 @@ public class PetController {
     public ResponseEntity<?> findByUser() {
         return new ResponseEntity<>(CommonRes.ofSuccess(petService.findByUser(), HttpStatus.OK.value(), "Pet 목록 조회 완료"), HttpStatus.OK);
     }
-
 
     // 유저가 등록한 펫 수정
     @PutMapping("/{id}")

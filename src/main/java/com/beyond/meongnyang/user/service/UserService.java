@@ -1,5 +1,7 @@
 package com.beyond.meongnyang.user.service;
 
+import com.beyond.meongnyang.pet.entity.Pet;
+import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
@@ -9,10 +11,9 @@ import com.beyond.meongnyang.user.dto.check.UserCheckPhoneReq;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.jpa.repository.Lock;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserLockedService userLockedService;
+
+    private final PetRepository petRepository;
 
 
     //회원 가입 시 이메일, 전화번호, 닉네임 각각 인증
@@ -181,6 +184,17 @@ public class UserService {
         user.softDelete();
     }
 
+    /* ****************펫 관련 ********************* */
+    public Long setMainPet(Long petId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 사용자입니다."));
+        Pet pet = this.petRepository.findById(petId).orElseThrow(() -> new EntityNotFoundException("펫 정보가 없습니다."));
+        if(!user.getId().equals(pet.getUser().getId())){
+            throw new AccessDeniedException("본인 소유의 반려동물만 대표동물로 등록할 수 있습니다.");
+        }
+        user.changeMainPet(petId);
+        return petId;
+    }
 
     /* **************** 관리자 기능 **************** */
     public List<UserListRes> findAll() {

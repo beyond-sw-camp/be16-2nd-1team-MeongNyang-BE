@@ -40,10 +40,12 @@ public class PetService {
         if (file != null && !file.isEmpty()) {
             imageUrl = s3UploadService.upload(file);
         }
-
         req.setUrl(imageUrl);
 
-        petRepository.save(req.toEntity(user, species));
+        Pet pet = petRepository.save(req.toEntity(user, species));
+        if(user.getMainPetId() == null) {
+            user.changeMainPet(pet.getId());
+        }
     }
 
 
@@ -83,7 +85,6 @@ public class PetService {
 
         pet.updatePet(req, species);
     }
-
     // 등록한 애완동물 삭제
     public String deletPet(Long id) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
