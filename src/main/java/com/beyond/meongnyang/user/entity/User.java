@@ -56,7 +56,12 @@ public class User extends CommonAt {
 
     @Column(name = "is_locked", nullable = false)
     @Builder.Default
-    private boolean isLocked = false;
+    private String isLocked = "N";
+
+    // 비밀번호 틀린 횟수 카운트
+    @Column(name = "failed_count", nullable = false)
+    @Builder.Default
+    private int failedCount = 0;
 
     // 변경사항 기록
     //TODO: 비밀번호 틀렸을 시에 계정잠금된 시점 기록.
@@ -81,6 +86,15 @@ public class User extends CommonAt {
     public void softDelete() {
         this.delYn = "Y";
         this.deletedAt = LocalDateTime.now();
+    }
+
+    // 잠금 관련
+    public void updateCount(int count) {
+        this.failedCount = count;
+    }
+    public void lockedAccount() {
+        this.isLocked = "Y";
+        this.isLockedAt = LocalDateTime.now();
     }
 
 

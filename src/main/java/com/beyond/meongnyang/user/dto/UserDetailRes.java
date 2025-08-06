@@ -19,11 +19,12 @@ public class UserDetailRes {
     private String email;
     private String phone;
     private int point;
-    private boolean isLocked;
+    private String isLocked;
     private LocalDateTime isLockedAt;
     private LocalDateTime passwordChangeAt;
     private String delYn;
     private LocalDateTime deletedAt;
+    private int failedAttempt;
 
     public static UserDetailRes fromEntity(User user) {
         return UserDetailRes.builder()
@@ -32,7 +33,8 @@ public class UserDetailRes {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .point(user.getPoint())
-                .isLocked(user.isLocked())
+                .failedAttempt(user.getFailedCount())
+                .isLocked(user.getIsLocked())
                 .isLockedAt(user.getIsLockedAt())
                 .passwordChangeAt(user.getPasswordChangeAt())
                 .delYn(user.getDelYn())

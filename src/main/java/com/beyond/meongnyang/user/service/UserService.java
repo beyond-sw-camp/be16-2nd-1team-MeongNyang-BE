@@ -27,6 +27,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserLockedService userLockedService;
 
 
     //회원 가입 시 이메일, 전화번호, 닉네임 각각 인증
@@ -81,24 +82,65 @@ public class UserService {
     }
 
     // 로그인
+//    public User accessLogin(UserLoginReq request) {
+//            //  존재 확인
+//            User user = userRepository.findByEmail(request.getEmail())
+//                    .orElseThrow(() -> new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다."));
+//
+//            //  상태 체크
+//            if ("Y".equals(user.getDelYn())) {
+//                throw new IllegalArgumentException("사용하지 않는 계정입니다.");
+//            }
+//            if ("Y".equals(user.getIsLocked())) {
+//                throw new IllegalArgumentException("잠긴 계정입니다.");
+//            }
+//            //  비밀번호 체크
+//            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+//                user.updateCount(user.getFailedCount() + 1); // DB에 저장되는 필드
+//                userRepository.saveAndFlush(user);
+//                if (user.getFailedCount() >= 5) {
+//                    user.lockedAccount();
+////                    throw new IllegalArgumentException("5번 틀려서 계정이 잠겼습니다.");
+//                }
+//                throw new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다.");
+//            }
+//            //  로그인 성공 시 실패 횟수 초기화
+//            user.updateCount(0);
+//
+//            return user;
+//        }
     public User accessLogin(UserLoginReq request) {
-        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
-        boolean check = true;
-        if(!optionalUser.isPresent()) {
-            check = false;
-        } else {
-            if(!passwordEncoder.matches(request.getPassword(), optionalUser.get().getPassword())){
-                check = false;
-            }
-        }
-        if(!check) {
-            throw new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다.");
-        }
-        if(optionalUser.get().getDelYn().equals("Y"))  {
+        // 1. 이메일로 사용자 조회
+        User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다."));
+
+        // 2. 상태 체크
+        if ("Y".equals(user.getDelYn())) {
             throw new IllegalArgumentException("사용하지 않는 계정입니다.");
         }
-        return optionalUser.get();
+        if ("Y".equals(user.getIsLocked())) {
+            throw new IllegalArgumentException("잠긴 계정입니다.");
+        }
+
+        // 3. 비밀번호 체크
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            int failCount = userLockedService.increaseFailedCount(user.getId());
+            int remain = 5 - failCount;
+
+            if(remain <=0) {
+                throw new IllegalArgumentException("로그인 시도횟수를 초과하여 계정이 잠겼습니다.");
+            }   else {
+                throw new IllegalArgumentException("로그인 시도 실패");
+            }
+
+        }
+
+        // 4. 로그인 성공 시 실패 횟수 초기화
+        userLockedService.resetFailedCount(user.getId());
+
+        return user;
     }
+
 
     // 이메일 찾기
     // TODO: repo에서 삭제 하기
