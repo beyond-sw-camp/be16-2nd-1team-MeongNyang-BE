@@ -7,6 +7,7 @@ import com.beyond.meongnyang.market.dto.MarketPostListReq;
 import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
 import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.entity.ProductImage;
+import com.beyond.meongnyang.market.entity.Wishlist;
 import com.beyond.meongnyang.market.repository.MarketPostRepository;
 import com.beyond.meongnyang.market.repository.ProductImageRepository;
 import com.beyond.meongnyang.market.repository.WishlistRepository;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -191,7 +193,50 @@ public class MarketService {
     }
 
 //    찜하기
-    public void marketPostLike(Long postId) {
+    public Long likeMarketPost(Long postId) {
+//        1. 로그인한 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
 
+//        2. 마켓포스트 객체 가져오기
+        MarketPost marketPost = marketPostRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("없는 거래글입니다."));
+
+//        3. 중복 찜 여부 확인하기
+        boolean alreadLiked = wishlistRepository.findByUserAndMarketPost(user, marketPost).isPresent();
+        if(alreadLiked) {
+            throw new IllegalStateException("이미 찜한 거래글입니다.");
+        }
+
+//        4. wishlist 객체 조립 및 생성
+        Wishlist wishlist = Wishlist.builder()
+                .user(user)
+                .marketPost(marketPost)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+//        5. save 및 wishlist 리턴
+        wishlistRepository.save(wishlist);
+        return wishlist.getId();
+    }
+
+//    찜 취소
+    @Transactional
+    public void unlikeMarketPost(Long id) {
+//        1. 로그인한 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+
+//        2. 찜한 마켓포스트 객체 가져오기
+        MarketPost marketPost = marketPostRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("없는 거래글입니다."));
+
+//        3. 찜목록에서 삭제하기
+        wishlistRepository.deleteByUserAndMarketPost(user, marketPost);
+        wishlistRepository.flush();
     }
 }

@@ -13,8 +13,8 @@ import java.util.Optional;
 public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
 //    찜 여부 확인
     Optional<Wishlist> findByUserAndMarketPost(User user, MarketPost marketPost);
-//    찜 목록 조회
-    List<Wishlist> findAllByUser(User user);
 //    찜 취소
     void deleteByUserAndMarketPost(User user, MarketPost marketPost);
+//    찜 목록 조회
+    List<Wishlist> findAllByUser(User user);
 }

@@ -2,16 +2,15 @@ package com.beyond.meongnyang.market.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.market.dto.MarketPostCreateReq;
-import com.beyond.meongnyang.market.dto.MarketPostListReq;
 import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
 import com.beyond.meongnyang.market.service.MarketService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -115,19 +114,31 @@ public class MarketController {
 
 //    찜하기
     @PostMapping("/{id}/like")
-    public ResponseEntity<?> marketPostLike(@PathVariable("id") Long id) {
-        Long postId = marketService.marketPostLike(id);
+    public ResponseEntity<?> likeMarketPost(@PathVariable("id") Long postId) {
+        Long wishListId = marketService.likeMarketPost(postId);
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        postId,
+                        wishListId,
                         HttpStatus.CREATED.value(),
                         "찜목록에 추가되었습니다."),
                 HttpStatus.CREATED
         );
     }
 
-////    찜 취소
-//    @DeleteMapping("/{id}/like")
+//    찜 취소
+    @DeleteMapping("/{id}/like")
+    public ResponseEntity<?> unlikeMarketPost(@PathVariable("id") Long postId) {
+        marketService.unlikeMarketPost(postId);
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postId,
+                        HttpStatus.OK.value(),
+                        "찜목록에서 삭제되었습니다."),
+                HttpStatus.OK
+        );
+    }
+
 ////    찜 목록조회
 //    @GetMapping("/like")
+//    public
 }
