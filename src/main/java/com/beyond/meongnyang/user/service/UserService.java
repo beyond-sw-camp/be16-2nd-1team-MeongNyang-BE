@@ -2,12 +2,9 @@ package com.beyond.meongnyang.user.service;
 
 import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.pet.repository.PetRepository;
+import com.beyond.meongnyang.user.dto.check.*;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.dto.*;
-import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
-import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
-import com.beyond.meongnyang.user.dto.check.UserCheckPasswordReq;
-import com.beyond.meongnyang.user.dto.check.UserCheckPhoneReq;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -73,11 +70,25 @@ public class UserService {
 //        }
 //    }
 
-    //
+    // 이메일 인증코드 발급
     public void sendCode (UserCheckEmailReq req) {
         String unknownEmail = req.getEmail();
         String code  = emailVerificationService.createAndSendCode(unknownEmail);
         sendEmailService.sendVerificationCode(unknownEmail, code);
+
+    }
+
+    // 이메일 인증코드 검증
+    public void verifyCode (UserEmailVerifyReq req) {
+        String havetoEmail = req.getEmail();
+        String code = req.getCode();
+        boolean check = false;
+        check = this.emailVerificationService.verifyCode(havetoEmail, code);
+        if(!check) {
+            throw new IllegalArgumentException("이메일 혹은 인증코드가 다릅니다.");
+        } else {
+            this.emailVerificationService.deleteCode(havetoEmail);
+        }
 
     }
 

@@ -14,9 +14,12 @@ import java.util.concurrent.TimeUnit;
 @Transactional
 public class EmailVerificationService {
 
-    @Autowired
     @Qualifier("emailCodeInventory")
-    private RedisTemplate<String, String>  emailCodeRedisTemplate;
+    private final RedisTemplate<String, String>  emailCodeRedisTemplate;
+
+    public EmailVerificationService(RedisTemplate<String, String> emailCodeRedisTemplate) {
+        this.emailCodeRedisTemplate = emailCodeRedisTemplate;
+    }
 
     // 인증 코드 생성 및 Redis 저장
     public String createAndSendCode(String email) {

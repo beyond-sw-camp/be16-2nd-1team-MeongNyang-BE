@@ -2,12 +2,9 @@ package com.beyond.meongnyang.user.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.common.security.JwtTokenProvider;
+import com.beyond.meongnyang.user.dto.check.*;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.dto.*;
-import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
-import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
-import com.beyond.meongnyang.user.dto.check.UserCheckPasswordReq;
-import com.beyond.meongnyang.user.dto.check.UserCheckPhoneReq;
 import com.beyond.meongnyang.user.service.SendEmailService;
 import com.beyond.meongnyang.user.service.UserService;
 import jakarta.validation.Valid;
@@ -41,7 +38,13 @@ public class UserRestController {
                 null, HttpStatus.OK.value(), "인증번호가 발급되었습니다."
         ), HttpStatus.OK);
     }
-
+    @PostMapping("/verify-email-check")
+    public ResponseEntity<?> verifyCode(@RequestBody UserEmailVerifyReq req) {
+       this.userService.verifyCode(req);
+        return new ResponseEntity<>(CommonRes.ofSuccess(
+            null, HttpStatus.OK.value(), "인증 완료되었습니다."
+        ), HttpStatus.OK);
+    }
     @PostMapping("/check-nickname")
     public ResponseEntity<?> checkNickname(@Valid @RequestBody UserCheckNicknameReq dto) {
         this.userService.checkNickname(dto);

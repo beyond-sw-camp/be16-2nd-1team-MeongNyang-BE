@@ -45,7 +45,7 @@ public class RedisConfig {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
         configuration.setHostName(host);
         configuration.setPort(port);
-        configuration.setDatabase(0);  // refresh token 0번 db에 저장
+        configuration.setDatabase(1);  // refresh token 0번 db에 저장
         return new LettuceConnectionFactory(configuration);
     }
 
