@@ -85,6 +85,16 @@ public class UserRestController {
 //        return new ResponseEntity<>(CommonRes.ofSuccess(email, HttpStatus.OK.value(), "이메일을 찾았습니다."), HttpStatus.OK);
 //    }
 
+    // 비밀번호 찾기 :임시비밀번호 발급
+    @PostMapping("/lost-password")
+    public ResponseEntity<?> wantTempPassword(@RequestBody UserFindPasswordReq req) {
+        this.userService.wantTempPassword(req);
+        return new ResponseEntity<>(CommonRes.ofSuccess(
+                null,  HttpStatus.OK.value(), "임시비밀번호가 이메일로 전송되었습니다."
+        ), HttpStatus.OK);
+    }
+
+
     // 계정 unlock 풀기
     @PostMapping("/unlock")
     public ResponseEntity<?> unlock(@Valid @RequestBody UserUnlockReq req) {
@@ -109,7 +119,7 @@ public class UserRestController {
                 "mainPetId :" + mainPetId, HttpStatus.OK.value(), "대표동물 설정"
         ), HttpStatus.OK);
     }
-    //
+    // 마이페이지 -기본
     @GetMapping("my-page")
     public ResponseEntity<?> enterMyPage() {
         MyPageRes myPageRes = this.userService.enterMyPage();

@@ -181,6 +181,15 @@ public class UserService {
 //        return user.getEmail();
 //    }
 
+    // 비밀번호 찾기: 임시 비밀번호 발급
+    public void wantTempPassword(UserFindPasswordReq req) {
+        User user = this.userRepository.findByNameAndEmail(req.getName(), req.getEmail()).orElseThrow(
+                () -> new EntityNotFoundException("등록된 회원정보가 없습니다.")
+        );
+        String tempPassword = this.userLockedService.generateTempPassword();
+        this.sendEmailService.sendTemporaryPassword(req.getEmail(), tempPassword);
+    }
+
     // 계정 락 풀기
     //TODO: 수정 읽음 동시성 문제 해결하기, 비밀번호 변경 , 임시 비밀번호 시간은?
     public void unlock(UserUnlockReq req) {

@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class UserFindPasswordReq {
+    private String name;
     private String email;
 }

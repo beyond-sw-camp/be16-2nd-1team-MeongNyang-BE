@@ -89,6 +89,7 @@ public class User extends CommonAt {
 
     /* ******************연관관계***************** */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Pet> pets = new ArrayList<>();
 
     @Column(name = "main_pet_id", nullable = true)
