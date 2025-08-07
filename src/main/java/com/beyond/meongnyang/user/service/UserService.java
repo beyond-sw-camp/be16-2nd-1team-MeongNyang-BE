@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -204,6 +205,24 @@ public class UserService {
         user.updatePassword(passwordEncoder.encode(tempPassword));
         sendEmailService.sendTemporaryPassword(req.getEmail(), tempPassword);
 
+    }
+
+    // 비밀번호 변경
+    public void changePassword (UserChangePasswordReq req) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = this.userRepository.findByEmail(email).orElseThrow(
+                () -> new EntityNotFoundException("등록된 회원정보가 없습니다.")
+        );
+
+        boolean check = passwordEncoder.matches(req.getOldPassword(), user.getPassword());
+        if(!check) {
+            throw new EntityNotFoundException("비밀번호가 틀립니다.");
+        }
+        if(req.getOldPassword().equals(req.getNewPassword())){
+            throw new IllegalArgumentException("기존 비밀번호랑 같습니다.");
+        }
+        String newPassword = passwordEncoder.encode(req.getNewPassword());
+        user.updatePassword(newPassword);
     }
 
 

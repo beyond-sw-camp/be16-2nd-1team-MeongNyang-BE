@@ -104,6 +104,15 @@ public class UserRestController {
         ), HttpStatus.OK);
     }
 
+    // 비밀번호 변경
+    @PutMapping("change/password")
+    public ResponseEntity<?> changePassword(@RequestBody UserChangePasswordReq req) {
+        this.userService.changePassword(req);
+        return new ResponseEntity<>(CommonRes.ofSuccess(
+                null, HttpStatus.OK.value(), "비밀번호가 변경되었습니다."
+        ), HttpStatus.OK);
+    }
+
     //계정 삭제
     @PostMapping("/delete")
     public ResponseEntity<?> deleteAccount(@Valid @RequestBody UserCheckPasswordReq dto) {
