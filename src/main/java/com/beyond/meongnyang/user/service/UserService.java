@@ -13,6 +13,7 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Service
@@ -33,6 +35,9 @@ public class UserService {
     private final UserLockedService userLockedService;
 
     private final PetRepository petRepository;
+    private final SendEmailService sendEmailService;
+    private final EmailVerificationService emailVerificationService;
+
 
 
     //회원 가입 시 이메일, 전화번호, 닉네임 각각 인증
@@ -57,17 +62,25 @@ public class UserService {
         }
     }
 
-    public void checkPhone (UserCheckPhoneReq dto) {
-        Optional<User> optionalUser = this.userRepository.findByPhone(dto.getPhone());
-        if (optionalUser.isPresent()) {
-//            User user = optionalUser.get();
-//            if(user.getDelYn().equals("Y")) {
-//                throw new EntityExistsException("탈퇴한 전화번호입니다.");
-//            }
-            throw new EntityExistsException("이미 사용중인 전화번호입니다.");
-        }
+//    public void checkPhone (UserCheckPhoneReq dto) {
+//        Optional<User> optionalUser = this.userRepository.findByPhone(dto.getPhone());
+//        if (optionalUser.isPresent()) {
+////            User user = optionalUser.get();
+////            if(user.getDelYn().equals("Y")) {
+////                throw new EntityExistsException("탈퇴한 전화번호입니다.");
+////            }
+//            throw new EntityExistsException("이미 사용중인 전화번호입니다.");
+//        }
+//    }
+
+    //
+    public void sendCode (UserCheckEmailReq req) {
+        String unknownEmail = req.getEmail();
+        String code  = emailVerificationService.createAndSendCode(unknownEmail);
+        sendEmailService.sendVerificationCode(unknownEmail, code);
 
     }
+
     // 회원가입
     public void save(UserCreateReq dto) {
         // 중복 체크
@@ -77,9 +90,9 @@ public class UserService {
         if (userRepository.findByNickname(dto.getNickname()).isPresent()) {
             throw new EntityExistsException("이미 사용중인 닉네임입니다.");
         }
-        if (userRepository.findByPhone(dto.getPhone()).isPresent()) {
-            throw new EntityExistsException("이미 사용중인 전화번호입니다.");
-        }
+//        if (userRepository.findByPhone(dto.getPhone()).isPresent()) {
+//            throw new EntityExistsException("이미 사용중인 전화번호입니다.");
+//        }
         String encodedPassword = this.passwordEncoder.encode(dto.getPassword());
         User user = dto.toCreateEntity(encodedPassword);
         this.userRepository.save(user);
@@ -147,20 +160,20 @@ public class UserService {
     }
 
 
-    // 이메일 찾기
-    // TODO: repo에서 삭제 하기
-    public String findEmail(UserFindEmailReq dto) {
-        User user = this.userRepository.findByPhone(dto.getPhone()).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 전화번호입니다."));
-        if(!user.getName().equals(dto.getName())) {
-            throw new EntityNotFoundException("이름이 일치하지 않습니다.");
-        }
-        return user.getEmail();
-    }
+//    // 이메일 찾기
+//
+//    public String findEmail(UserFindEmailReq dto) {
+//        User user = this.userRepository.findByPhone(dto.getPhone()).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 전화번호입니다."));
+//        if(!user.getName().equals(dto.getName())) {
+//            throw new EntityNotFoundException("이름이 일치하지 않습니다.");
+//        }
+//        return user.getEmail();
+//    }
 
     // 계정 락 풀기
     //TODO: 수정 읽음 동시성 문제 해결하기, 비밀번호 변경 , 임시 비밀번호 시간은?
-    public String unlock(UserUnlockReq req) {
-        User user = this.userRepository.findByNameAndPhone(req.getName(), req.getPhone())
+    public void unlock(UserUnlockReq req) {
+        User user = this.userRepository.findByNameAndEmail(req.getName(), req.getEmail())
                 .orElseThrow(() -> new EntityNotFoundException("등록된 회원정보가 없습니다."));
         if(user.getDelYn().equals("Y")) {
             throw new IllegalArgumentException("이미 탈퇴한 계정입니다.");
@@ -169,9 +182,11 @@ public class UserService {
         user.unlockedAccount();
         String tempPassword = userLockedService.generateTempPassword();
         user.updatePassword(passwordEncoder.encode(tempPassword));
+        sendEmailService.sendTemporaryPassword(req.getEmail(), tempPassword);
 
-        return tempPassword;
     }
+
+
 
 
     // 계정 삭제
@@ -184,7 +199,7 @@ public class UserService {
         user.softDelete();
     }
 
-    /* ****************마이페이지&설정 관련- (pet) ********************* */
+    /* ****************마이페이지&설정 관련-(pet) ********************* */
     // 대표동물 설정
     public Long setMainPet(Long petId) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -214,6 +229,7 @@ public class UserService {
     }
 
     /* **************** 관리자 기능 **************** */
+    // 회원 전체 조회
     public List<UserListRes> findAll() {
         List<User> users = this.userRepository.findAllBydelYn("N");
         return users.stream().map(a -> UserListRes.fromEntity(a)).toList();

@@ -32,9 +32,9 @@ public class User extends CommonAt {
     @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    // TODO: 전화번호로 비밀번호, 이메일 찾기? & 전화번호 입력받는 형싱 000-0000-0000으로 할지 -없이 받을지
-    @Column(name = "phone", nullable = false, unique = true, length = 255)
-    private String phone;
+//
+//    @Column(name = "phone", nullable = false, unique = true, length = 255)
+//    private String phone;
 
     // TODO: nickname 수정 사항 해야함
     @Column(name = "nickname", nullable = false, unique = true, length = 255)

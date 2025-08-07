@@ -17,7 +17,7 @@ public class UserDetailRes {
     private Long userId;
     private String nickname;
     private String email;
-    private String phone;
+//    private String phone;
     private int point;
     private String isLocked;
     private LocalDateTime isLockedAt;
@@ -31,7 +31,7 @@ public class UserDetailRes {
                 .userId(user.getId())
                 .nickname(user.getNickname())
                 .email(user.getEmail())
-                .phone(user.getPhone())
+//                .phone(user.getPhone())
                 .point(user.getPoint())
                 .failedAttempt(user.getFailedCount())
                 .isLocked(user.getIsLocked())

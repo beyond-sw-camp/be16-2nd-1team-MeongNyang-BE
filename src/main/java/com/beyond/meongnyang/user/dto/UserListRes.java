@@ -18,7 +18,7 @@ public class UserListRes {
     private Long userId;
     private String nickname;
     private String email;
-    private String phone;
+//    private String phone;
     private int point;
     private String isLocked;
     private String delYn;
@@ -28,7 +28,7 @@ public class UserListRes {
                 .userId(user.getId())
                 .nickname(user.getNickname())
                 .email(user.getEmail())
-                .phone(user.getPhone())
+//                .phone(user.getPhone())
                 .point(user.getPoint())
                 .isLocked(user.getIsLocked())
                 .delYn(user.getDelYn())
