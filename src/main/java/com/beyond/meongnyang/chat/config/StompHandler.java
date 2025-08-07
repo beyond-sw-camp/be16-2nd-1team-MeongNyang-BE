@@ -52,9 +52,11 @@ public class StompHandler implements ChannelInterceptor {
             String email = claims.getSubject();
             Long roomId = Long.parseLong(accessor.getDestination().split("/")[3]);
             chatService.validChatRoomParticipant(roomId, email);
-
-
         }
+        if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+            log.info("DISCONNECT from {}", accessor.getDestination());
+        }
+
 
         return message;
     }

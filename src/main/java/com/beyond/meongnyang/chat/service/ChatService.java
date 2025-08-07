@@ -52,9 +52,9 @@ public class ChatService {
                 .content(chatMessageReq.getMessage())
                 .build();
 
-        chatRoom.getChatParticipantList().stream()
-                .filter(cp -> cp.getUser().getId().equals(user.getId())).findFirst()
-                .ifPresent(cp -> cp.read(chatMessage));
+//        chatRoom.getChatParticipantList().stream()
+//                .filter(cp -> cp.getUser().getId().equals(user.getId())).findFirst()
+//                .ifPresent(cp -> cp.read(chatMessage));
 
         // 유저별 메세지상태 여부 저장
 //        chatRoom.getChatParticipantList().forEach(chatParticipant -> {

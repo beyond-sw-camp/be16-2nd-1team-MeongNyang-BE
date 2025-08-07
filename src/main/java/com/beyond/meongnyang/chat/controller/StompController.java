@@ -26,21 +26,21 @@ public class StompController {
         chatRedisService.publishChatMessageToRedis(roomId, res);
     }
 
+    @MessageMapping("/chat-rooms/{roomId}/invite")
+    public void inviteUsers(@DestinationVariable Long roomId, List<ChatParticipantAddReq> chatParticipantAddReqs) {
+        List<ChatParticipantAddRes> chatParticipantAddRes = chatService.inviteUsers(roomId, chatParticipantAddReqs);
+        chatRedisService.publishInvitedUsersToRedis(roomId, chatParticipantAddRes);
+    }
+
     @MessageMapping("/chat-rooms/{roomId}/leave")
     public void leaveRoom(@DestinationVariable Long roomId) {
         chatService.leaveChatRoomAndRemoveIfEmpty(roomId);
         chatRedisService.publishLeftUserToRedis(roomId);
     }
 
-    @MessageMapping("/chat-rooms/{roomId}/invite")
-    public void inviteUsers(@DestinationVariable Long roomId, List<ChatParticipantAddReq> chatParticipantAddReqs) {
-        chatService.inviteUsers(roomId, chatParticipantAddReqs);
-        chatRedisService.publishInvitedUsersToRedis(roomId, chatParticipantAddReqs);
-    }
-
     @MessageMapping("/chat-rooms/{roomId}/online")
-    public void online(@DestinationVariable Long roomId) {
-        chatRedisService.publishChatOnlineToRedis(roomId);
+    public void online(@DestinationVariable Long roomId, String email) {
+        chatRedisService.publishChatOnlineToRedis(roomId, email);
     }
 
     @MessageMapping("/chat-rooms/{roomId}/offline")

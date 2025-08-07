@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatMessageRes {
-    private Long messageId;
+    private Long id;
     private String message;
     private String senderEmail;
 //    private Integer readCount;
@@ -17,7 +17,7 @@ public class ChatMessageRes {
         return ChatMessageRes.builder()
                 .message(chatMessage.getContent())
                 .senderEmail(chatMessage.getUser().getEmail())
-                .messageId(chatMessage.getId())
+                .id(chatMessage.getId())
 //                .readCount(readCount)
                 .build();
     }
