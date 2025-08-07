@@ -11,6 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
+//    찜 개수 조회(거래글 목록 조회 시)
+    long countByMarketPost(MarketPost marketPost);
 //    찜 여부 확인
     Optional<Wishlist> findByUserAndMarketPost(User user, MarketPost marketPost);
 //    찜 취소

@@ -172,6 +172,9 @@ public class MarketService {
 //        2. 거래글 객체를 구매자id로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAllByBuyerId(user.getId(), pageable);
 
+//        3. 찜 개수 가져오기
+        Long wishlistCount = wishlistRepository.countByMarketPost(marketPostList.stream().map(p -> p.))
+
 //        3. 각 거래글 객체를 dto로 변환해서 반환
         return marketPostList.map(MarketPostListReq::fromEntity);
     }
