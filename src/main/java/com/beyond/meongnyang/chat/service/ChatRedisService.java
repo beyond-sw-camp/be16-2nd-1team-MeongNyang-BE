@@ -101,7 +101,6 @@ public class ChatRedisService implements MessageListener {
         chatOnlineParticipantsRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", onlineParticipants);
     }
 
-    // TODO : RDB에 읽음처리
     public void publishChatOfflineToRedis(Long roomId) {
         chatOnlineParticipantsRedisTemplate.opsForSet().remove(CHAT_ROOM_PREFIX + roomId, SecurityContextHolder.getContext().getAuthentication().getName());
 

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -199,5 +200,20 @@ public class ChatService {
         chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getEmail)
                 .filter(pEmail -> pEmail.equals(email))
                 .findFirst().orElseThrow(() -> new AccessDeniedException("Access Denied"));
+    }
+
+    public void readMessages(Long roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        ChatParticipant chatParticipant = chatParticipantRepository.findByUserEmailAndChatRoom(email, chatRoom).orElseThrow(() -> new EntityNotFoundException("participant not found"));
+
+        chatParticipant.read(chatRoom.getChatParticipantList().get(chatRoom.getChatMessageList().size() - 1).getLastReadMessage());
+    }
+
+    public void readMessages(Long roomId,String userEmail) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+        ChatParticipant chatParticipant = chatParticipantRepository.findByUserEmailAndChatRoom(userEmail, chatRoom).orElseThrow(() -> new EntityNotFoundException("participant not found"));
+
+        chatParticipant.read(chatRoom.getChatMessageList().get(chatRoom.getChatMessageList().size() - 1));
     }
 }

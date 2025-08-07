@@ -45,6 +45,7 @@ public class StompController {
 
     @MessageMapping("/chat-rooms/{roomId}/offline")
     public void offline(@DestinationVariable Long roomId) {
+        chatService.readMessages(roomId);
         chatRedisService.publishChatOfflineToRedis(roomId);
     }
 }
