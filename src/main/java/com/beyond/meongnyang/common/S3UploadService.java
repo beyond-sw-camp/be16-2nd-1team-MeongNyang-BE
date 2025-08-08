@@ -7,9 +7,11 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.PatternSyntaxException;
 
 @Service
 @RequiredArgsConstructor
@@ -20,8 +22,8 @@ public class S3UploadService {
     private String bucket;
 
     // 단일 파일 업로드
-    public String upload(MultipartFile file){
-        String fileName = "user-"+UUID.randomUUID()+"-profileimage-"+file.getOriginalFilename();
+    public String upload(MultipartFile file) {
+        String fileName = "user-" + UUID.randomUUID() + "-profileimage-" + file.getOriginalFilename();
 
         // 저장 객체 구성
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -39,14 +41,14 @@ public class S3UploadService {
         }
 
         //이미지 url 추출
-        String imgUrl = s3Client.utilities().getUrl(a->a.bucket(bucket).key(fileName)).toExternalForm();
+        String imgUrl = s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toExternalForm();
         return imgUrl;
     }
 
     // 다중 파일 업로드
-    public List<String> upload(List<MultipartFile> files){
+    public List<String> upload(List<MultipartFile> files) {
         List<String> urls = new ArrayList<>();
-        for(MultipartFile file : files){
+        for (MultipartFile file : files) {
             String key = UUID.randomUUID() + "-" + file.getOriginalFilename();
 
             PutObjectRequest putReq = PutObjectRequest.builder()
@@ -68,7 +70,46 @@ public class S3UploadService {
     }
 
     // 파일 삭제
-    public void delete(String fileName){
-        s3Client.deleteObject(a->a.bucket(bucket).key(fileName));
+    public void delete(String fileName) {
+        s3Client.deleteObject(a -> a.bucket(bucket).key(fileName));
+    }
+
+    // pattern 예시. chat/{roomId}/{messageId}/chat-{roomId}-{messageId}-*
+    // pattern에서 *에 해당하는 것을 파일의 순서로 치환
+    public List<String> upload(List<MultipartFile> files, String pattern) {
+        List<String> urls = new ArrayList<>();
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
+            String[] splitFileName = null;
+
+            try {
+                splitFileName = file.getOriginalFilename().split("\\.");
+            } catch (NullPointerException e) {
+                throw new IllegalArgumentException("처리할 수 없는 파일명입니다. 확장자명이 반드시 필요합니다.");
+            }
+
+            String extension = splitFileName[splitFileName.length - 1];
+
+            if ((pattern+extension).indexOf('*') == -1)
+                throw new PatternSyntaxException("패턴 양식이 올바르지 않습니다.", pattern+extension, -1);
+
+            String key = (pattern + extension).replace("*", String.valueOf(i));
+
+            PutObjectRequest putReq = PutObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .contentType(file.getContentType())
+                    .build();
+
+            try {
+                s3Client.putObject(putReq, RequestBody.fromBytes(file.getBytes()));
+            } catch (Exception e) {
+                throw new IllegalArgumentException("이미지 업로드 실패: " + file.getOriginalFilename());
+            }
+
+            String imgUrl = s3Client.utilities().getUrl(b -> b.bucket(bucket).key(key)).toExternalForm();
+            urls.add(imgUrl);
+        }
+        return urls;
     }
 }
