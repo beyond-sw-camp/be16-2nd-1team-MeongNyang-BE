@@ -4,6 +4,7 @@ import com.beyond.meongnyang.chat.dto.*;
 import com.beyond.meongnyang.chat.entity.ChatParticipant;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.*;
 
 @Slf4j
@@ -49,7 +51,6 @@ public class ChatRedisService implements MessageListener {
         Set<String> onlineParticipants = chatOnlineParticipantsRedisTemplate.opsForSet().members(ONLINE_KEY_PREFIX + roomId);
         Map<String, String> chatParticipants = getOrLoadParticipantMap(roomId);
 
-
         // 메세지를 보내면 온라인 유저들의 마지막 읽은 메세지를 redis에서 갱신
         onlineParticipants.forEach(onlineParticipant -> {
             chatParticipants.put(onlineParticipant, String.valueOf(chatMessageRes.getId()));
@@ -77,7 +78,7 @@ public class ChatRedisService implements MessageListener {
         redisChatParticipantMap.remove(SecurityContextHolder.getContext().getAuthentication().getName());
         chatParticipantsRedisTemplate.opsForValue().set(PARTICIPANTS_KEY_PREFIX + roomId, redisChatParticipantMap);
 
-        chatParticipantsRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-participants", toChatParticipantResList(roomId, redisChatParticipantMap));
+        pubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-participants", toJson(roomId, redisChatParticipantMap));
     }
 
     // redis의 참여자 목록에 추가하고 publish
@@ -89,7 +90,7 @@ public class ChatRedisService implements MessageListener {
         }
 
         chatParticipantsRedisTemplate.opsForValue().set(PARTICIPANTS_KEY_PREFIX + roomId, redisChatParticipantMap);
-        chatParticipantsRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-participants", toChatParticipantResList(roomId, redisChatParticipantMap));
+        pubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-participants", toJson(roomId, redisChatParticipantMap));
     }
 
     public Map<String, String> getOrLoadParticipantMap(Long roomId) {
@@ -109,7 +110,7 @@ public class ChatRedisService implements MessageListener {
         return participantMap;
     }
 
-    private List<ChatParticipantRes> toChatParticipantResList(Long roomId, Map<String, String> chatParticipantsMap) {
+    private String toJson(Long roomId, Map<String, String> chatParticipantsMap) {
         List<ChatParticipantRes> chatParticipantResList = new ArrayList<>();
 
         for (Map.Entry<String, String> entry : chatParticipantsMap.entrySet()) {
@@ -121,12 +122,21 @@ public class ChatRedisService implements MessageListener {
                             .build()
             );
         }
-        return chatParticipantResList;
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String data = null;
+        try {
+            data = objectMapper.writeValueAsString(chatParticipantResList);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        return data;
     }
 
-    public void publishChatOnlineToRedis(Long roomId, String email) {
-        log.info(email);
-        chatOnlineParticipantsRedisTemplate.opsForSet().add(ONLINE_KEY_PREFIX + roomId, email);
+    public void publishChatOnlineToRedis(Long roomId, ChatOnlineParticipantReq req) {
+        log.info(req.getEmail());
+        chatOnlineParticipantsRedisTemplate.opsForSet().add(ONLINE_KEY_PREFIX + roomId, req.getEmail());
 
         Set<String> onlineParticipantEmails = chatOnlineParticipantsRedisTemplate.opsForSet().members(ONLINE_KEY_PREFIX + roomId);
 
@@ -138,15 +148,15 @@ public class ChatRedisService implements MessageListener {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             String data = objectMapper.writeValueAsString(chatOnlineParticipantResList);
-            chatOnlineParticipantsRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", data);
+            pubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", data);
         } catch (JsonProcessingException e) {
             log.error("Error processing JSON for online participants: {}", e.getMessage());
             throw new RuntimeException("Error processing JSON for online participants");
         }
     }
 
-    public void publishChatOfflineToRedis(Long roomId) {
-        chatOnlineParticipantsRedisTemplate.opsForSet().remove(ONLINE_KEY_PREFIX + roomId, SecurityContextHolder.getContext().getAuthentication().getName());
+    public void publishChatOfflineToRedis(Long roomId, ChatOnlineParticipantReq req) {
+        chatOnlineParticipantsRedisTemplate.opsForSet().remove(ONLINE_KEY_PREFIX + roomId, req.getEmail());
 
         Set<String> onlineParticipantEmails = chatOnlineParticipantsRedisTemplate.opsForSet().members(ONLINE_KEY_PREFIX + roomId);
 
@@ -158,7 +168,7 @@ public class ChatRedisService implements MessageListener {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             String data = objectMapper.writeValueAsString(chatOnlineParticipantResList);
-            chatOnlineParticipantsRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", data);
+            pubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", data);
         } catch (JsonProcessingException e) {
             log.error("Error processing JSON for online participants: {}", e.getMessage());
             throw new RuntimeException("Error processing JSON for online participants");
@@ -186,19 +196,46 @@ public class ChatRedisService implements MessageListener {
 
     public void publishChatMessageToStompClient(String roomId, Message message) {
         log.info("start publishChatMessageToStompClient : " + new String(message.getBody()));
-        messageTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-message", message.getBody());
+        ObjectMapper objectMapper = new ObjectMapper();
+        ChatMessageRes chatMessageRes = null;
+        try {
+            chatMessageRes = objectMapper.readValue(message.getBody(), ChatMessageRes.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        messageTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-message", chatMessageRes);
         log.info("end publishChatMessageToStompClient : " + new String(message.getBody()));
     }
 
     public void publishChatParticipantsToStompClient(String roomId, Message message) {
         log.info("start publishChatParticipantsToStompClient : " + new String(message.getBody()));
-        messageTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-participants", message.getBody());
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<ChatParticipantRes> chatParticipantResList = new ArrayList<>();
+        try {
+            JsonNode jsonNodes = objectMapper.readTree(message.getBody());
+            for (JsonNode jsonNode : jsonNodes) {
+                chatParticipantResList.add(objectMapper.readValue(jsonNode.toString(), ChatParticipantRes.class));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        messageTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-participants", chatParticipantResList);
         log.info("end publishChatParticipantsToStompClient : " + new String(message.getBody()));
     }
 
     public void publishChatOnlineParticipantsToStompClient(String roomId, Message message) {
         log.info("start publishChatOnlineParticipantsToStompClient : " + new String(message.getBody()));
-        messageTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", message.getBody());
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<ChatOnlineParticipantRes> chatOnlineParticipantResList = new ArrayList<>();
+        try {
+            JsonNode jsonNodes = objectMapper.readTree(message.getBody());
+            for (JsonNode jsonNode : jsonNodes) {
+                chatOnlineParticipantResList.add(objectMapper.readValue(jsonNode.toString(), ChatOnlineParticipantRes.class));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        messageTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", chatOnlineParticipantResList);
         log.info("end publishChatOnlineParticipantsToStompClient : " + new String(message.getBody()));
     }
 }

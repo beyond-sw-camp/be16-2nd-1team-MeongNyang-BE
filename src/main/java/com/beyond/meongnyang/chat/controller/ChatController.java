@@ -49,9 +49,11 @@ public class ChatController {
     // 참여자 추가
     @PostMapping("/{roomId}/participants")
     public ResponseEntity<?> inviteUsers(@PathVariable Long roomId, @RequestBody List<ChatParticipantAddReq> chatParticipantAddReqList) {
-        List<ChatParticipantAddRes> chatParticipantAddRes = chatService.inviteUsers(roomId, chatParticipantAddReqList);
-        chatRedisService.publishInvitedUsersToRedis(roomId, chatParticipantAddRes);
-        return null;
+        List<ChatParticipantAddRes> chatParticipantAddResList = chatService.inviteUsers(roomId, chatParticipantAddReqList);
+        chatRedisService.publishInvitedUsersToRedis(roomId, chatParticipantAddResList);
+        return ResponseEntity.ok(
+                CommonRes.ofSuccess(null, HttpStatus.OK.value(), "invited users")
+        );
     }
 
     // 채팅방 나가기
@@ -59,7 +61,9 @@ public class ChatController {
     public ResponseEntity<?> leaveChatRoom(@PathVariable Long roomId) {
         chatService.leaveChatRoomAndRemoveIfEmpty(roomId);
         chatRedisService.publishLeftUserToRedis(roomId);
-        return null;
+        return ResponseEntity.ok(
+                CommonRes.ofSuccess(null, HttpStatus.OK.value(), "left chat room")
+        );
     }
 
     // 참여자 목록 조회

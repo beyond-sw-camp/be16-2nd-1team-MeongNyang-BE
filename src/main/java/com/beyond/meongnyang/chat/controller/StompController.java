@@ -39,13 +39,13 @@ public class StompController {
     }
 
     @MessageMapping("/chat-rooms/{roomId}/online")
-    public void online(@DestinationVariable Long roomId, String email) {
-        chatRedisService.publishChatOnlineToRedis(roomId, email);
+    public void online(@DestinationVariable Long roomId, ChatOnlineParticipantReq chatOnlineParticipantReq) {
+        chatRedisService.publishChatOnlineToRedis(roomId, chatOnlineParticipantReq);
     }
 
     @MessageMapping("/chat-rooms/{roomId}/offline")
-    public void offline(@DestinationVariable Long roomId) {
-        chatService.readMessages(roomId);
-        chatRedisService.publishChatOfflineToRedis(roomId);
+    public void offline(@DestinationVariable Long roomId, ChatOnlineParticipantReq chatOnlineParticipantReq) {
+        chatService.readMessages(roomId, chatOnlineParticipantReq.getEmail());
+        chatRedisService.publishChatOfflineToRedis(roomId, chatOnlineParticipantReq);
     }
 }
