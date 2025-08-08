@@ -194,12 +194,6 @@ public class PostRestController {
 
     // 검색
 
-    // 팔로워 수 조회
-
-    // 팔로우
-
-    // 언팔로우
-
     // 신고
 
     // 차단

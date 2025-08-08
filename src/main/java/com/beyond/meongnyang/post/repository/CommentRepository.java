@@ -14,9 +14,5 @@ import java.util.Optional;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     Page<Comment> findAllByPostId(Long postId, Pageable pageable);
-
-    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND c.id NOT IN " +
-            "(SELECT ct.comment.id FROM CommentTag ct)")
-    Page<Comment> findAllRootComments(@Param("postId") Long postId, Pageable pageable);
 }
 

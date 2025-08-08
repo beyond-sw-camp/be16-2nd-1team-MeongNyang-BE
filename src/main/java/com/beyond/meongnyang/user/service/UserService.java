@@ -1,21 +1,31 @@
 package com.beyond.meongnyang.user.service;
 
+import com.beyond.meongnyang.common.CommonService;
+import com.beyond.meongnyang.user.entity.Follow;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckPasswordReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckPhoneReq;
+import com.beyond.meongnyang.user.entity.UserBlock;
+import com.beyond.meongnyang.user.repository.FollowRepository;
+import com.beyond.meongnyang.user.repository.UserBlockRepository;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,9 +34,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Transactional
 public class UserService {
-
     private final UserRepository userRepository;
+    private final FollowRepository followRepository;
+    private final UserBlockRepository userBlockRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CommonService commonService;
 
 
     //회원 가입 시 이메일, 전화번호, 닉네임 각각 인증
@@ -113,19 +125,98 @@ public class UserService {
 
     // 계정 삭제
     public void deleteAccount(UserCheckPasswordReq dto) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 이메일입니다."));
+        User user = commonService.getCurrentUser();
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
         user.softDelete();
     }
 
+    // 팔로우
+    public void follow(Long followingId){
+        User follower = commonService.getCurrentUser();
+        User follow = userRepository.findById(followingId).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
+
+        if (followRepository.findIdByFollowerIdAndFollowId(follower.getId(), followingId).isPresent()) {
+            throw new EntityExistsException("이미 퍌로우중인 사용자입니다.");
+
+        }
+        Follow following = Follow.builder()
+                .follower(follower)
+                .follow(follow)
+                .build();
+        followRepository.save(following);
+    }
+
+    // 언팔로우
+    public void unFollow(Long followingId){
+        User follower = commonService.getCurrentUser();
+        User following = userRepository.findById(followingId).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
+
+        Long followId = followRepository.findByFollowerIdAndFollowId(follower.getId(), following.getId());
+        followRepository.deleteById(followId);
+    }
+
+    // 팔로우 목록 조회
+    public Page<UserFollowDetailRes> followList(String type, Pageable pageable) {
+        User user = commonService.getCurrentUser();
+        Specification<Follow> spec = (root, query, cb) -> {
+            if ("follower".equalsIgnoreCase(type)) {
+                return cb.equal(root.get("follower").get("id"), user.getId());
+                } else if ("follow".equalsIgnoreCase(type)) {
+                return cb.equal(root.get("follow").get("id"), user.getId());
+            } else {
+                throw new IllegalArgumentException("type은 'follower' 또는 'following'만 허용됩니다.");
+            }
+        };
+
+        return followRepository.findAll(spec, pageable)
+                .map(follow -> {
+                    // 'follower'이면 나를 팔로우한 사람을, 'follow'이면 내가 팔로우한 사람을 선택
+                    User targetUser = "follower".equalsIgnoreCase(type)
+                            ? follow.getFollow()  // 나를 팔로우한 사람
+                            : follow.getFollower();    // 내가 팔로우한 사람
+
+                    // UserFollowDetailRes로 변환하여 반환
+                    return UserFollowDetailRes.fromEntity(targetUser);
+                });
+    }
+
+    // 사용자 차단
+    public void blockUser(Long blockUserId){
+        User user = commonService.getCurrentUser();
+        User blockUser = userRepository.findById(blockUserId).orElseThrow(() -> new EntityNotFoundException());
+        UserBlock userBlock = UserBlock.builder()
+                .user(user)
+                .blockUser(blockUser)
+                .build();
+        userBlockRepository.save(userBlock);
+    }
+
+    // 사용자 차단 해제
+    public void unBlockUser(Long blockUserId){
+        User user = commonService.getCurrentUser();
+        Long id = userBlockRepository.findIdByUserIdAndBlockUserId(user.getId(), blockUserId);
+        userBlockRepository.deleteById(id);
+    }
+
+    // 차단된 사용자 목록 조회
+    public Page<UserBlockDetailRes> blockUsers(String name, Pageable pageable){
+        User user = commonService.getCurrentUser();
+        Page<UserBlock> users;
+        if(name == null){
+            users = this.userBlockRepository.findAllByUserId(user.getId(), pageable);
+        } else {
+            users = this.userBlockRepository.findByName(user.getId(), name, pageable);
+        }
+        return users.map(UserBlockDetailRes::fromEntity);
+    }
+
 
     /* **************** 관리자 기능 **************** */
     public List<UserListRes> findAll() {
         List<User> users = this.userRepository.findAllBydelYn("N");
-        return users.stream().map(a -> UserListRes.fromEntity(a)).toList();
+        return users.stream().map(UserListRes::fromEntity).toList();
 
     }
 

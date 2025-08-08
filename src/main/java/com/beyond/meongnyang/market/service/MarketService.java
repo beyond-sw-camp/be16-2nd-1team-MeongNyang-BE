@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.market.service;
 
+import com.beyond.meongnyang.common.CommonService;
 import com.beyond.meongnyang.common.S3UploadService;
 import com.beyond.meongnyang.market.dto.MarketPostCreateReq;
 import com.beyond.meongnyang.market.dto.MarketPostDetailRes;
@@ -32,16 +33,14 @@ public class MarketService {
     private final MarketPostRepository marketPostRepository;
     private final ProductImageRepository productImageRepository;
     private final S3UploadService s3UploadService;
+    private final CommonService commonService;
     private final UserRepository userRepository;
 
 //    거래글 생성
     public Long marketPostCreate(MarketPostCreateReq marketPostCreateReq,
                                  List<MultipartFile> imageFiles) {
 //        1. 로그인한 사용자 정보 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+        User user = commonService.getCurrentUser();
 
 //        2. 거래글 찾아오기
         MarketPost marketPost = marketPostCreateReq.toEntity();
@@ -77,11 +76,7 @@ public class MarketService {
                                  MarketPostUpdateReq marketPostUpdateReq,
                                  List<MultipartFile> imageFiles) {
 //        1. 로그인한 사용자 정보 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
-
+        User user = commonService.getCurrentUser();
 //        2. 거래글 찾아오기
         MarketPost marketPost =  marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 거래글입니다."));
 
@@ -126,10 +121,7 @@ public class MarketService {
 //    거래글 삭제
     public void marketPostDelete(Long id) throws AccessDeniedException {
 //        1. 로그인한 사용자 정보 가져오기
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String email = authentication.getName();
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+        User user = commonService.getCurrentUser();
 
 //        2. 거래글 찾아오기
         MarketPost marketPost =  marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 거래글입니다."));
