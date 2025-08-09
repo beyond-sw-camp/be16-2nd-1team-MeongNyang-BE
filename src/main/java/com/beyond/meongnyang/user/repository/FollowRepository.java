@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.user.repository;
 
 import com.beyond.meongnyang.user.entity.Follow;
+import com.beyond.meongnyang.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -13,5 +14,5 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     Page<Follow> findAll(Specification<Follow> spec, Pageable pageable);
 
-    Optional<Object> findIdByFollowerIdAndFollowId(Long id, Long followingId);
+    Optional<Object> findIdByFollowerAndFollowing(User Follower, User following);
 }

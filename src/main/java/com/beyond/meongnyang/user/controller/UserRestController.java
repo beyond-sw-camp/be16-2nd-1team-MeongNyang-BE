@@ -131,12 +131,12 @@ public class UserRestController {
     // 차단해제
     @DeleteMapping("/blocks/{id}")
     public ResponseEntity<?> unBlockUser(@PathVariable Long id) {
-        userService.blockUser(id);
+        userService.unBlockUser(id);
         return new ResponseEntity<>(CommonRes.ofSuccess("차단 해제 완료", HttpStatus.OK.value(), "차단 해제 완료"), HttpStatus.OK);
     }
 
     // 차단 목록 조회
-    @PostMapping("/blocks")
+    @GetMapping("/blocks")
     public ResponseEntity<?> blockList(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam("type") String name){
         return new ResponseEntity<>(CommonRes.ofSuccess(userService.blockUsers(name, pageable), HttpStatus.OK.value(), "차단 목록을 조회했습니다."), HttpStatus.OK);
     }

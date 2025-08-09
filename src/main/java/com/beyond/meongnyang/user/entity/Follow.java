@@ -20,6 +20,6 @@ public class Follow extends CommonAt {
     private User follower;
 
     @ManyToOne
-    @JoinColumn(name  = "follow_id")
-    private User follow;
+    @JoinColumn(name  = "following_id")
+    private User following;
 }
