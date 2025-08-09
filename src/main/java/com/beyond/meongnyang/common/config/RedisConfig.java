@@ -38,4 +38,24 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         return redisTemplate;
     }
+
+    @Bean
+    @Qualifier("emailCodeInventory")
+    public RedisConnectionFactory emailCodeRedisInventory() {
+        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
+        configuration.setHostName(host);
+        configuration.setPort(port);
+        configuration.setDatabase(1);  // refresh token 0번 db에 저장
+        return new LettuceConnectionFactory(configuration);
+    }
+
+    @Bean
+    @Qualifier("emailCodeInventory")
+    public RedisTemplate<String, String> emailCodeRedisTemplate(@Qualifier("emailCodeInventory") RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        return redisTemplate;
+    }
 }

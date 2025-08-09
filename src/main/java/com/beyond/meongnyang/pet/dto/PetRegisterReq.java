@@ -27,7 +27,7 @@ public class PetRegisterReq {
     @NotNull(message = "몸무게를 입력해주세요")
     @DecimalMin(value = "0.01", message = "몸무게는 0보다 커야 합니다") // TODO: 프론트에서 소수점 2자리 제약 걸어주기
     private BigDecimal weight;
-    private String petProfile;
+    private String url;
     private LocalDate birthday;
 
     // 프론트에서 선택한 speciesId가 넘어옴.
@@ -39,7 +39,7 @@ public class PetRegisterReq {
                 .age(this.age)
                 .gender(this.gender)
                 .weight(this.weight)
-                .petProfile(this.petProfile)
+                .petProfileUrl(this.url)
                 .birthday(this.birthday)
                 .user(user)
                 .species(species)

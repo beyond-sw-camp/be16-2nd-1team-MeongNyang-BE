@@ -18,26 +18,20 @@ public class UserListRes {
     private Long userId;
     private String nickname;
     private String email;
-    private String phone;
+//    private String phone;
     private int point;
-    private boolean isLocked;
-    private LocalDateTime isLockedAt;
-    private LocalDateTime passwordChangeAt;
+    private String isLocked;
     private String delYn;
-    private LocalDateTime deletedAt;
 
     public static UserListRes fromEntity(User user) {
         return UserListRes.builder()
                 .userId(user.getId())
                 .nickname(user.getNickname())
                 .email(user.getEmail())
-                .phone(user.getPhone())
+//                .phone(user.getPhone())
                 .point(user.getPoint())
-                .isLocked(user.isLocked())
-                .isLockedAt(user.getIsLockedAt())
-                .passwordChangeAt(user.getPasswordChangeAt())
+                .isLocked(user.getIsLocked())
                 .delYn(user.getDelYn())
-                .deletedAt(user.getDeletedAt())
                 .build();
     }
 }
