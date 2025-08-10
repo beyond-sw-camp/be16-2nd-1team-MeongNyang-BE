@@ -2,16 +2,13 @@ package com.beyond.meongnyang.chat.entity;
 
 import com.beyond.meongnyang.common.domain.CommonAt;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "chat_media")
 public class ChatMedia extends CommonAt {
     @Id

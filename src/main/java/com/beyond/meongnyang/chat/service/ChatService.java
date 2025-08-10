@@ -2,7 +2,6 @@ package com.beyond.meongnyang.chat.service;
 
 import com.beyond.meongnyang.chat.dto.*;
 import com.beyond.meongnyang.chat.entity.ChatMessage;
-//import com.beyond.meongnyang.chat.entity.ChatMessageStatus;
 import com.beyond.meongnyang.chat.entity.ChatParticipant;
 import com.beyond.meongnyang.chat.entity.ChatRoom;
 import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
@@ -22,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,6 +35,14 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatParticipantRepository chatParticipantRepository;
     private final S3UploadService s3UploadService;
+
+//    @Autowired
+//    public ChatService(UserRepository userRepository, ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, ChatParticipantRepository chatParticipantRepository) {
+//        this.userRepository = userRepository;
+//        this.chatRoomRepository = chatRoomRepository;
+//        this.chatMessageRepository = chatMessageRepository;
+//        this.chatParticipantRepository = chatParticipantRepository;
+//    }
 
     public ChatMessageRes saveMessage(Long id, ChatMessageReq chatMessageReq) {
         // 채팅방 조회
@@ -50,9 +58,9 @@ public class ChatService {
                 .content(chatMessageReq.getMessage())
                 .build();
 
-        chatRoom.getChatParticipantList().stream()
-                .filter(cp -> cp.getUser().getId().equals(user.getId())).findFirst()
-                .ifPresent(cp -> cp.read(chatMessage));
+//        chatRoom.getChatParticipantList().stream()
+//                .filter(cp -> cp.getUser().getId().equals(user.getId())).findFirst()
+//                .ifPresent(cp -> cp.read(chatMessage));
 
         // 유저별 메세지상태 여부 저장
 //        chatRoom.getChatParticipantList().forEach(chatParticipant -> {
@@ -73,17 +81,7 @@ public class ChatService {
         chatMessageRepository.save(chatMessage);
         // TODO : 메세지에 파일(사진, 오디오, 동영상)이 있을 경우 처리해야 함
 
-
-        int unreadCount = chatRoom.getChatParticipantList().size();
-
-        for (ChatParticipant chatParticipant : chatRoom.getChatParticipantList()) {
-            if (chatParticipant.getLastReadMessage() == null) continue;
-
-            if (!chatParticipant.getLastReadMessage().getCreatedAt().isBefore(chatMessage.getCreatedAt()))
-                unreadCount--;
-        }
-
-        return ChatMessageRes.fromEntity(chatMessage, unreadCount);
+        return ChatMessageRes.fromEntity(chatMessage);
     }
 
     public Long createChatRoom(ChatRoomCreateReq chatRoomCreateReq) {
@@ -92,7 +90,7 @@ public class ChatService {
                 .name(chatRoomCreateReq.getRoomName())
                 .build();
 
-        // 채팅방 참여자 객체(채팅방 개설을 요구한 유저의 객체) 생성
+        // 채팅방 참여자 객체 생성
         chatRoomCreateReq.getUserEmailList().forEach(userEmail -> {
             ChatParticipant chatParticipant = ChatParticipant.builder()
                     .chatRoom(chatRoom)
@@ -134,8 +132,7 @@ public class ChatService {
 //                .toList();
     }
 
-    // TODO : 응답해줄 것 고민하기
-    public void inviteUsers(Long roomId, List<ChatParticipantAddReq> chatParticipantAddReqList) {
+    public List<ChatParticipantAddRes> inviteUsers(Long roomId, List<ChatParticipantAddReq> chatParticipantAddReqList) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
 
         User inviter = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
@@ -160,37 +157,70 @@ public class ChatService {
         });
 
         if (chatRoom.getChatParticipantList().size() > 2) chatRoom.updateIsGroupChat(Bool.TRUE);
+
+        return chatParticipantAddReqList.stream()
+                .map(req ->
+                        ChatParticipantAddRes.builder().inviteeEmail(req.getInviteeEmail()).build()
+                ).toList();
     }
 
     public List<ChatMessageRes> getChatMessages(Long roomId) {
+        validChatRoomParticipant(roomId);
+
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+
+        return chatMessageRepository.findAllByChatRoomOrderByCreatedAt(chatRoom).stream()
+                .map(ChatMessageRes::fromEntity).toList();
+    }
+
+    public ChatParticipantRemRes leaveChatRoomAndRemoveIfEmpty(Long roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        chatRoom.getChatParticipantList().removeIf(chatParticipant -> chatParticipant.getUser().getEmail().equals(userEmail));
+
+        if (chatRoom.getChatParticipantList().isEmpty()) chatRoomRepository.delete(chatRoom);
+
+        return ChatParticipantRemRes.builder().leftUserEmail(userEmail).build();
+    }
+
+    public List<ChatParticipantRes> getChatParticipants(Long roomId) {
+        validChatRoomParticipant(roomId);
+
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+
+        return chatRoom.getChatParticipantList().stream().map(ChatParticipantRes::fromEntity).toList();
+    }
+
+    public void validChatRoomParticipant(Long roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+
+        chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getEmail)
+                .filter(pEmail -> pEmail.equals(SecurityContextHolder.getContext().getAuthentication().getName()))
+                .findFirst().orElseThrow(() -> new AccessDeniedException("Access Denied"));
+    }
+
+    public void validChatRoomParticipant(Long roomId, String email) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
 
         // 채팅방에 속해있는 유저인지 검증
         chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getEmail)
-                .filter(pEmail -> pEmail.equals(SecurityContextHolder.getContext().getAuthentication().getName()))
+                .filter(pEmail -> pEmail.equals(email))
                 .findFirst().orElseThrow(() -> new AccessDeniedException("Access Denied"));
-
-        return chatMessageRepository.findAllByChatRoomOrderByCreatedAt(chatRoom).stream()
-                .map(chatMessage -> {
-                    int unreadCount = chatRoom.getChatParticipantList().size();
-
-                    for (ChatParticipant chatParticipant : chatRoom.getChatParticipantList()) {
-                        if (chatParticipant.getLastReadMessage() == null) continue;
-
-                        if (!chatParticipant.getLastReadMessage().getCreatedAt().isBefore(chatMessage.getCreatedAt()))
-                            unreadCount--;
-                    }
-
-                    return ChatMessageRes.fromEntity(chatMessage, unreadCount);
-                }).toList();
     }
 
-    public boolean isChatRoomParticipant(Long roomId, String email) {
+    public void readMessages(Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        ChatParticipant chatParticipant = chatParticipantRepository.findByUserEmailAndChatRoom(email, chatRoom).orElseThrow(() -> new EntityNotFoundException("participant not found"));
 
-        // 채팅방에 속해있는 유저인지 검증
-        return chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getEmail)
-                .anyMatch(pEmail -> pEmail.equals(email));
+        chatParticipant.read(chatRoom.getChatParticipantList().get(chatRoom.getChatMessageList().size() - 1).getLastReadMessage());
+    }
+
+    public void readMessages(Long roomId,String userEmail) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+        ChatParticipant chatParticipant = chatParticipantRepository.findByUserEmailAndChatRoom(userEmail, chatRoom).orElseThrow(() -> new EntityNotFoundException("participant not found"));
+
+        chatParticipant.read(chatRoom.getChatMessageList().get(chatRoom.getChatMessageList().size() - 1));
     }
 
     public List<String> uploadFiles(Long roomId, List<MultipartFile> files) {

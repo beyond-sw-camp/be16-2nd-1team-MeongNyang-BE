@@ -3,10 +3,7 @@ package com.beyond.meongnyang.chat.entity;
 import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +12,7 @@ import java.util.List;
 @Getter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "chat_room")
 public class ChatRoom extends CommonAt {
     @Id

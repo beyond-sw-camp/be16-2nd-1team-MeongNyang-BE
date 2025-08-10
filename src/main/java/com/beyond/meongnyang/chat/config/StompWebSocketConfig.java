@@ -28,7 +28,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) { // 클라이언트에게 메세지를 받아서 특정 클라이언트들에게 전달해주는 브로커(현실에서의 그 브로커 같은 역할)
-        // /publish/{roomId} 로 메세지를 발행한다.
+        // 프론트가 /publish로 시작하는 메세지를 발행한다.
         // /publish로 시작하는 url패턴으로 메세지가 발행되면 @Controller 객체의 @MessageMapping 메서드로 라우팅
         registry.setApplicationDestinationPrefixes("/publish");
 

@@ -6,6 +6,6 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class ChatParticipantAddReq {
-    private String inviteeEmail;
+public class ChatParticipantRemRes {
+    private String leftUserEmail;
 }

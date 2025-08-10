@@ -3,10 +3,7 @@ package com.beyond.meongnyang.chat.entity;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,7 +13,7 @@ import java.util.List;
 @Getter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "chat_message")
 public class ChatMessage extends CommonAt {
     @Id

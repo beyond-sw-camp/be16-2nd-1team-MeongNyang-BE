@@ -2,15 +2,12 @@ package com.beyond.meongnyang.chat.dto;
 
 import com.beyond.meongnyang.chat.entity.ChatMessage;
 import com.beyond.meongnyang.chat.entity.ChatRoom;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatRoomSummaryRes {
     private Long id;
     private String roomName;

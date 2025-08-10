@@ -11,7 +11,6 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -51,9 +50,13 @@ public class StompHandler implements ChannelInterceptor {
                     .getBody();
 
             String email = claims.getSubject();
-            Long roomId = Long.parseLong(accessor.getDestination().split("/")[2]);
-            if (!chatService.isChatRoomParticipant(roomId, email)) throw new AccessDeniedException("Access Denied");
+            Long roomId = Long.parseLong(accessor.getDestination().split("/")[3]);
+            chatService.validChatRoomParticipant(roomId, email);
         }
+        if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+            log.info("DISCONNECT from {}", accessor.getDestination());
+        }
+
 
         return message;
     }

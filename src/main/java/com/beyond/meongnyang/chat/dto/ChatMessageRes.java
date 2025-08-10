@@ -1,27 +1,24 @@
 package com.beyond.meongnyang.chat.dto;
 
 import com.beyond.meongnyang.chat.entity.ChatMessage;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatMessageRes {
-    private Long messageId;
+    private Long id;
     private String message;
     private String senderEmail;
-    private Integer readCount;
+//    private Integer readCount;
 
-    public static ChatMessageRes fromEntity(ChatMessage chatMessage, Integer readCount) {
+    public static ChatMessageRes fromEntity(ChatMessage chatMessage/*, Integer readCount*/) {
         return ChatMessageRes.builder()
                 .message(chatMessage.getContent())
                 .senderEmail(chatMessage.getUser().getEmail())
-                .messageId(chatMessage.getId())
-                .readCount(readCount)
+                .id(chatMessage.getId())
+//                .readCount(readCount)
                 .build();
     }
 }
