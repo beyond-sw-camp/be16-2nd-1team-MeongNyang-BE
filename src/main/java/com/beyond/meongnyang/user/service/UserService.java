@@ -277,17 +277,17 @@ public class UserService {
     }
 
     // 나를 팔로우하는 사람 목록 (followers)
-    public Page<UserSummaryRes> getFollowers(Pageable pageable) {
+    public Page<UserFollowRes> getFollowers(Pageable pageable) {
         User user = commonService.getCurrentUser();
         return followRepository.findByFollowing(user, pageable)
-                .map(UserFollow::getFollower).map(UserSummaryRes::fromEntity);
+                .map(UserFollow::getFollower).map(UserFollowRes::fromEntity);
     }
 
     // 내가 팔로우하는 사람 목록 (followings)
-    public Page<UserSummaryRes> getFollowings(Pageable pageable) {
+    public Page<UserFollowRes> getFollowings(Pageable pageable) {
         User user = commonService.getCurrentUser();
         return followRepository.findByFollower(user, pageable)
-                .map(UserFollow::getFollowing).map(UserSummaryRes::fromEntity);
+                .map(UserFollow::getFollowing).map(UserFollowRes::fromEntity);
     }
 
     // 사용자 차단
