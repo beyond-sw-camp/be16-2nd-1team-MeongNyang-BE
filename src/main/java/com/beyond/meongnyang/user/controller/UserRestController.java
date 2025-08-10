@@ -179,7 +179,7 @@ public class UserRestController {
     public ResponseEntity<?> followers(
             @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return new ResponseEntity<>(
-                CommonRes.ofSuccess(userService.followers(pageable), HttpStatus.OK.value(), "팔로워 목록 조회 완료"),
+                CommonRes.ofSuccess(userService.getFollowers(pageable), HttpStatus.OK.value(), "팔로워 목록 조회 완료"),
                 HttpStatus.OK
         );
     }
@@ -190,7 +190,7 @@ public class UserRestController {
     public ResponseEntity<?> followings(
             @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return new ResponseEntity<>(
-                CommonRes.ofSuccess(userService.followings(pageable), HttpStatus.OK.value(), "팔로잉 목록 조회 완료"),
+                CommonRes.ofSuccess(userService.getFollowings(pageable), HttpStatus.OK.value(), "팔로잉 목록 조회 완료"),
                 HttpStatus.OK
         );
     }
