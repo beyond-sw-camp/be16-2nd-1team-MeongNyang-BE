@@ -41,7 +41,7 @@ public class InitialDataLoader implements CommandLineRunner {
                 .password(this.passwordEncoder.encode(password))
                 .name(name)
                 .nickname(nickname)
-                .phone(phone)
+//                .phone(phone)
                 .role(Role.ADMIN)
                 .point(Integer.MAX_VALUE)
                 .delYn("N")

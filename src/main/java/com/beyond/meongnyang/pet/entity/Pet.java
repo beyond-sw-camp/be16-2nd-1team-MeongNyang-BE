@@ -46,7 +46,7 @@ public class Pet extends CommonAt {
     private boolean firstPet;
 
     @Column(name = "pet_profile", nullable = true, length = 255)
-    private String petProfile;
+    private String petProfileUrl;
 
     // TODO: 1년 뒤에 떡국 먹게 하기
     @Column(name = "birthday", nullable = true)
@@ -74,9 +74,8 @@ public class Pet extends CommonAt {
         this.age = req.getAge();
         this.gender = req.getGender();
         this.weight = req.getWeight();
-        this.petProfile = req.getPetProfile();
         this.birthday = req.getBirthday();
-        this.petProfile = req.getPetProfile();
+        this.petProfileUrl = req.getUrl();
         this.species = species;
 
     }

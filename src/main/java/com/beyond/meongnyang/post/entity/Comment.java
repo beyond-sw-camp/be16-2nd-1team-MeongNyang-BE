@@ -6,19 +6,23 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
+import java.util.ArrayList;
 import java.util.List;
 
+// Comment.java (Entity)
 @Entity
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@ToString
+@Builder
+@Where(clause = "del_yn = false")
 public class Comment extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
@@ -28,14 +32,20 @@ public class Comment extends CommonAt {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @NotEmpty(message = "내용을 입력해주세요.")
-    @Size(max = 1000,message = "내용은 최대 150자까지 입력 가능합니다.")
+    @Column(nullable = false)
     private String content;
 
-    @OneToMany(mappedBy = "comment")
-    private List<CommentTag> commentTags;
+    @Column(nullable = false)
+    private boolean delYn = false;
 
-    public void updateComment(String content){
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommentTag> commentTags = new ArrayList<>();
+
+    public void updateContent(String content) {
         this.content = content;
+    }
+
+    public void softDelete() {
+        this.delYn = true;
     }
 }

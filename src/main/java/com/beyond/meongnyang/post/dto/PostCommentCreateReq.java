@@ -11,15 +11,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class PostCommentCreateReq {
-    private Long postId;
-    private Long userId;
     private String content;
 
-    public Comment toEntity(Post post, User user){
+    public Comment toEntity(User user, Post post) {
         return Comment.builder()
-                .post(post)
                 .user(user)
-                .content(content)
+                .post(post)
+                .content(this.content)
                 .build();
     }
 }

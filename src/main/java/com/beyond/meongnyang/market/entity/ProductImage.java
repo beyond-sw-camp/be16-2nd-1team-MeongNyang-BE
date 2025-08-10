@@ -23,8 +23,4 @@ public class ProductImage extends CommonAt {
     @Column(length = 255, nullable = false)
     private String imageUrl;
 
-//    public void updateImageUrl(String imageUrl){
-//        this.imageUrl = imageUrl;
-//    }
-
 }

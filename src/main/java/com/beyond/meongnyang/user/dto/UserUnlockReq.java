@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.post.dto;
+package com.beyond.meongnyang.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class PostCommentEditReq {
-    private String content;
+public class UserUnlockReq {
+    private String name;
+    private String email;
 }

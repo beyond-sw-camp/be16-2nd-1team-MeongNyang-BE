@@ -53,6 +53,14 @@ public class RedisConfig {
         configuration.setHostName(host);
         configuration.setPort(port);
         configuration.setDatabase(12);
+
+    @Bean
+    @Qualifier("emailCodeInventory")
+    public RedisConnectionFactory emailCodeRedisInventory() {
+        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
+        configuration.setHostName(host);
+        configuration.setPort(port);
+        configuration.setDatabase(1);  // refresh token 0번 db에 저장
         return new LettuceConnectionFactory(configuration);
     }
 
@@ -110,5 +118,15 @@ public class RedisConfig {
     public MessageListenerAdapter chatListenerAdapter(ChatRedisService chatRedisService) {
         // 채널로 부터 수신되는 message 처리를 SseAlarmService 객체로 던져주고, SseAlarmService의 onMessage 메서드에서 처리한다.
         return new MessageListenerAdapter(chatRedisService, "onMessage");
+    }
+
+    @Bean  
+    @Qualifier("emailCodeInventory")
+    public RedisTemplate<String, String> emailCodeRedisTemplate(@Qualifier("emailCodeInventory") RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        return redisTemplate;
     }
 }

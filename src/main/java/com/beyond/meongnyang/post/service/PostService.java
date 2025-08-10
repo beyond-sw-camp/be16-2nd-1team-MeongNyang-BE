@@ -1,13 +1,9 @@
 package com.beyond.meongnyang.post.service;
 
-import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.post.dto.*;
 import com.beyond.meongnyang.common.S3UploadService;
 import com.beyond.meongnyang.post.entity.*;
-import com.beyond.meongnyang.post.repository.CommentRepository;
-import com.beyond.meongnyang.post.repository.LikeRepository;
-import com.beyond.meongnyang.post.repository.PostRepository;
-import com.beyond.meongnyang.post.repository.TagRepository;
+import com.beyond.meongnyang.post.repository.*;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
@@ -15,16 +11,18 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +34,7 @@ public class PostService {
 //    private final PetRepository petRepository;
     private final LikeRepository likeRepository;
     private final CommentRepository commentRepository;
+    private final CommentTagRepository commentTagRepository;
     private final S3UploadService s3UploadService;
     private final EntityManager em;
 
@@ -126,40 +125,64 @@ public class PostService {
     }
 
     // 댓글 달기
-    public Long createComment(PostCommentCreateReq postCommentCreateReq){
+    public Long createComment(Long postId, PostCommentCreateReq postCommentCreateReq) {
         User user = getCurrentUser();
-        Post post = postRepository.findById(postCommentCreateReq.getPostId()).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
-        Comment comment = postCommentCreateReq.toEntity(post, user);
-        return commentRepository.save(comment).getId();
+        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("게시글 없음"));
+        return commentRepository.save(postCommentCreateReq.toEntity(user, post)).getId();
     }
 
-    // 댓글 수정
-    public Long editComment(PostCommentCreateReq postCommentCreateReq) throws AccessDeniedException {
+    public Long createReply(Long commentId, PostCommentReplyReq request) {
+        User replyUser = getCurrentUser();
+        Comment parentComment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
+        User mentionUser = userRepository.findById(request.getMentionUserId())
+                .orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
+
+        Comment replyComment = request.ReplyToEntity(replyUser, parentComment.getPost());
+        commentRepository.save(replyComment);
+
+        CommentTag tag = request.CommentTagToEntity(replyComment, mentionUser, replyUser, parentComment);
+        commentTagRepository.save(tag);
+
+        return replyComment.getId();
+    }
+
+    public Page<PostCommentListRes> commentList(Long postId, Pageable pageable) {
+        Page<Comment> comments = commentRepository.findAllByPostId(postId, pageable);
+        return comments.map(comment -> {
+            List<CommentTag> tags = commentTagRepository.findAllByParentComment(comment);
+            List<PostCommentReplyRes> replies = tags.stream()
+                    .map(PostCommentReplyRes::fromEntity)
+                    .collect(Collectors.toList());
+            return PostCommentListRes.fromEntity(comment, replies);
+        });
+    }
+
+    public Long editComment(Long commentId, PostCommentEditReq postCommentEditReq) throws AccessDeniedException {
         User user = getCurrentUser();
-        Comment comment = commentRepository.findByPostIdAndUserId(postCommentCreateReq.getPostId(), user.getId()).orElseThrow(() -> new EntityNotFoundException("해당 댓글이 존재하지 않습니다"));
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
 
         // 작성자 확인
         if (!Objects.equals(user.getId(), comment.getUser().getId())) {
-            throw new AccessDeniedException("작성자 또는 관리자만 삭제 가능합니다.");
+            throw new AccessDeniedException("작성자 또는 관리자만 수정 가능합니다.");
         }
-        comment.updateComment(postCommentCreateReq.getContent());
-        return comment.getId();
+
+        comment.updateContent(postCommentEditReq.getContent());
+        return commentId;
     }
 
-    // 댓글 삭제
-//    public Long deleteComment(PostCommentDeleteReq postCommentDeleteReq) throws AccessDeniedException {
-//        User user = getCurrentUser();
-//        Comment comment = commentRepository.findByPostIdAndUserId(postCommentCreateReq.getPostId(), user.getId()).orElseThrow(() -> new EntityNotFoundException("해당 댓글이 존재하지 않습니다"));
-//
-//        // 작성자 확인
-//        if (!Objects.equals(user.getId(), comment.getUser().getId())) {
-//            throw new AccessDeniedException("작성자 또는 관리자만 삭제 가능합니다.");
-//        }
-//        comment.updateComment(postCommentCreateReq.getContent());
-//        return comment.getId();
-//    }
+    public Long deleteComment(Long commentId) throws AccessDeniedException {
+        User user = getCurrentUser();
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
 
-    // 대댓글 달기
+        if (!Objects.equals(user.getId(), comment.getUser().getId())) {
+            throw new AccessDeniedException("작성자 또는 관리자만 삭제 가능합니다.");
+        }
+        comment.softDelete();
+        return commentId;
+    }
 
     // 검색
 

@@ -26,6 +26,11 @@ public class MarketPost extends CommonAt {
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
 
+//    관계성 설정 MarketPost N : User 1
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "buyer_id", nullable = true)
+    private User buyer;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Category category;
@@ -79,7 +84,6 @@ public class MarketPost extends CommonAt {
         this.region = marketPostUpdateReq.getRegion();
         this.description = marketPostUpdateReq.getDescription();
     }
-
     public void deleteMarketPost(String delYn){
         this.delYn = delYn;
     }
