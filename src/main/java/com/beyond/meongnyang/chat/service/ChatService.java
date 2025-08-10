@@ -1,9 +1,7 @@
 package com.beyond.meongnyang.chat.service;
 
 import com.beyond.meongnyang.chat.dto.*;
-import com.beyond.meongnyang.chat.entity.ChatMessage;
-import com.beyond.meongnyang.chat.entity.ChatParticipant;
-import com.beyond.meongnyang.chat.entity.ChatRoom;
+import com.beyond.meongnyang.chat.entity.*;
 import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
@@ -78,9 +76,18 @@ public class ChatService {
 //        });
 
         // 메세지 저장
-        chatMessageRepository.save(chatMessage);
         // TODO : 메세지에 파일(사진, 오디오, 동영상)이 있을 경우 처리해야 함
+        chatMessageReq.getFileUrls().forEach(url -> {
+            ChatMedia chatMedia = ChatMedia.builder()
+                    .url(url)
+                    .chatMessage(chatMessage)
+                    .build();
 
+            chatMessage.getChatMediaList().add(chatMedia);
+        });
+
+
+        chatMessageRepository.save(chatMessage);
         return ChatMessageRes.fromEntity(chatMessage);
     }
 
@@ -208,13 +215,13 @@ public class ChatService {
                 .findFirst().orElseThrow(() -> new AccessDeniedException("Access Denied"));
     }
 
-    public void readMessages(Long roomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        ChatParticipant chatParticipant = chatParticipantRepository.findByUserEmailAndChatRoom(email, chatRoom).orElseThrow(() -> new EntityNotFoundException("participant not found"));
-
-        chatParticipant.read(chatRoom.getChatParticipantList().get(chatRoom.getChatMessageList().size() - 1).getLastReadMessage());
-    }
+//    public void readMessages(Long roomId) {
+//        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+//        ChatParticipant chatParticipant = chatParticipantRepository.findByUserEmailAndChatRoom(email, chatRoom).orElseThrow(() -> new EntityNotFoundException("participant not found"));
+//
+//        chatParticipant.read(chatRoom.getChatParticipantList().get(chatRoom.getChatMessageList().size() - 1).getLastReadMessage());
+//    }
 
     public void readMessages(Long roomId,String userEmail) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
@@ -224,9 +231,7 @@ public class ChatService {
     }
 
     public List<String> uploadFiles(Long roomId, List<MultipartFile> files) {
-        // TODO: 유저가 소속되어 있는 지 검증 필요
-//        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
-
+        validChatRoomParticipant(roomId);
 
         LocalDateTime now = LocalDateTime.now();
         String pattern = String.format("chat/%d/%d/%02d/%02d/%s-*", roomId, now.getYear(), now.getMonthValue(), now.getDayOfMonth(), UUID.randomUUID());
