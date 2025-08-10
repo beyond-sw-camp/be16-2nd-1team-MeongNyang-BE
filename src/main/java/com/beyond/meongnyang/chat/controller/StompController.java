@@ -1,37 +1,51 @@
 package com.beyond.meongnyang.chat.controller;
 
-import com.beyond.meongnyang.chat.dto.ChatMessageRes;
+import com.beyond.meongnyang.chat.dto.*;
+import com.beyond.meongnyang.chat.service.ChatRedisService;
 import com.beyond.meongnyang.chat.service.ChatService;
-import com.beyond.meongnyang.chat.dto.ChatMessageReq;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
+
+import java.util.List;
 
 @Slf4j
 @Controller
 @RequiredArgsConstructor
 public class StompController {
 
-    private final SimpMessageSendingOperations messageTemplate;
     private final ChatService chatService;
-//    // 방법 1. MessageMapping 과 SendTo 한번에 처리
-//    @MessageMapping("/{roomId}") // 클라이언트에서 특정 roomId로 메세지 발행시 MessageMapping 수신
-//    @SendTo("/topic/{roomId}") // 해당 roomId에 메세지를 발행하여 구독 중인 클라이언트에게 메세지 전송
-//    // DestinationVariable : MessageMapping 어노테이션으로 정의된 Websocket Controller 내에서만 사용
-//    public String sendMessage(@DestinationVariable Long roomId, String chatMessage) {
-//        log.info(chatMessage);
-//        return chatMessage;
-//    }
+    private final ChatRedisService chatRedisService;
 
-    // 방법 2. MessageMapping 어노테이션만 활용
-    // 추후 변경사항이 발생시 방법1에 비해 더욱 유연하게 개선 가능
-    @MessageMapping("/{roomId}")
+    @MessageMapping("/chat-rooms/{roomId}/chat-message")
     public void sendMessage(@DestinationVariable Long roomId, ChatMessageReq chatMessageReq) {
-        log.info(chatMessageReq.getMessage());
-        ChatMessageRes chatMessageRes = chatService.saveMessage(roomId, chatMessageReq);
-        messageTemplate.convertAndSend("/topic/" + roomId, chatMessageRes);
+        ChatMessageRes res = chatService.saveMessage(roomId, chatMessageReq);
+        chatRedisService.publishChatMessageToRedis(roomId, res);
+    }
+
+    @MessageMapping("/chat-rooms/{roomId}/invite")
+    public void inviteUsers(@DestinationVariable Long roomId, List<ChatParticipantAddReq> chatParticipantAddReqs) {
+        List<ChatParticipantAddRes> chatParticipantAddRes = chatService.inviteUsers(roomId, chatParticipantAddReqs);
+        chatRedisService.publishInvitedUsersToRedis(roomId, chatParticipantAddRes);
+    }
+
+    @MessageMapping("/chat-rooms/{roomId}/leave")
+    public void leaveRoom(@DestinationVariable Long roomId) {
+        chatService.leaveChatRoomAndRemoveIfEmpty(roomId);
+        chatRedisService.publishLeftUserToRedis(roomId);
+    }
+
+    @MessageMapping("/chat-rooms/{roomId}/online")
+    public void online(@DestinationVariable Long roomId, ChatOnlineParticipantReq chatOnlineParticipantReq) {
+        chatRedisService.publishChatOnlineToRedis(roomId, chatOnlineParticipantReq);
+    }
+
+    @MessageMapping("/chat-rooms/{roomId}/offline")
+    public void offline(@DestinationVariable Long roomId, ChatOnlineParticipantReq chatOnlineParticipantReq) {
+        chatService.readMessages(roomId, chatOnlineParticipantReq.getEmail());
+        chatRedisService.publishChatOfflineToRedis(roomId, chatOnlineParticipantReq);
     }
 }

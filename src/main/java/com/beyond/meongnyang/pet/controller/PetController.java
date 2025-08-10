@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -15,10 +16,10 @@ import org.springframework.web.bind.annotation.*;
 public class PetController {
     private final PetService petService;
 
-
+    // 유저가 펫 등록
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody PetRegisterReq req) {
-        this.petService.register(req);
+    public ResponseEntity<?> register(@Valid @RequestPart("PetRegisterReq") PetRegisterReq req, @RequestPart(value = "url", required = false) MultipartFile petImg) {
+        this.petService.register(req, petImg);
         return new ResponseEntity<>(CommonRes.ofSuccess(("당신의 반려동물이 등록되었습니다."),
                 HttpStatus.CREATED.value(), "Pet 등록 완료"), HttpStatus.CREATED);
     }
@@ -29,11 +30,10 @@ public class PetController {
         return new ResponseEntity<>(CommonRes.ofSuccess(petService.findByUser(), HttpStatus.OK.value(), "Pet 목록 조회 완료"), HttpStatus.OK);
     }
 
-
     // 유저가 등록한 펫 수정
     @PutMapping("/{id}")
-    public ResponseEntity<?> updatePet(@PathVariable Long id, @Valid @RequestBody PetRegisterReq req) {
-        this.petService.updatePet(id, req);
+    public ResponseEntity<?> updatePet(@PathVariable Long id, @Valid @RequestPart("PetRegisterReq") PetRegisterReq req, @RequestPart(value = "url", required = false) MultipartFile petImg) {
+        this.petService.updatePet(id, req, petImg);
         return new ResponseEntity<>(CommonRes.ofSuccess("애완동물 수정이 완료됐습니다.",
                 HttpStatus.OK.value(), "애완동물 수정 완료"), HttpStatus.OK);
     }

@@ -3,16 +3,13 @@ package com.beyond.meongnyang.chat.entity;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "chat_participant")
 public class ChatParticipant extends CommonAt {
     // TODO : ChatParticipant를 @EqualsAndHashCode(of = {"user", "chatRoom"}) 어노테이션으로 추가 후 Set으로 변경하는 것 고민해보기

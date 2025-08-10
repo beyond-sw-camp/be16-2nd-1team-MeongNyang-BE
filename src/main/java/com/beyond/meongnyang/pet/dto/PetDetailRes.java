@@ -22,7 +22,7 @@ public class PetDetailRes {
     private Integer age;
     private Gender gender;
     private BigDecimal weight;
-    private String petProfile;
+    private String url;
     private LocalDate birthday;
 
     public static PetDetailRes fromEntity(Pet pet) {
@@ -33,7 +33,7 @@ public class PetDetailRes {
                 .age(pet.getAge())
                 .gender(pet.getGender())
                 .weight(pet.getWeight())
-                .petProfile(pet.getPetProfile())
+                .url(pet.getPetProfileUrl())
                 .birthday(pet.getBirthday())
                 .build();
     }
