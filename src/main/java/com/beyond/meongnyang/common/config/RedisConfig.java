@@ -53,6 +53,9 @@ public class RedisConfig {
         configuration.setHostName(host);
         configuration.setPort(port);
         configuration.setDatabase(12);
+        return new LettuceConnectionFactory(configuration);
+    }
+
 
     @Bean
     @Qualifier("emailCodeInventory")
