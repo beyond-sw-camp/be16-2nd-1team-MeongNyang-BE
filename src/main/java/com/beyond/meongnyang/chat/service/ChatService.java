@@ -8,6 +8,7 @@ import com.beyond.meongnyang.chat.entity.ChatRoom;
 import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
+import com.beyond.meongnyang.common.S3UploadService;
 import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
@@ -17,9 +18,12 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +34,7 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatParticipantRepository chatParticipantRepository;
+    private final S3UploadService s3UploadService;
 
     public ChatMessageRes saveMessage(Long id, ChatMessageReq chatMessageReq) {
         // 채팅방 조회
@@ -67,8 +72,6 @@ public class ChatService {
         // 메세지 저장
         chatMessageRepository.save(chatMessage);
         // TODO : 메세지에 파일(사진, 오디오, 동영상)이 있을 경우 처리해야 함
-
-
 
 
         int unreadCount = chatRoom.getChatParticipantList().size();
@@ -188,5 +191,15 @@ public class ChatService {
         // 채팅방에 속해있는 유저인지 검증
         return chatRoom.getChatParticipantList().stream().map(ChatParticipant::getUser).map(User::getEmail)
                 .anyMatch(pEmail -> pEmail.equals(email));
+    }
+
+    public List<String> uploadFiles(Long roomId, List<MultipartFile> files) {
+        // TODO: 유저가 소속되어 있는 지 검증 필요
+//        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
+
+
+        LocalDateTime now = LocalDateTime.now();
+        String pattern = String.format("chat/%d/%d/%02d/%02d/%s-*", roomId, now.getYear(), now.getMonthValue(), now.getDayOfMonth(), UUID.randomUUID());
+        return s3UploadService.upload(files, pattern);
     }
 }

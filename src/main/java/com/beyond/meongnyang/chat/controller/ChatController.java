@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -48,6 +49,16 @@ public class ChatController {
 
         return ResponseEntity.ok(
                 CommonRes.ofSuccess(chatMessageResList, HttpStatus.OK.value(), "chat message list")
+        );
+    }
+
+    @PostMapping("/{roomId}/files")
+    public ResponseEntity<?> uploadFiles(@PathVariable Long roomId, @RequestParam List<MultipartFile> files) {
+
+        List<String> fileUrls = chatService.uploadFiles(roomId, files);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                CommonRes.ofSuccess(fileUrls, HttpStatus.CREATED.value(), "upload files")
         );
     }
 }
