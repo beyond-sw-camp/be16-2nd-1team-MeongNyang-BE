@@ -107,6 +107,7 @@ public class S3UploadService {
             try {
                 splitFileName = file.getOriginalFilename().split("\\.");
             } catch (NullPointerException e) {
+                urls.forEach(this::delete);
                 throw new IllegalArgumentException("처리할 수 없는 파일명입니다. 확장자명이 반드시 필요합니다.");
             }
 
@@ -123,11 +124,12 @@ public class S3UploadService {
             try {
                 s3Client.putObject(putReq, RequestBody.fromBytes(file.getBytes()));
             } catch (Exception e) {
+                urls.forEach(this::delete);
                 throw new IllegalArgumentException("이미지 업로드 실패: " + file.getOriginalFilename());
             }
 
-            String imgUrl = s3Client.utilities().getUrl(b -> b.bucket(bucket).key(key)).toExternalForm();
-            urls.add(imgUrl);
+            String url = s3Client.utilities().getUrl(b -> b.bucket(bucket).key(key)).toExternalForm();
+            urls.add(url);
         }
         return urls;
     }
