@@ -1,7 +1,7 @@
 package com.beyond.meongnyang.user.service;
 
 import com.beyond.meongnyang.common.CommonService;
-import com.beyond.meongnyang.user.entity.Follow;
+import com.beyond.meongnyang.user.entity.UserFollow;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
@@ -17,15 +17,12 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -141,11 +138,11 @@ public class UserService {
             throw new EntityExistsException("이미 퍌로우중인 사용자입니다.");
 
         }
-        Follow follow = Follow.builder()
+        UserFollow userFollow = UserFollow.builder()
                 .follower(follower)
                 .following(following)
                 .build();
-        followRepository.save(follow);
+        followRepository.save(userFollow);
     }
 
     // 언팔로우
@@ -160,7 +157,7 @@ public class UserService {
     // 팔로우 목록 조회
     public Page<UserFollowDetailRes> followList(String type, Pageable pageable) {
         User user = commonService.getCurrentUser();
-        Specification<Follow> followList = (root, query, cb) -> {
+        Specification<UserFollow> followList = (root, query, cb) -> {
             if ("follower".equalsIgnoreCase(type)) {
                 return cb.equal(root.get("follower").get("id"), user.getId());
                 } else if ("follow".equalsIgnoreCase(type)) {
@@ -171,11 +168,11 @@ public class UserService {
         };
 
         return followRepository.findAll(followList, pageable)
-                .map(follow -> {
+                .map(userFollow -> {
                     // 'follower'이면 나를 팔로우한 사람을, 'follow'이면 내가 팔로우한 사람을 선택
                     User targetUser = "follower".equalsIgnoreCase(type)
-                            ? follow.getFollowing()  // 나를 팔로우한 사람
-                            : follow.getFollower();    // 내가 팔로우한 사람
+                            ? userFollow.getFollowing()  // 나를 팔로우한 사람
+                            : userFollow.getFollower();    // 내가 팔로우한 사람
 
                     // UserFollowDetailRes로 변환하여 반환
                     return UserFollowDetailRes.fromEntity(targetUser);

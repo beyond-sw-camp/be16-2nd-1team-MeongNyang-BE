@@ -10,7 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Table(name = "follow")
-public class Follow extends CommonAt {
+public class UserFollow extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -1,6 +1,5 @@
 package com.beyond.meongnyang.user.dto;
 
-import com.beyond.meongnyang.user.entity.Follow;
 import com.beyond.meongnyang.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
