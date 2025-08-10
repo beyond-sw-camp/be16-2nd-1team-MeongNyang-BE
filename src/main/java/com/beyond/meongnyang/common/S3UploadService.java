@@ -113,7 +113,7 @@ public class S3UploadService {
 
             String extension = splitFileName[splitFileName.length - 1];
 
-            String key = (pattern + extension).replace("*", String.valueOf(i));
+            String key = (pattern + "." + extension).replace("*", String.valueOf(i));
 
             PutObjectRequest putReq = PutObjectRequest.builder()
                     .bucket(bucket)

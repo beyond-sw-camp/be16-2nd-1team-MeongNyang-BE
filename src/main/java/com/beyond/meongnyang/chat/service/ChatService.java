@@ -199,7 +199,7 @@ public class ChatService {
 
 
         LocalDateTime now = LocalDateTime.now();
-        String pattern = String.format("/chat/%d/%d/%02d/%02d/%s-*", roomId, now.getYear(), now.getMonthValue(), now.getDayOfMonth(), UUID.randomUUID());
+        String pattern = String.format("chat/%d/%d/%02d/%02d/%s-*", roomId, now.getYear(), now.getMonthValue(), now.getDayOfMonth(), UUID.randomUUID());
         return s3UploadService.upload(files, pattern);
     }
 }
