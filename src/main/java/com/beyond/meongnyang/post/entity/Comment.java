@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.post.entity;
 
+import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
@@ -35,8 +36,8 @@ public class Comment extends CommonAt {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    private boolean delYn = false;
+    @Enumerated(EnumType.STRING)
+    private Bool delYn = Bool.FALSE;
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommentTag> commentTags = new ArrayList<>();
@@ -46,6 +47,6 @@ public class Comment extends CommonAt {
     }
 
     public void softDelete() {
-        this.delYn = true;
+        this.delYn = Bool.TRUE;
     }
 }

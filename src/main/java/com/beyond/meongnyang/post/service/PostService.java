@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.post.service;
 
+import com.beyond.meongnyang.common.CommonService;
 import com.beyond.meongnyang.post.dto.*;
 import com.beyond.meongnyang.common.S3UploadService;
 import com.beyond.meongnyang.post.entity.*;
@@ -36,11 +37,12 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final CommentTagRepository commentTagRepository;
     private final S3UploadService s3UploadService;
+    private final CommonService commonService;
     private final EntityManager em;
 
     // 일기 작성
     public Long save(PostCreateReq postCreateRequest, List<MultipartFile> files){
-        User user = getCurrentUser();
+        User user = commonService.getCurrentUser();
 
         Post post = postCreateRequest.postToEntity();
         post.setUser(user);
@@ -54,7 +56,7 @@ public class PostService {
 
     // 일기 수정
     public void updatePost(Long id, PostEditReq postEditReq, List<MultipartFile> files) throws AccessDeniedException {
-        User user = getCurrentUser();
+        User user = commonService.getCurrentUser();
 
         // 원래 일기를 가져온다
         Post post = postRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("글이 존재하지 않습니다."));
@@ -74,7 +76,7 @@ public class PostService {
 
     // 일기 삭제(soft-delete)
     public void deletePost(Long id) throws AccessDeniedException {
-        User user = getCurrentUser();
+        User user = commonService.getCurrentUser();
         Post post = postRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("글이 존재하지 않습니다."));
 
         // 작성자 확인
@@ -87,7 +89,7 @@ public class PostService {
 
     // 내 일기 목록 조회
     public Page<PostListReq> myPosts(Pageable pageable){
-        User user = getCurrentUser();
+        User user = commonService.getCurrentUser();
         Page<Post> postList = postRepository.findAllByUserId(user.getId(), pageable);
         return postList.map(p->PostListReq.fromEntity(p));
     }
@@ -101,7 +103,7 @@ public class PostService {
 
     // 좋아요 처리
     public Long postLike(Long postId){
-        User user = getCurrentUser();
+        User user = commonService.getCurrentUser();
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
         boolean isLike = likeRepository.existsByUserIdAndPostId(user.getId(), post.getId());
         if(isLike){
@@ -114,7 +116,7 @@ public class PostService {
 
     // 좋아요 취소
     public Long postLikeCancel(Long postId){
-        User user = getCurrentUser();
+        User user = commonService.getCurrentUser();
         likeRepository.deleteByPostIdAndUserId(postId, user.getId());
         return postId;
     }
@@ -126,13 +128,13 @@ public class PostService {
 
     // 댓글 달기
     public Long createComment(Long postId, PostCommentCreateReq postCommentCreateReq) {
-        User user = getCurrentUser();
+        User user = commonService.getCurrentUser();
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("게시글 없음"));
         return commentRepository.save(postCommentCreateReq.toEntity(user, post)).getId();
     }
 
     public Long createReply(Long commentId, PostCommentReplyReq request) {
-        User replyUser = getCurrentUser();
+        User replyUser = commonService.getCurrentUser();
         Comment parentComment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
         User mentionUser = userRepository.findById(request.getMentionUserId())
@@ -159,7 +161,7 @@ public class PostService {
     }
 
     public Long editComment(Long commentId, PostCommentEditReq postCommentEditReq) throws AccessDeniedException {
-        User user = getCurrentUser();
+        User user = commonService.getCurrentUser();
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
 
@@ -173,7 +175,7 @@ public class PostService {
     }
 
     public Long deleteComment(Long commentId) throws AccessDeniedException {
-        User user = getCurrentUser();
+        User user = commonService.getCurrentUser();
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("댓글이 존재하지 않습니다."));
 
@@ -226,13 +228,5 @@ public class PostService {
                 post.addMedia(media);
             }
         }
-    }
-
-    // 유효한 사용자인지 확인
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
     }
 }
