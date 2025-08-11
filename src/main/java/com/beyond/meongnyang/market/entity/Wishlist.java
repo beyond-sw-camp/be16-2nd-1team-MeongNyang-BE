@@ -3,7 +3,6 @@ package com.beyond.meongnyang.market.entity;
 import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 

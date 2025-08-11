@@ -149,8 +149,10 @@ public class MarketService {
     public Page<MarketPostListReq> marketPostList(Pageable pageable) {
 //        1. pageable(page, size 정보)대로 marketPost를 list로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAll(pageable);
-//        2. list에서 marketPost를 하나씩 꺼내서 dto로 변환
-        return marketPostList.map(p-> MarketPostListReq.fromEntity(p));
+//        2. list에서 marketPost를 하나씩 꺼내서 dto로 변환 (+ 찜개수)
+        return marketPostList.map(post ->
+                MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post))
+        );
     }
 
 //    거래글 상세조회
@@ -172,11 +174,10 @@ public class MarketService {
 //        2. 거래글 객체를 구매자id로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAllByBuyerId(user.getId(), pageable);
 
-//        3. 찜 개수 가져오기
-        Long wishlistCount = wishlistRepository.countByMarketPost(marketPostList.stream().map(p -> p.))
-
-//        3. 각 거래글 객체를 dto로 변환해서 반환
-        return marketPostList.map(MarketPostListReq::fromEntity);
+//        3. 각 거래글 객체를 dto로 변환해서 반환 (+ 찜개수)
+        return marketPostList.map(post ->
+                MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post))
+        );
     }
 
 //    판매목록 조회
@@ -191,8 +192,10 @@ public class MarketService {
 //        2. 거래글 객체를 판매자id로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAllBySellerId(user.getId(), pageable);
 
-//        3. 각 거래글 객체를 dto로 변환해서 반환
-        return marketPostList.map(MarketPostListReq::fromEntity);
+//        3. 각 거래글 객체를 dto로 변환해서 반환 (+ 찜개수)
+        return marketPostList.map(post ->
+                MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post))
+        );
     }
 
 //    찜하기
@@ -241,5 +244,24 @@ public class MarketService {
 //        3. 찜목록에서 삭제하기
         wishlistRepository.deleteByUserAndMarketPost(user, marketPost);
         wishlistRepository.flush();
+    }
+
+//    찜목록 조회
+    @Transactional(readOnly = true)
+    public Page<MarketPostListReq> getWishlist(Pageable pageable) {
+//        1. 로그인한 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+
+        // 2. 해당 사용자의 찜(Wishlist) 페이지 조회
+        Page<Wishlist> wishlistPage = wishlistRepository.findAllByUser(user, pageable);
+
+        // 3. 각 Wishlist → MarketPost 꺼내서 DTO 변환 + 전체 찜 개수 포함
+        return wishlistPage.map(w -> {
+            MarketPost post = w.getMarketPost();
+            return MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post));
+        });
     }
 }

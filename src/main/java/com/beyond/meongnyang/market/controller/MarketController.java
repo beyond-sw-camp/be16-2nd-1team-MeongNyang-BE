@@ -2,9 +2,11 @@ package com.beyond.meongnyang.market.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.market.dto.MarketPostCreateReq;
+import com.beyond.meongnyang.market.dto.MarketPostListReq;
 import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
 import com.beyond.meongnyang.market.service.MarketService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -138,7 +140,10 @@ public class MarketController {
         );
     }
 
-////    찜 목록조회
-//    @GetMapping("/like")
-//    public
+//    찜 목록조회
+    @GetMapping("/like")
+    public ResponseEntity<?> getWishlist(@PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<MarketPostListReq> page = marketService.getWishlist(pageable);
+        return ResponseEntity.ok(page);
+    }
 }
