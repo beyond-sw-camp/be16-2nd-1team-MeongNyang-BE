@@ -2,6 +2,7 @@ package com.beyond.meongnyang.post.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.post.dto.*;
+import com.beyond.meongnyang.post.entity.SearchType;
 import com.beyond.meongnyang.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -193,6 +194,17 @@ public class PostRestController {
     // 친구 추천
 
     // 검색
+    @GetMapping("/search")
+    public ResponseEntity<?> postComments(@RequestParam SearchType searchType, @RequestParam String keyword,
+                                          @PageableDefault(value = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.searchPost(searchType, keyword, pageable),
+                        HttpStatus.OK.value(),
+                        "성공"
+                ), HttpStatus.OK
+        );
+    }
 
     // 신고
 

@@ -268,13 +268,23 @@ public class UserService {
     }
 
     // 언팔로우
-    public void unFollow(Long followingId){
-        User follower = commonService.getCurrentUser();
-        User following = userRepository.findById(followingId).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
+    public void unFollow(Long followingId) {
+        User user = commonService.getCurrentUser();
 
-        Long followId = followRepository.findByFollowerIdAndFollowingId(follower.getId(), following.getId());
-        followRepository.deleteById(followId);
+        if (user.getId().equals(followingId)) {
+            throw new IllegalArgumentException("본인은 언팔로우할 수 없습니다.");
+        }
+
+        // 대상 사용자 검증 (존재하지 않으면 예외)
+        userRepository.findById(followingId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
+
+        UserFollow userFollow = followRepository.findByFollowerIdAndFollowingId(user.getId(), followingId)
+                .orElseThrow(() -> new EntityNotFoundException("팔로우 관계가 없습니다."));
+
+        followRepository.delete(userFollow);
     }
+
 
     // 나를 팔로우하는 사람 목록 (followers)
     public Page<UserFollowRes> getFollowers(Pageable pageable) {

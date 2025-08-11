@@ -171,7 +171,7 @@ public class UserRestController {
     @DeleteMapping("/follows/{id}")
     public ResponseEntity<?> unFollow(@PathVariable Long id){
         userService.unFollow(id);
-        return new ResponseEntity<>(CommonRes.ofSuccess("언팔로우 완료", HttpStatus.OK.value(), "회원 상세 조회 완료"), HttpStatus.OK);
+        return new ResponseEntity<>(CommonRes.ofSuccess("언팔로우 완료", HttpStatus.OK.value(), "언팔로우를 성공했습니다."), HttpStatus.OK);
     }
 
     // 팔로워 목록 조회
