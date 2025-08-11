@@ -272,33 +272,22 @@ public class UserService {
         User follower = commonService.getCurrentUser();
         User following = userRepository.findById(followingId).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
 
-        Long followId = followRepository.findByFollowerIdAndFollowId(follower.getId(), following.getId());
+        Long followId = followRepository.findByFollowerIdAndFollowingId(follower.getId(), following.getId());
         followRepository.deleteById(followId);
     }
 
-    // 팔로우 목록 조회
-    public Page<UserFollowDetailRes> followList(String type, Pageable pageable) {
+    // 나를 팔로우하는 사람 목록 (followers)
+    public Page<UserFollowRes> getFollowers(Pageable pageable) {
         User user = commonService.getCurrentUser();
-        Specification<UserFollow> followList = (root, query, cb) -> {
-            if ("follower".equalsIgnoreCase(type)) {
-                return cb.equal(root.get("follower").get("id"), user.getId());
-                } else if ("follow".equalsIgnoreCase(type)) {
-                return cb.equal(root.get("following").get("id"), user.getId());
-            } else {
-                throw new IllegalArgumentException("type은 'follower' 또는 'following'만 허용됩니다.");
-            }
-        };
+        return followRepository.findByFollowing(user, pageable)
+                .map(UserFollow::getFollower).map(UserFollowRes::fromEntity);
+    }
 
-        return followRepository.findAll(followList, pageable)
-                .map(userFollow -> {
-                    // 'follower'이면 나를 팔로우한 사람을, 'follow'이면 내가 팔로우한 사람을 선택
-                    User targetUser = "follower".equalsIgnoreCase(type)
-                            ? userFollow.getFollowing()  // 나를 팔로우한 사람
-                            : userFollow.getFollower();    // 내가 팔로우한 사람
-
-                    // UserFollowDetailRes로 변환하여 반환
-                    return UserFollowDetailRes.fromEntity(targetUser);
-                });
+    // 내가 팔로우하는 사람 목록 (followings)
+    public Page<UserFollowRes> getFollowings(Pageable pageable) {
+        User user = commonService.getCurrentUser();
+        return followRepository.findByFollower(user, pageable)
+                .map(UserFollow::getFollowing).map(UserFollowRes::fromEntity);
     }
 
     // 사용자 차단

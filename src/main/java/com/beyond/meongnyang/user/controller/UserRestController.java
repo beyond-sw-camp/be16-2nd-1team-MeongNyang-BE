@@ -174,10 +174,25 @@ public class UserRestController {
         return new ResponseEntity<>(CommonRes.ofSuccess("언팔로우 완료", HttpStatus.OK.value(), "회원 상세 조회 완료"), HttpStatus.OK);
     }
 
-    // 팔로우 목록 조회
-    @GetMapping("/follows")
-    public ResponseEntity<?> followList(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC)Pageable pageable, @RequestParam("type") String type){
-        return new ResponseEntity<>(CommonRes.ofSuccess(userService.followList(type, pageable), HttpStatus.OK.value(), "팔로잉 목록 조회 완료"), HttpStatus.OK);
+    // 팔로워 목록 조회
+    @GetMapping("/follows/followers")
+    public ResponseEntity<?> getFollowers(
+            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(userService.getFollowers(pageable), HttpStatus.OK.value(), "팔로워 목록 조회 완료"),
+                HttpStatus.OK
+        );
+    }
+
+
+    // 팔로잉 목록 조회
+    @GetMapping("/follows/followings")
+    public ResponseEntity<?> getFollowings(
+            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(userService.getFollowings(pageable), HttpStatus.OK.value(), "팔로잉 목록 조회 완료"),
+                HttpStatus.OK
+        );
     }
 
     // 차단
