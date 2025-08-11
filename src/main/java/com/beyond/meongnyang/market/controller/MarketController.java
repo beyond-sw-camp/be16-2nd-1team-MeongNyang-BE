@@ -12,7 +12,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,9 +25,9 @@ public class MarketController {
 
     // 거래글 등록
     @PostMapping("/posts")
-    public ResponseEntity<?> marketPostCreate (@RequestPart(name = "post") MarketPostCreateReq marketPostCreateReq,
+    public ResponseEntity<?> createMarketPost (@RequestPart(name = "post") MarketPostCreateReq marketPostCreateReq,
                                                @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) {
-        Long postId = marketService.marketPostCreate(marketPostCreateReq, imageFiles);
+        Long postId = marketService.createMarketPost(marketPostCreateReq, imageFiles);
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
                         postId,
@@ -40,10 +39,10 @@ public class MarketController {
 
     // 거래글 수정
     @PatchMapping("/{id}")
-    public ResponseEntity<?> marketPostUpdate(@PathVariable("id") Long id,
+    public ResponseEntity<?> updateMarketPost(@PathVariable("id") Long id,
                                               @RequestPart(name = "post") MarketPostUpdateReq marketPostUpdateReq,
                                               @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) {
-        marketService.marketPostUpdate(id, marketPostUpdateReq, imageFiles);
+        marketService.updateMarketPost(id, marketPostUpdateReq, imageFiles);
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
                         id,
@@ -55,8 +54,8 @@ public class MarketController {
 
     // 거래글 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> marketPostDelete(@PathVariable("id") Long id) {
-        marketService.marketPostDelete(id);
+    public ResponseEntity<?> deleteMarketPost(@PathVariable("id") Long id) {
+        marketService.deleteMarketPost(id);
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
                         id,
@@ -92,10 +91,10 @@ public class MarketController {
 
     // 구매목록 조회
     @GetMapping("/purchases")
-    public ResponseEntity<?> getPurchases(@PageableDefault(value = 5, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<?> findPurchases(@PageableDefault(value = 5, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        marketService.getPurchases(pageable),
+                        marketService.findPurchases(pageable),
                         HttpStatus.OK.value(),
                         "구매목록 조회에 성공했습니다."
                 ), HttpStatus.OK
@@ -104,10 +103,10 @@ public class MarketController {
 
     // 판매목록 조회
     @GetMapping("/sales")
-    public ResponseEntity<?> getSales(@PageableDefault(value = 5, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<?> findSales(@PageableDefault(value = 5, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        marketService.getSales(pageable),
+                        marketService.findSales(pageable),
                         HttpStatus.OK.value(),
                         "판매목록 조회에 성공했습니다."
                 ), HttpStatus.OK
@@ -142,8 +141,8 @@ public class MarketController {
 
 //    찜 목록조회
     @GetMapping("/like")
-    public ResponseEntity<?> getWishlist(@PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<MarketPostListReq> page = marketService.getWishlist(pageable);
+    public ResponseEntity<?> findWishlist(@PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<MarketPostListReq> page = marketService.findWishlist(pageable);
         return ResponseEntity.ok(page);
     }
 }

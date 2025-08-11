@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.market.entity;
 
+import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @ToString
-public class Wishlist {
+public class Wishlist extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,8 +27,4 @@ public class Wishlist {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "market_post_id", nullable = false)
     private MarketPost marketPost;
-
-    @Column(updatable = false)      // 수정 시 이 필드는 건드리지 않게 함
-    private LocalDateTime createdAt;
-
 }

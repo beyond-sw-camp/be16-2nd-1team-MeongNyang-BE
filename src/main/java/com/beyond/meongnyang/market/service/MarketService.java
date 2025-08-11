@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -39,7 +38,7 @@ public class MarketService {
     private final WishlistRepository wishlistRepository;
 
 //    거래글 생성
-    public Long marketPostCreate(MarketPostCreateReq marketPostCreateReq,
+    public Long createMarketPost(MarketPostCreateReq marketPostCreateReq,
                                  List<MultipartFile> imageFiles) {
 //        1. 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -77,7 +76,7 @@ public class MarketService {
     }
 
 //    거래글 수정
-    public Long marketPostUpdate(Long id,
+    public Long updateMarketPost(Long id,
                                  MarketPostUpdateReq marketPostUpdateReq,
                                  List<MultipartFile> imageFiles) {
 //        1. 로그인한 사용자 정보 가져오기
@@ -128,7 +127,7 @@ public class MarketService {
     }
 
 //    거래글 삭제
-    public void marketPostDelete(Long id) throws AccessDeniedException {
+    public void deleteMarketPost(Long id) throws AccessDeniedException {
 //        1. 로그인한 사용자 정보 가져오기
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
@@ -146,6 +145,7 @@ public class MarketService {
     }
 
 //    거래글 목록조회
+    @Transactional(readOnly = true)
     public Page<MarketPostListReq> marketPostList(Pageable pageable) {
 //        1. pageable(page, size 정보)대로 marketPost를 list로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAll(pageable);
@@ -156,6 +156,7 @@ public class MarketService {
     }
 
 //    거래글 상세조회
+    @Transactional(readOnly = true)
     public MarketPostDetailRes marketPostDetail(Long id) {
         MarketPost marketPost = marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 거래글입니다."));
         return MarketPostDetailRes.fromEntity(marketPost);
@@ -164,7 +165,7 @@ public class MarketService {
 //    TODO : 결제기능 구현 후에 buyer 세팅 가능
 //    구매목록 조회
     @Transactional(readOnly = true)
-    public Page<MarketPostListReq> getPurchases(Pageable pageable) {
+    public Page<MarketPostListReq> findPurchases(Pageable pageable) {
 //        1. 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
@@ -182,7 +183,7 @@ public class MarketService {
 
 //    판매목록 조회
     @Transactional(readOnly = true)
-    public Page<MarketPostListReq> getSales(Pageable pageable) {
+    public Page<MarketPostListReq> findSales(Pageable pageable) {
 //        1. 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
@@ -220,7 +221,6 @@ public class MarketService {
         Wishlist wishlist = Wishlist.builder()
                 .user(user)
                 .marketPost(marketPost)
-                .createdAt(LocalDateTime.now())
                 .build();
 
 //        5. save 및 wishlist 리턴
@@ -229,7 +229,6 @@ public class MarketService {
     }
 
 //    찜 취소
-    @Transactional
     public void unlikeMarketPost(Long id) {
 //        1. 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -248,7 +247,7 @@ public class MarketService {
 
 //    찜목록 조회
     @Transactional(readOnly = true)
-    public Page<MarketPostListReq> getWishlist(Pageable pageable) {
+    public Page<MarketPostListReq> findWishlist(Pageable pageable) {
 //        1. 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
