@@ -2,6 +2,7 @@ package com.beyond.meongnyang.chat.dto;
 
 import com.beyond.meongnyang.chat.entity.ChatMedia;
 import com.beyond.meongnyang.chat.entity.ChatMessage;
+import com.beyond.meongnyang.chat.entity.ChatRoom;
 import com.beyond.meongnyang.common.dto.CommonRes;
 import lombok.*;
 import org.springframework.http.HttpStatus;
@@ -23,12 +24,15 @@ public class ChatMessageRes {
     private String senderEmail;
     private List<String> fileUrls;
 
+    private Long chatRoomId;
+
     public static ChatMessageRes fromEntity(ChatMessage chatMessage) {
         return ChatMessageRes.builder()
                 .message(chatMessage.getContent())
                 .senderEmail(chatMessage.getUser().getEmail())
                 .id(chatMessage.getId())
                 .fileUrls(chatMessage.getChatMediaList().stream().map(ChatMedia::getUrl).toList())
+                .chatRoomId(chatMessage.getChatRoom().getId())
                 .build();
     }
 }
