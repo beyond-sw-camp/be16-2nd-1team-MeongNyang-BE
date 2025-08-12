@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -207,6 +208,15 @@ public class PostRestController {
     }
 
     // 신고
-
-    // 차단
+    @PostMapping("/{id}/reports")
+    public ResponseEntity<?> reportPost(@PathVariable("id")Long postId, @RequestBody PostReportCreateReq postReportCreateReq){
+        postService.reportPost(postId, postReportCreateReq);
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        "신고가 완료되었습니다.",
+                        HttpStatus.OK.value(),
+                        "신고 완료."
+                ), HttpStatus.OK
+        );
+    }
 }

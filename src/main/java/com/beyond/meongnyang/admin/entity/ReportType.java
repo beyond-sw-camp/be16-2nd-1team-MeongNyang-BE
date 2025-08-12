@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.market.entity;
+package com.beyond.meongnyang.admin.entity;
 
 public enum ReportType {
     USER,

@@ -1,6 +1,9 @@
-package com.beyond.meongnyang.market.entity;
+package com.beyond.meongnyang.admin.entity;
 
+import com.beyond.meongnyang.chat.entity.ChatMessage;
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.market.entity.MarketPost;
+import com.beyond.meongnyang.post.entity.Post;
 import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,28 +24,38 @@ public class Report extends CommonAt {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter_id", nullable = false)
-    private User reporter;
+    private User reporterUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reported_user_id")
     private User reportedUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "market_post_id")
     private MarketPost marketPost;
 
-    private Long postId;
-    private Long messageId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_message_id")
+    private ChatMessage chatMessage;
 
     @Column(length = 255, nullable = false)
     private String reason;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ReportStatus reportStatus;
+    @Builder.Default
+    private ReportStatus reportStatus = ReportStatus.WAITING;
 
     private LocalDateTime processedAt;
 
     @Enumerated(EnumType.STRING)
     private ReportType reportType;
+
+    public void updateReportStatus(ReportStatus reportStatus){
+        this.reportStatus = reportStatus;
+    }
 }

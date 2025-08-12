@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.chat.service;
 
+import com.beyond.meongnyang.admin.repository.ReportRepository;
 import com.beyond.meongnyang.chat.dto.*;
 import com.beyond.meongnyang.chat.entity.ChatMessage;
 import com.beyond.meongnyang.chat.entity.ChatParticipant;
@@ -7,6 +8,7 @@ import com.beyond.meongnyang.chat.entity.ChatRoom;
 import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
+import com.beyond.meongnyang.common.CommonService;
 import com.beyond.meongnyang.common.S3UploadService;
 import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.user.entity.User;
@@ -34,7 +36,9 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatParticipantRepository chatParticipantRepository;
+    private final ReportRepository reportRepository;
     private final S3UploadService s3UploadService;
+    private final CommonService commonService;
 
 //    @Autowired
 //    public ChatService(UserRepository userRepository, ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, ChatParticipantRepository chatParticipantRepository) {
@@ -231,5 +235,13 @@ public class ChatService {
         LocalDateTime now = LocalDateTime.now();
         String pattern = String.format("chat/%d/%d/%02d/%02d/%s-*", roomId, now.getYear(), now.getMonthValue(), now.getDayOfMonth(), UUID.randomUUID());
         return s3UploadService.upload(files, pattern);
+    }
+
+    // 채팅 신고하기
+    // ToDo : 컨트롤러 부분만 설계 부탁드립니다.
+    public void reportChatMessage(Long chatMessageId, ChatMessageReportCreateReq chatMessageReportCreateReq) {
+        User reportUser = commonService.getCurrentUser();
+        ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId).orElseThrow(()-> new EntityNotFoundException("해당 채팅 메시지가 존재하지 않습니다."));
+        reportRepository.save(chatMessageReportCreateReq.ReportToEntity(chatMessage, reportUser));
     }
 }

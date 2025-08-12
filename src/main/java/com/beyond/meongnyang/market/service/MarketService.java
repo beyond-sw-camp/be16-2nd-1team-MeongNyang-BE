@@ -1,11 +1,9 @@
 package com.beyond.meongnyang.market.service;
 
+import com.beyond.meongnyang.admin.repository.ReportRepository;
 import com.beyond.meongnyang.common.CommonService;
 import com.beyond.meongnyang.common.S3UploadService;
-import com.beyond.meongnyang.market.dto.MarketPostCreateReq;
-import com.beyond.meongnyang.market.dto.MarketPostDetailRes;
-import com.beyond.meongnyang.market.dto.MarketPostListReq;
-import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
+import com.beyond.meongnyang.market.dto.*;
 import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.entity.ProductImage;
 import com.beyond.meongnyang.market.repository.MarketPostRepository;
@@ -35,6 +33,7 @@ public class MarketService {
     private final S3UploadService s3UploadService;
     private final CommonService commonService;
     private final UserRepository userRepository;
+    private final ReportRepository reportRepository;
 
 //    거래글 생성
     public Long marketPostCreate(MarketPostCreateReq marketPostCreateReq,
@@ -178,5 +177,12 @@ public class MarketService {
 
 //        3. 각 거래글 객체를 dto로 변환해서 반환
         return marketPostList.map(MarketPostListReq::fromEntity);
+    }
+
+    // 거래글 신고하기
+    public void reportMarketPost(Long marketPostId, MarketReportCreateReq marketReportCreateReq) {
+        User reportUser = commonService.getCurrentUser();
+        MarketPost marketPost = marketPostRepository.findById(marketPostId).orElseThrow(()-> new EntityNotFoundException("해당 거래글이 존재하지 않습니다."));
+        reportRepository.save(marketReportCreateReq.ReportToEntity(marketPost, reportUser));
     }
 }

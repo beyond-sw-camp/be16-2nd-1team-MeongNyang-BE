@@ -24,7 +24,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserRestController {
 
     public final UserService userService;
@@ -140,24 +140,6 @@ public class UserRestController {
         return new ResponseEntity<>(CommonRes.ofSuccess(
                 myPageRes, HttpStatus.OK.value(), "마이페이지-기본"
         ), HttpStatus.OK);
-    }
-
-
-    /* ******************** 관리자 기능 ******************** */
-    // 탈퇴하지 않은 회원목록 조회
-    @GetMapping("/list")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> findAll() {
-        List<UserListRes> userList = this.userService.findAll();
-        return new ResponseEntity<>(CommonRes.ofSuccess(userList, HttpStatus.OK.value(), "회원 목록 조회 완료"), HttpStatus.OK);
-    }
-
-    // 회원 상세 조회
-    @GetMapping("/detail/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> findById(@PathVariable Long id) {
-        UserDetailRes user = this.userService.findById(id);
-        return new ResponseEntity<>(CommonRes.ofSuccess(user, HttpStatus.OK.value(), "회원 상세 조회 완료"), HttpStatus.OK);
     }
 
     // 팔로우

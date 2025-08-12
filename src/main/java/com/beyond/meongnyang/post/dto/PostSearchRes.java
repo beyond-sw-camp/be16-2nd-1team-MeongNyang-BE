@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.post.dto;
 
+import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.post.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,11 +18,11 @@ public class PostSearchRes {
     private String title;
     private String content;
 
-    public static PostSearchRes fromEntity(Post post) {
+    public static PostSearchRes fromEntity(Post post, Pet pet) {
         return PostSearchRes.builder()
                 .id(post.getId())
-                .petProfile(post.getUser() != null ? /* p.getUser().getProfileImage() */ null : null)
-                .petName(post.getUser() != null ? /* p.getUser().getNickname() */ null : null)
+                .petProfile(pet.getPetProfileUrl())
+                .petName(pet.getName())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .build();

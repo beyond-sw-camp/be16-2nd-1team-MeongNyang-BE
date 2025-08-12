@@ -125,4 +125,9 @@ public class User extends CommonAt {
     public void changeMainPet(Long petId) {
         this.mainPetId = petId;
     }
+
+    // 권한 변경
+    public void updateRole(Role role){
+        this.role = role;
+    }
 }

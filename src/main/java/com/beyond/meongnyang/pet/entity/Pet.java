@@ -55,7 +55,7 @@ public class Pet extends CommonAt {
     // pet 등록 관련 소프트 딜리트
     @Column(name = "is_del", nullable = false)
     @Builder.Default
-    private String isDel = "N";
+    private String delYn = "N";
 
 
     /* ******************** 연관관계 ******************* */
@@ -81,6 +81,6 @@ public class Pet extends CommonAt {
     }
 
     public void delPet() {
-        this.isDel = "Y";
+        this.delYn = "Y";
     }
 }
