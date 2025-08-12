@@ -1,29 +1,47 @@
 package com.beyond.meongnyang.user.controller;
 
+import com.beyond.meongnyang.common.config.RedisConfig;
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.common.security.JwtTokenProvider;
+import com.beyond.meongnyang.common.service.RedisService;
 import com.beyond.meongnyang.user.dto.check.*;
+import com.beyond.meongnyang.user.dto.oauth2.*;
+import com.beyond.meongnyang.user.entity.SocialType;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.dto.*;
+import com.beyond.meongnyang.user.service.GoogleLoginService;
+import com.beyond.meongnyang.user.service.KakaoLoginService;
 import com.beyond.meongnyang.user.service.SendEmailService;
 import com.beyond.meongnyang.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/user")
 public class UserRestController {
+    // 임시저장rt
+    @Value("${jwt.tempExpirationRt}")
+    Long tempExpirationRt;
+    // 완전 저장
+    @Value("${jwt.expirationRt}")
+    Long expirationRt;
 
     public final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final GoogleLoginService googleLoginService;
+    private final KakaoLoginService kakaoLoginService;
+    private final RedisService redisService;
+
 
     @PostMapping("/check-email")
     public ResponseEntity<?> checkEmail(@Valid @RequestBody UserCheckEmailReq dto) {
@@ -78,12 +96,134 @@ public class UserRestController {
 
         return new ResponseEntity<>(CommonRes.ofSuccess(token, HttpStatus.OK.value(), "로그인되었습니다."), HttpStatus.OK);
     }
-//    // 이메일 찾기
-//    @PostMapping("/find/email")
-//    public ResponseEntity<?> findEmail(@Valid @RequestBody UserFindEmailReq dto) {
-//        String email = this.userService.findEmail(dto);
-//        return new ResponseEntity<>(CommonRes.ofSuccess(email, HttpStatus.OK.value(), "이메일을 찾았습니다."), HttpStatus.OK);
-//    }
+    // google Login
+    @PostMapping("/google/login")
+    public ResponseEntity<?> googleLogin(@Valid @RequestBody RedirectReq redirectReq) {
+        // accessToken 발급
+        GoogleOauthTokenRes googleOauthTokenRes = this.googleLoginService.getAccessToken(redirectReq.getCode());
+        // 사용자 정보 얻기
+        GoogleProfileRes googleProfileRes = this.googleLoginService.getGoogleProfile(googleOauthTokenRes.getAccess_token());
+        // 회원가입이 되어있지 않다면 회원가입 시키기
+        Optional<User> optionalUser = this.userService.getUserBySocailId(googleProfileRes.getSub());
+        if(optionalUser.isEmpty()){
+            Long ttl = tempExpirationRt * 60L;  // 15분
+            OauthTempRes tempData = new OauthTempRes(
+                    googleProfileRes.getSub(),
+                    googleProfileRes.getEmail(),
+                    SocialType.GOOGLE,
+                    googleOauthTokenRes.getRefresh_token());
+
+            redisService.saveObject("TMP_RT:GOOGLE:" + googleProfileRes.getSub(), tempData, ttl);
+
+            return new ResponseEntity(CommonRes.ofSuccess(
+                    Map.of(
+                            "isNewUser", true,
+                            "socialId", googleProfileRes.getSub(),
+                            "email", googleProfileRes.getEmail(),
+                            "socialType", SocialType.GOOGLE), HttpStatus.CREATED.value(), "추가 정보를 입력해주세요"), HttpStatus.CREATED);
+        }
+
+        // 회원가입이 되어있는 회원이라면 토큰 발급
+        User user = optionalUser.get();
+        String atToken = jwtTokenProvider.createAtToken(user);
+        return new ResponseEntity<>(CommonRes.ofSuccess(
+                Map.of(
+                        "isNewUser", false,
+                        "id", user.getId(),
+                        "token", atToken
+                ), HttpStatus.OK.value(), "로그인되었습니다."
+        ), HttpStatus.OK);
+//        Map<String, Object> loginInfo = new HashMap<>();
+//        loginInfo.put("id", user.getId());
+//        loginInfo.put("token", atToken);
+//        return new ResponseEntity<>(CommonRes.ofSuccess(loginInfo, HttpStatus.OK.value(), "로그인되었습니다."), HttpStatus.OK);
+
+
+    }
+
+    // kakao Login
+    @PostMapping("/kakao/login")
+    public ResponseEntity<?> kakaoLogin(@Valid @RequestBody RedirectReq redirectReq) {
+        System.out.println("카카오 인가 코드: " + redirectReq.getCode());
+
+
+        KakaoOauthTokenRes oauthTokenRes = this.kakaoLoginService.getAccessToken(redirectReq.getCode());
+        System.out.println("카카오 access_token: " + oauthTokenRes.getAccess_token());
+
+        KakapProfileRes kakaoProfileRes = this.kakaoLoginService.getKakaoProfile(oauthTokenRes.getAccess_token());
+        System.out.println("카카오 유저 ID: " + kakaoProfileRes.getId());
+        System.out.println("카카오 유저 email: " + kakaoProfileRes.getKakao_account().getEmail());
+
+        Optional<User> optionalUser = this.userService.getUserBySocailId(kakaoProfileRes.getId());
+        if (optionalUser.isEmpty()) {
+            Long ttl = tempExpirationRt * 60L;  // 15분
+            OauthTempRes tempData = new OauthTempRes(
+                    kakaoProfileRes.getId(),
+                    kakaoProfileRes.getKakao_account().getEmail(),
+                    SocialType.KAKAO,
+                    oauthTokenRes.getRefresh_token()
+            );
+
+            redisService.saveObject("TMP_RT:KAKAO:" + kakaoProfileRes.getId(), tempData, ttl);
+
+            return new ResponseEntity(CommonRes.ofSuccess(
+                    Map.of(
+                            "isNewUser", true,
+                            "socialId", kakaoProfileRes.getId(),
+                            "email", kakaoProfileRes.getKakao_account().getEmail(),
+                            "socialType", SocialType.KAKAO), HttpStatus.CREATED.value(), "추가 정보를 입력해주세요"), HttpStatus.CREATED);
+        }
+        User user = optionalUser.get();
+        String atToken = jwtTokenProvider.createAtToken(user);
+        return new ResponseEntity<>(CommonRes.ofSuccess(
+                Map.of(
+                        "isNewUser", false,
+                        "id", user.getId(),
+                        "token", atToken
+                ), HttpStatus.OK.value(), "로그인되었습니다."
+        ), HttpStatus.OK);
+//        Map<String, Object> loginInfo = new HashMap<>();
+//        loginInfo.put("id", originalUser.getId());
+//        loginInfo.put("token", atToken);
+//        return new ResponseEntity<>(CommonRes.ofSuccess(loginInfo, HttpStatus.OK.value(), "로그인되었습니다."), HttpStatus.OK);
+
+
+    }
+
+    @PostMapping("/signup-extra")
+    public ResponseEntity<?> signupExtra(@Valid @RequestBody InitalSetReq req) {
+        // Redis 키는 로그인 시 저장한 형식과 동일해야 함
+        String tmpKey = "TMP_RT:" + req.getSocialType() + ":" + req.getSocialId();
+
+        // Redis에서 OauthTempRes 객체 가져오기
+        OauthTempRes tempData = redisService.getObject(tmpKey, OauthTempRes.class);
+
+        if (tempData == null) {
+            throw new RuntimeException("세션이 만료되었습니다. 다시 로그인 해주세요.");
+        }
+
+        // DB 저장: 로그인 시 저장된 소셜 정보 + 이번에 받은 추가 정보 결합
+        User user = userService.saveOauthUserWithExtraInfo(
+                tempData.getSocialId(),   // 로그인 시 저장된 소셜 ID
+                tempData.getEmail(),      // 로그인 시 저장된 이메일
+                req,
+                tempData.getSocialType()  // 로그인 시 저장된 소셜 타입
+        );
+
+        // Redis 임시 데이터 삭제 후 Refresh Token 정식 키로 이동
+        redisService.deleteRefreshToken(tmpKey);
+        redisService.saveRefreshToken(
+                "RT:" + tempData.getSocialType() + ":" + user.getId(),
+                tempData.getRefreshToken(),
+                expirationRt * 60L
+        );
+
+        // Access Token 발급 후 응답
+        return ResponseEntity.ok(Map.of(
+                "id", user.getId(),
+                "token", jwtTokenProvider.createAtToken(user)
+        ));
+    }
 
     // 비밀번호 찾기 :임시비밀번호 발급
     @PostMapping("/lost-password")

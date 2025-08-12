@@ -3,8 +3,11 @@ package com.beyond.meongnyang.user.service;
 import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.user.dto.check.*;
+import com.beyond.meongnyang.user.dto.oauth2.InitalSetReq;
+import com.beyond.meongnyang.user.entity.SocialType;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.dto.*;
+import com.beyond.meongnyang.user.entity.UserStatus;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -112,33 +115,6 @@ public class UserService {
     }
 
     // 로그인
-//    public User accessLogin(UserLoginReq request) {
-//            //  존재 확인
-//            User user = userRepository.findByEmail(request.getEmail())
-//                    .orElseThrow(() -> new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다."));
-//
-//            //  상태 체크
-//            if ("Y".equals(user.getDelYn())) {
-//                throw new IllegalArgumentException("사용하지 않는 계정입니다.");
-//            }
-//            if ("Y".equals(user.getIsLocked())) {
-//                throw new IllegalArgumentException("잠긴 계정입니다.");
-//            }
-//            //  비밀번호 체크
-//            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-//                user.updateCount(user.getFailedCount() + 1); // DB에 저장되는 필드
-//                userRepository.saveAndFlush(user);
-//                if (user.getFailedCount() >= 5) {
-//                    user.lockedAccount();
-////                    throw new IllegalArgumentException("5번 틀려서 계정이 잠겼습니다.");
-//                }
-//                throw new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다.");
-//            }
-//            //  로그인 성공 시 실패 횟수 초기화
-//            user.updateCount(0);
-//
-//            return user;
-//        }
     public User accessLogin(UserLoginReq request) {
         // 1. 이메일로 사용자 조회
         User user = userRepository.findByEmail(request.getEmail())
@@ -170,17 +146,33 @@ public class UserService {
 
         return user;
     }
+    public Optional<User> getUserBySocailId(String socialId) {
+        return this.userRepository.findBySocialId(socialId);
 
+    }
 
-//    // 이메일 찾기
-//
-//    public String findEmail(UserFindEmailReq dto) {
-//        User user = this.userRepository.findByPhone(dto.getPhone()).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 전화번호입니다."));
-//        if(!user.getName().equals(dto.getName())) {
-//            throw new EntityNotFoundException("이름이 일치하지 않습니다.");
-//        }
-//        return user.getEmail();
-//    }
+    public User createOauthTemp(String socialId, String email, SocialType socialType) {
+        User user = User.builder()
+                .email(email)
+                .socialId(socialId)
+                .socialType(socialType)
+                .userStatus(UserStatus.PENDING)
+                .build();
+        return user;
+    }
+
+    // oauth 로그인 후 추가 정보 등록 후 db 저장.
+    public User saveOauthUserWithExtraInfo(String socialId, String email, InitalSetReq extraInfo, SocialType socialType) {
+        User user = User.builder()
+                .socialId(socialId)
+                .email(email)
+                .name(extraInfo.getName())
+                .nickname(extraInfo.getNickname())
+                .socialType(socialType)
+                .userStatus(UserStatus.ACTIVE)
+                .build();
+        return userRepository.save(user);
+    }
 
     // 비밀번호 찾기: 임시 비밀번호 발급
     public void wantTempPassword(UserFindPasswordReq req) {

@@ -26,7 +26,7 @@ public class User extends CommonAt {
     @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "password", nullable = false, unique = true, length = 255)
+//    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
     @Column(name = "name", nullable = false, length = 255)
@@ -87,6 +87,18 @@ public class User extends CommonAt {
     @Column(name = "deleted_at", nullable = true)
     private LocalDateTime deletedAt;
 
+    /* ****************** social Login ******************* */
+    @Column(name = "social_id", nullable = true)
+    private String socialId;
+    @Column(name = "social_type", nullable = true)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private SocialType socialType = SocialType.COMMON;
+    @Column(name = "user_status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private UserStatus userStatus = UserStatus.ACTIVE;
+
     /* ******************연관관계***************** */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -94,6 +106,7 @@ public class User extends CommonAt {
 
     @Column(name = "main_pet_id", nullable = true)
     private Long mainPetId;
+
 
 
     /* ******************메소드******************* */
