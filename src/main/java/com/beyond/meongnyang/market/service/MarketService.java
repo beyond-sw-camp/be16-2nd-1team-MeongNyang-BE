@@ -6,8 +6,10 @@ import com.beyond.meongnyang.common.S3UploadService;
 import com.beyond.meongnyang.market.dto.*;
 import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.entity.ProductImage;
+import com.beyond.meongnyang.market.entity.Wishlist;
 import com.beyond.meongnyang.market.repository.MarketPostRepository;
 import com.beyond.meongnyang.market.repository.ProductImageRepository;
+import com.beyond.meongnyang.market.repository.WishlistRepository;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.*;
@@ -34,9 +36,10 @@ public class MarketService {
     private final CommonService commonService;
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
+    private final WishlistRepository wishlistRepository;
 
 //    거래글 생성
-    public Long marketPostCreate(MarketPostCreateReq marketPostCreateReq,
+    public Long createMarketPost(MarketPostCreateReq marketPostCreateReq,
                                  List<MultipartFile> imageFiles) {
 //        1. 로그인한 사용자 정보 가져오기
         User user = commonService.getCurrentUser();
@@ -71,7 +74,7 @@ public class MarketService {
     }
 
 //    거래글 수정
-    public Long marketPostUpdate(Long id,
+    public Long updateMarketPost(Long id,
                                  MarketPostUpdateReq marketPostUpdateReq,
                                  List<MultipartFile> imageFiles) {
 //        1. 로그인한 사용자 정보 가져오기
@@ -118,7 +121,7 @@ public class MarketService {
     }
 
 //    거래글 삭제
-    public void marketPostDelete(Long id) throws AccessDeniedException {
+    public void deleteMarketPost(Long id) throws AccessDeniedException {
 //        1. 로그인한 사용자 정보 가져오기
         User user = commonService.getCurrentUser();
 
@@ -133,14 +136,18 @@ public class MarketService {
     }
 
 //    거래글 목록조회
+    @Transactional(readOnly = true)
     public Page<MarketPostListReq> marketPostList(Pageable pageable) {
 //        1. pageable(page, size 정보)대로 marketPost를 list로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAll(pageable);
-//        2. list에서 marketPost를 하나씩 꺼내서 dto로 변환
-        return marketPostList.map(p-> MarketPostListReq.fromEntity(p));
+//        2. list에서 marketPost를 하나씩 꺼내서 dto로 변환 (+ 찜개수)
+        return marketPostList.map(post ->
+                MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post))
+        );
     }
 
 //    거래글 상세조회
+    @Transactional(readOnly = true)
     public MarketPostDetailRes marketPostDetail(Long id) {
         MarketPost marketPost = marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 거래글입니다."));
         return MarketPostDetailRes.fromEntity(marketPost);
@@ -149,7 +156,7 @@ public class MarketService {
 //    TODO : 결제기능 구현 후에 buyer 세팅 가능
 //    구매목록 조회
     @Transactional(readOnly = true)
-    public Page<MarketPostListReq> getPurchases(Pageable pageable) {
+    public Page<MarketPostListReq> findPurchases(Pageable pageable) {
 //        1. 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
@@ -159,13 +166,15 @@ public class MarketService {
 //        2. 거래글 객체를 구매자id로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAllByBuyerId(user.getId(), pageable);
 
-//        3. 각 거래글 객체를 dto로 변환해서 반환
-        return marketPostList.map(MarketPostListReq::fromEntity);
+//        3. 각 거래글 객체를 dto로 변환해서 반환 (+ 찜개수)
+        return marketPostList.map(post ->
+                MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post))
+        );
     }
 
 //    판매목록 조회
     @Transactional(readOnly = true)
-    public Page<MarketPostListReq> getSales(Pageable pageable) {
+    public Page<MarketPostListReq> findSales(Pageable pageable) {
 //        1. 로그인한 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
@@ -175,8 +184,75 @@ public class MarketService {
 //        2. 거래글 객체를 판매자id로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAllBySellerId(user.getId(), pageable);
 
-//        3. 각 거래글 객체를 dto로 변환해서 반환
-        return marketPostList.map(MarketPostListReq::fromEntity);
+//        3. 각 거래글 객체를 dto로 변환해서 반환 (+ 찜개수)
+        return marketPostList.map(post ->
+                MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post))
+        );
+    }
+
+//    찜하기
+    public Long likeMarketPost(Long postId) {
+//        1. 로그인한 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+
+//        2. 마켓포스트 객체 가져오기
+        MarketPost marketPost = marketPostRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("없는 거래글입니다."));
+
+//        3. 중복 찜 여부 확인하기
+        boolean alreadLiked = wishlistRepository.findByUserAndMarketPost(user, marketPost).isPresent();
+        if(alreadLiked) {
+            throw new IllegalStateException("이미 찜한 거래글입니다.");
+        }
+
+//        4. wishlist 객체 조립 및 생성
+        Wishlist wishlist = Wishlist.builder()
+                .user(user)
+                .marketPost(marketPost)
+                .build();
+
+//        5. save 및 wishlist 리턴
+        wishlistRepository.save(wishlist);
+        return wishlist.getId();
+    }
+
+//    찜 취소
+    public void unlikeMarketPost(Long id) {
+//        1. 로그인한 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+
+//        2. 찜한 마켓포스트 객체 가져오기
+        MarketPost marketPost = marketPostRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("없는 거래글입니다."));
+
+//        3. 찜목록에서 삭제하기
+        wishlistRepository.deleteByUserAndMarketPost(user, marketPost);
+        wishlistRepository.flush();
+    }
+
+//    찜목록 조회
+    @Transactional(readOnly = true)
+    public Page<MarketPostListReq> findWishlist(Pageable pageable) {
+//        1. 로그인한 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+
+        // 2. 해당 사용자의 찜(Wishlist) 페이지 조회
+        Page<Wishlist> wishlistPage = wishlistRepository.findAllByUser(user, pageable);
+
+        // 3. 각 Wishlist → MarketPost 꺼내서 DTO 변환 + 전체 찜 개수 포함
+        return wishlistPage.map(w -> {
+            MarketPost post = w.getMarketPost();
+            return MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post));
+        });
     }
 
     // 거래글 신고하기

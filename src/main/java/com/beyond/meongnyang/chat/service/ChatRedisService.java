@@ -3,6 +3,7 @@ package com.beyond.meongnyang.chat.service;
 import com.beyond.meongnyang.chat.dto.*;
 import com.beyond.meongnyang.chat.entity.ChatParticipant;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
+import com.beyond.meongnyang.common.registry.SseEmitterRegistry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,6 +16,7 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.*;
@@ -23,26 +25,31 @@ import java.util.*;
 @Service
 @Transactional
 public class ChatRedisService implements MessageListener {
+    private final SseEmitterRegistry sseEmitterRegistry;
+
     private final ChatParticipantRepository chatParticipantRepository;
 
     private final SimpMessageSendingOperations messageTemplate;
-    private final RedisTemplate<String, String> pubsubRedisTemplate;
+    private final RedisTemplate<String, String> chatPubsubRedisTemplate;
     private final RedisTemplate<String, Map<String, String>> chatParticipantsRedisTemplate;
     private final RedisTemplate<String, String> chatOnlineParticipantsRedisTemplate;
 
     private static final String PARTICIPANTS_KEY_PREFIX = "CHAT_PARTICIPANTS_";
     private static final String ONLINE_KEY_PREFIX = "CHAT_ONLINE_";
 
-    public ChatRedisService(ChatParticipantRepository chatParticipantRepository,
+    public ChatRedisService(SseEmitterRegistry sseEmitterRegistry,
+                            ChatParticipantRepository chatParticipantRepository,
                             SimpMessageSendingOperations messageTemplate,
                             @Qualifier("chatPubSub") RedisTemplate<String, String> pubsubRedisTemplate,
                             @Qualifier("chatParticipants") RedisTemplate<String, Map<String, String>> chatParticipantsRedisTemplate,
                             @Qualifier("chatOnlineParticipants") RedisTemplate<String, String> chatOnlineParticipantsRedisTemplate) {
 
+        this.sseEmitterRegistry = sseEmitterRegistry;
+
         this.chatParticipantRepository = chatParticipantRepository;
 
         this.messageTemplate = messageTemplate;
-        this.pubsubRedisTemplate = pubsubRedisTemplate;
+        this.chatPubsubRedisTemplate = pubsubRedisTemplate;
         this.chatParticipantsRedisTemplate = chatParticipantsRedisTemplate;
         this.chatOnlineParticipantsRedisTemplate = chatOnlineParticipantsRedisTemplate;
     }
@@ -68,7 +75,7 @@ public class ChatRedisService implements MessageListener {
         }
 
         // 온라인 유저들의 마지막 읽은 메세지는 프론트로 돌려주지 않고 프론트가 알아서 계산하게 하고, 메세지만 프론트로 보내줌
-        pubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-message", data);
+        chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-message", data);
     }
 
     // redis의 참여자 목록에서 제거하고 publish
@@ -78,7 +85,7 @@ public class ChatRedisService implements MessageListener {
         redisChatParticipantMap.remove(SecurityContextHolder.getContext().getAuthentication().getName());
         chatParticipantsRedisTemplate.opsForValue().set(PARTICIPANTS_KEY_PREFIX + roomId, redisChatParticipantMap);
 
-        pubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-participants", toJson(roomId, redisChatParticipantMap));
+        chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-participants", toJson(roomId, redisChatParticipantMap));
     }
 
     // redis의 참여자 목록에 추가하고 publish
@@ -90,7 +97,7 @@ public class ChatRedisService implements MessageListener {
         }
 
         chatParticipantsRedisTemplate.opsForValue().set(PARTICIPANTS_KEY_PREFIX + roomId, redisChatParticipantMap);
-        pubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-participants", toJson(roomId, redisChatParticipantMap));
+        chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-participants", toJson(roomId, redisChatParticipantMap));
     }
 
     public Map<String, String> getOrLoadParticipantMap(Long roomId) {
@@ -148,7 +155,7 @@ public class ChatRedisService implements MessageListener {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             String data = objectMapper.writeValueAsString(chatOnlineParticipantResList);
-            pubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", data);
+            chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", data);
         } catch (JsonProcessingException e) {
             log.error("Error processing JSON for online participants: {}", e.getMessage());
             throw new RuntimeException("Error processing JSON for online participants");
@@ -168,7 +175,7 @@ public class ChatRedisService implements MessageListener {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             String data = objectMapper.writeValueAsString(chatOnlineParticipantResList);
-            pubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", data);
+            chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", data);
         } catch (JsonProcessingException e) {
             log.error("Error processing JSON for online participants: {}", e.getMessage());
             throw new RuntimeException("Error processing JSON for online participants");
@@ -187,6 +194,7 @@ public class ChatRedisService implements MessageListener {
 
         if (channel.endsWith("/chat-message")) {
             publishChatMessageToStompClient(roomId, message);
+            sendNewMessageViaSse(roomId, message);
         } else if (channel.endsWith("/chat-participants")) {
             publishChatParticipantsToStompClient(roomId, message);
         } else if (channel.endsWith("/chat-online-participants")) {
@@ -195,7 +203,7 @@ public class ChatRedisService implements MessageListener {
     }
 
     public void publishChatMessageToStompClient(String roomId, Message message) {
-        log.info("start publishChatMessageToStompClient : " + new String(message.getBody()));
+        log.info("start publishChatMessageToStompClient : {}", new String(message.getBody()));
         ObjectMapper objectMapper = new ObjectMapper();
         ChatMessageRes chatMessageRes = null;
         try {
@@ -204,11 +212,11 @@ public class ChatRedisService implements MessageListener {
             throw new RuntimeException(e);
         }
         messageTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-message", chatMessageRes);
-        log.info("end publishChatMessageToStompClient : " + new String(message.getBody()));
+        log.info("end publishChatMessageToStompClient : {}", new String(message.getBody()));
     }
 
     public void publishChatParticipantsToStompClient(String roomId, Message message) {
-        log.info("start publishChatParticipantsToStompClient : " + new String(message.getBody()));
+        log.info("start publishChatParticipantsToStompClient : {}", new String(message.getBody()));
         ObjectMapper objectMapper = new ObjectMapper();
         List<ChatParticipantRes> chatParticipantResList = new ArrayList<>();
         try {
@@ -220,11 +228,11 @@ public class ChatRedisService implements MessageListener {
             throw new RuntimeException(e);
         }
         messageTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-participants", chatParticipantResList);
-        log.info("end publishChatParticipantsToStompClient : " + new String(message.getBody()));
+        log.info("end publishChatParticipantsToStompClient : {}", new String(message.getBody()));
     }
 
     public void publishChatOnlineParticipantsToStompClient(String roomId, Message message) {
-        log.info("start publishChatOnlineParticipantsToStompClient : " + new String(message.getBody()));
+        log.info("start publishChatOnlineParticipantsToStompClient : {}", new String(message.getBody()));
         ObjectMapper objectMapper = new ObjectMapper();
         List<ChatOnlineParticipantRes> chatOnlineParticipantResList = new ArrayList<>();
         try {
@@ -236,6 +244,21 @@ public class ChatRedisService implements MessageListener {
             throw new RuntimeException(e);
         }
         messageTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", chatOnlineParticipantResList);
-        log.info("end publishChatOnlineParticipantsToStompClient : " + new String(message.getBody()));
+        log.info("end publishChatOnlineParticipantsToStompClient : {}", new String(message.getBody()));
+    }
+
+    public void sendNewMessageViaSse(String roomId, Message message) {
+        Set<String> emails = getOrLoadParticipantMap(Long.valueOf(roomId)).keySet();
+        emails.forEach(email -> {
+            SseEmitter emitter = sseEmitterRegistry.getEmitter(email);
+
+            if (emitter != null) {
+                try {
+                    emitter.send(SseEmitter.event().data(message.getBody()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 }

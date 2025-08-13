@@ -2,6 +2,7 @@ package com.beyond.meongnyang.chat.config;
 
 import com.beyond.meongnyang.chat.service.ChatService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,36 +29,49 @@ public class StompHandler implements ChannelInterceptor {
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
 //            log.info("connect 요청시 토큰 유효성 검증");
+
             String bearerToken = accessor.getFirstNativeHeader("Authorization");
-            String token = bearerToken.substring("Bearer ".length());
+            try {
+                getClaimsAndValidJwt(bearerToken);
+            } catch (ExpiredJwtException e) {
 
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(jwtSecurityAt)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-
+            }
 //            log.info("토큰 검증 완료");
         }
 
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-            String bearerToken = accessor.getFirstNativeHeader("Authorization");
-            String token = bearerToken.substring("Bearer ".length());
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(jwtSecurityAt)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
 
+            String bearerToken = accessor.getFirstNativeHeader("Authorization");
+
+            Claims claims = null;
+            try {
+                claims = getClaimsAndValidJwt(bearerToken);
+            } catch (ExpiredJwtException e) {
+
+            }
             String email = claims.getSubject();
             Long roomId = Long.parseLong(accessor.getDestination().split("/")[3]);
             chatService.validChatRoomParticipant(roomId, email);
         }
+
         if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
             log.info("DISCONNECT from {}", accessor.getDestination());
         }
 
+        if (StompCommand.SEND.equals(accessor.getCommand())) {
+
+        }
+
 
         return message;
+    }
+
+    private Claims getClaimsAndValidJwt(String bearerToken) {
+        String token = bearerToken.substring("Bearer ".length());
+        return Jwts.parserBuilder()
+                .setSigningKey(jwtSecurityAt)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

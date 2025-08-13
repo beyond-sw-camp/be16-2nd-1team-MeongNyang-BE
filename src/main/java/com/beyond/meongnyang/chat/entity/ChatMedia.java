@@ -23,7 +23,7 @@ public class ChatMedia extends CommonAt {
     @Column(name = "url", nullable = false, columnDefinition = "TEXT")
     private String url;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "media_type", nullable = false)
-    private MediaType mediaType;
+//    @Enumerated(EnumType.STRING)
+//    @Column(name = "media_type", nullable = false)
+//    private MediaType mediaType;
 }
