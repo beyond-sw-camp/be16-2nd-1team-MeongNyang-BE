@@ -54,7 +54,7 @@ public class PetService {
     // 유저가 등록한 애완동물 목록
     public PetListRes findByUser() {
         User user = commonService.getCurrentUser();
-        List<Pet> pets =this.petRepository.findAllByUserAndIsDel(user, "N");
+        List<Pet> pets =this.petRepository.findAllByUserAndDelYn(user, "N");
         return PetListRes.fromEntity(user, pets);
     }
 

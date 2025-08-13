@@ -24,7 +24,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserRestController {
 
     public final UserService userService;
@@ -142,24 +142,6 @@ public class UserRestController {
         ), HttpStatus.OK);
     }
 
-
-    /* ******************** 관리자 기능 ******************** */
-    // 탈퇴하지 않은 회원목록 조회
-    @GetMapping("/list")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> findAll() {
-        List<UserListRes> userList = this.userService.findAll();
-        return new ResponseEntity<>(CommonRes.ofSuccess(userList, HttpStatus.OK.value(), "회원 목록 조회 완료"), HttpStatus.OK);
-    }
-
-    // 회원 상세 조회
-    @GetMapping("/detail/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> findById(@PathVariable Long id) {
-        UserDetailRes user = this.userService.findById(id);
-        return new ResponseEntity<>(CommonRes.ofSuccess(user, HttpStatus.OK.value(), "회원 상세 조회 완료"), HttpStatus.OK);
-    }
-
     // 팔로우
     @PostMapping("/follows/{id}")
     public ResponseEntity<?> follow(@PathVariable("id") Long id){
@@ -171,7 +153,7 @@ public class UserRestController {
     @DeleteMapping("/follows/{id}")
     public ResponseEntity<?> unFollow(@PathVariable Long id){
         userService.unFollow(id);
-        return new ResponseEntity<>(CommonRes.ofSuccess("언팔로우 완료", HttpStatus.OK.value(), "회원 상세 조회 완료"), HttpStatus.OK);
+        return new ResponseEntity<>(CommonRes.ofSuccess("언팔로우 완료", HttpStatus.OK.value(), "언팔로우를 성공했습니다."), HttpStatus.OK);
     }
 
     // 팔로워 목록 조회
