@@ -158,10 +158,7 @@ public class MarketService {
     @Transactional(readOnly = true)
     public Page<MarketPostListReq> findPurchases(Pageable pageable) {
 //        1. 로그인한 사용자 정보 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+        User user = commonService.getCurrentUser();
 
 //        2. 거래글 객체를 구매자id로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAllByBuyerId(user.getId(), pageable);
@@ -176,10 +173,7 @@ public class MarketService {
     @Transactional(readOnly = true)
     public Page<MarketPostListReq> findSales(Pageable pageable) {
 //        1. 로그인한 사용자 정보 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+        User user = commonService.getCurrentUser();
 
 //        2. 거래글 객체를 판매자id로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAllBySellerId(user.getId(), pageable);
@@ -193,10 +187,7 @@ public class MarketService {
 //    찜하기
     public Long likeMarketPost(Long postId) {
 //        1. 로그인한 사용자 정보 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+        User user = commonService.getCurrentUser();
 
 //        2. 마켓포스트 객체 가져오기
         MarketPost marketPost = marketPostRepository.findById(postId)
@@ -222,10 +213,7 @@ public class MarketService {
 //    찜 취소
     public void unlikeMarketPost(Long id) {
 //        1. 로그인한 사용자 정보 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+        User user = commonService.getCurrentUser();
 
 //        2. 찜한 마켓포스트 객체 가져오기
         MarketPost marketPost = marketPostRepository.findById(id)
@@ -240,10 +228,7 @@ public class MarketService {
     @Transactional(readOnly = true)
     public Page<MarketPostListReq> findWishlist(Pageable pageable) {
 //        1. 로그인한 사용자 정보 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+        User user = commonService.getCurrentUser();
 
         // 2. 해당 사용자의 찜(Wishlist) 페이지 조회
         Page<Wishlist> wishlistPage = wishlistRepository.findAllByUser(user, pageable);

@@ -1,10 +1,12 @@
 package com.beyond.meongnyang.admin.controller;
 
 import com.beyond.meongnyang.admin.dto.ReportResultReq;
+import com.beyond.meongnyang.admin.service.AdminUserService;
 import com.beyond.meongnyang.admin.service.ReportService;
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.user.dto.UserDetailRes;
 import com.beyond.meongnyang.user.dto.UserListRes;
+import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +28,20 @@ import java.util.List;
 public class AdminRestController {
     private final ReportService reportService;
     private final UserService userService;
+    private final AdminUserService adminUserService;
+
     // 회원 관련 관리자 기능
+    // 회원가입 승인
+    @PostMapping("/users/{id}/approve")
+    public ResponseEntity<?> approveUser(@PathVariable Long id) {
+        Long userId = adminUserService.approveUser(id);
+        return new ResponseEntity<>(CommonRes.ofSuccess(userId, HttpStatus.OK.value(), "회원가입 승인 완료"), HttpStatus.OK);
+    }
+
+    // 회원목록 조회
+    // 회원정보 수정
+    // 회원정보 삭제
+
     // 탈퇴하지 않은 회원목록 조회
     @GetMapping("/users/list")
     public ResponseEntity<?> findAll() {

@@ -45,7 +45,7 @@ public class User extends CommonAt {
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private Role role = Role.USER;
+    private Role role = Role.APPLICANT;
 
     //TODO 활동시 point 쌓기, 초기 설정 0으로 잡아두기
     @Column(name = "point", nullable = false)
