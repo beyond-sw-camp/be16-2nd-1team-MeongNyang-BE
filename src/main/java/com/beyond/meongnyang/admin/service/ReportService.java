@@ -103,7 +103,7 @@ public class ReportService {
 
         switch (req.getReportResult()) {
             case TEMPORARY_BLOCK -> userService.handleBan(admin, reportedUser, TEMPORARY_BLOCK, (long) req.getBlockSeconds());
-            case PERMANENT_BLOCK -> userService.handleBan(admin, reportedUser, PERMANENT_BLOCK, null);
+            case PERMANENT_BLOCK -> userService.handleBan(admin, reportedUser, PERMANENT_BLOCK, 0L);
             case POST_DELETE -> {
                 Post post = postRepository.findById(report.getPost().getId())
                         .orElseThrow(() -> new EntityNotFoundException("일기가 없습니다."));
