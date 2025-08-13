@@ -1,14 +1,13 @@
 package com.beyond.meongnyang.user.service;
 
 import com.beyond.meongnyang.common.CommonService;
-import com.beyond.meongnyang.user.entity.UserFollow;
-import com.beyond.meongnyang.user.entity.User;
+import com.beyond.meongnyang.common.service.SseService;
+import com.beyond.meongnyang.user.entity.*;
 import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckPasswordReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckPhoneReq;
-import com.beyond.meongnyang.user.entity.UserBlock;
 import com.beyond.meongnyang.user.repository.FollowRepository;
 import com.beyond.meongnyang.user.repository.UserBlockRepository;
 import com.beyond.meongnyang.pet.entity.Pet;
@@ -18,12 +17,16 @@ import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.parameters.P;
@@ -31,25 +34,32 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static com.beyond.meongnyang.user.entity.Role.*;
 
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
+@EnableScheduling
 public class UserService {
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
     private final UserBlockRepository userBlockRepository;
+    private final PetRepository petRepository;
     private final PasswordEncoder passwordEncoder;
     private final CommonService commonService;
     private final UserLockedService userLockedService;
-
-    private final PetRepository petRepository;
+    private final SseService sseService;
     private final SendEmailService sendEmailService;
     private final EmailVerificationService emailVerificationService;
+    private final EntityManager em;
 
 
     //회원 가입 시 이메일, 전화번호, 닉네임 각각 인증
@@ -300,7 +310,7 @@ public class UserService {
                 .map(UserFollow::getFollowing).map(UserFollowRes::fromEntity);
     }
 
-    // 사용자 차단
+    // 사용자 차단(사용자가 사용자를 차단)
     public void blockUser(Long blockUserId){
         User user = commonService.getCurrentUser();
         User blockUser = userRepository.findById(blockUserId).orElseThrow(() -> new EntityNotFoundException());
@@ -329,7 +339,6 @@ public class UserService {
         }
         return users.map(UserBlockDetailRes::fromEntity);
     }
-
     /* ****************마이페이지&설정 관련-(pet) ********************* */
     // 대표동물 설정
     public Long setMainPet(Long petId) {
@@ -377,5 +386,78 @@ public class UserService {
         return UserDetailRes.fromEntity(user);
     }
 
+    // 관리자에 의한 서비스 이용 차단 해제
+    public void unbanByAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
+        user.unblock();
+    }
 
+    // 1분 주기로 기간 차단 만료된 유저 서비스 이용 차단 자동 해제
+    @Scheduled(initialDelay = 10_000, fixedDelay = 60_000) // 애플리케이션 시작 10초 후 첫 실행, 이후 60초마다 실행
+    public void isUserBanExpiredCheck() {
+        log.info("차단 만료된 유저 검색 시작..");
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+
+        // 만료된 TEMPORARY_BLOCK 유저 조회
+        List<User> users = userRepository.findAllExpired(Role.TEMPORARY_BLOCK, now);
+
+        int sent = 0;
+        for (User user : users) {
+            // 1) 상태 전환
+            user.unblock(); // 예: this.role = Role.USER; this.banExpiredAt = null;
+
+            // 2) SSE 발송
+            try {
+                sseService.publishMessage(
+                        "auto-unban",       // topic
+                        user.getEmail(),    // receiver
+                        "시스템 자동 차단 해제", // sender
+                        "차단이 해제되었습니다."
+                );
+                sent++;
+            } catch (Exception e) {
+                log.error("SSE 전송 실패: userEmail={}", user.getEmail(), e);
+            }
+        }
+
+        log.info("자동 해제 {}명 처리, SSE 통지 {}건 완료", users.size(), sent);
+    }
+
+    // 서비스 이용 차단 및 차단 해제 처리
+    public void handleBan(User admin, User user, Role newRole, Long seconds) {
+        // 1) 역할/만료일 갱신
+        // 변경 결과에 따라 SSE 이벤트/메시지/만료시각을 준비
+        String event = "";
+        String message = "";
+        LocalDateTime expiryDate = LocalDateTime.now(ZoneId.of("Asia/Seoul")).plusSeconds(seconds);
+
+        switch (newRole) {
+            case TEMPORARY_BLOCK -> {
+                event = "ban";
+                message = "계정이 기간 차단되었습니다.";
+                user.updateRole(TEMPORARY_BLOCK);
+                user.setBlockExpiryDate(expiryDate);
+            }
+            case PERMANENT_BLOCK -> {
+                event = "ban";
+                message = "계정이 영구 차단되었습니다.";
+                user.updateRole(PERMANENT_BLOCK);
+            }
+            case USER -> { // 차단 해제
+                event = "unban";
+                message = "차단이 해제되었습니다.";
+                user.updateRole(USER);
+            }
+        }
+        em.flush();
+
+        // SSE 전송 (message만 보내는 버전)
+        sseService.publishMessage(
+                event,                 // "ban" | "unban"
+                user.getEmail(),       // receiver = 대상 사용자
+                admin.getEmail(),      // sender   = 관리자/시스템
+                message
+        );
+    }
 }

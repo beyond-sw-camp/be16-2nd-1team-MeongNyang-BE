@@ -32,9 +32,8 @@ public class User extends CommonAt {
     @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-//
-//    @Column(name = "phone", nullable = false, unique = true, length = 255)
-//    private String phone;
+    @Column(name = "phone", nullable = false, unique = true, length = 255)
+    private String phone;
 
     // TODO: nickname 수정 사항 해야함
     @Column(name = "nickname", nullable = false, unique = true, length = 255)
@@ -87,6 +86,10 @@ public class User extends CommonAt {
     @Column(name = "deleted_at", nullable = true)
     private LocalDateTime deletedAt;
 
+    // 차단 만료 일시
+    @Column(name = "block_expiry_date", nullable = true)
+    private LocalDateTime blockExpiryDate;
+
     /* ******************연관관계***************** */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -129,5 +132,16 @@ public class User extends CommonAt {
     // 권한 변경
     public void updateRole(Role role){
         this.role = role;
+    }
+
+    // 차단 기간 설정(기간 차단)
+    public void setBlockExpiryDate(LocalDateTime blockExpiryDate) {
+        this.blockExpiryDate = blockExpiryDate;
+    }
+
+    // 차단 해제
+    public void unblock(){
+        this.role = Role.USER;
+        this.blockExpiryDate = null;
     }
 }

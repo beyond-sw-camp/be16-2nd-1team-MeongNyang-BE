@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.common.handler;
 
+import com.beyond.meongnyang.common.customexception.BlockDeniedException;
 import com.beyond.meongnyang.common.dto.CommonRes;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -72,6 +73,13 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<?> authorizationDeniedException(AuthorizationDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonRes.ofFailure(HttpStatus.FORBIDDEN.value(), e.getMessage()));
+    }
+
+    // 차단된 사용자가 리소스에 접근하는 것을 막기 위한 핸들러
+    @ExceptionHandler(BlockDeniedException.class)
+    public ResponseEntity<?> blockDeniedException(BlockDeniedException e) {
+        log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonRes.ofFailure(HttpStatus.FORBIDDEN.value(), e.getMessage()));
     }
 }

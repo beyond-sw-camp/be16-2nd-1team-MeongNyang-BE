@@ -192,6 +192,7 @@ public class ChatRedisService implements MessageListener {
 
         System.out.println(channel);
 
+
         if (channel.endsWith("/chat-message")) {
             publishChatMessageToStompClient(roomId, message);
             sendNewMessageViaSse(roomId, message);

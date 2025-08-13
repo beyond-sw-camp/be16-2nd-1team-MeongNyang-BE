@@ -26,6 +26,7 @@ public class MarketController {
 
     // 거래글 등록
     @PostMapping("/posts")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> createMarketPost (@RequestPart(name = "post") MarketPostCreateReq marketPostCreateReq,
                                                @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) {
         Long postId = marketService.createMarketPost(marketPostCreateReq, imageFiles);
@@ -40,6 +41,7 @@ public class MarketController {
 
     // 거래글 수정
     @PatchMapping("/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> updateMarketPost(@PathVariable("id") Long id,
                                               @RequestPart(name = "post") MarketPostUpdateReq marketPostUpdateReq,
                                               @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles) {
@@ -55,6 +57,7 @@ public class MarketController {
 
     // 거래글 삭제
     @DeleteMapping("/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> deleteMarketPost(@PathVariable("id") Long id) {
         marketService.deleteMarketPost(id);
         return new ResponseEntity<>(
@@ -116,6 +119,7 @@ public class MarketController {
 
 //    찜하기
     @PostMapping("/{id}/like")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> likeMarketPost(@PathVariable("id") Long postId) {
         Long wishListId = marketService.likeMarketPost(postId);
         return new ResponseEntity<>(
@@ -129,6 +133,7 @@ public class MarketController {
 
 //    찜 취소
     @DeleteMapping("/{id}/like")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> unlikeMarketPost(@PathVariable("id") Long postId) {
         marketService.unlikeMarketPost(postId);
         return new ResponseEntity<>(

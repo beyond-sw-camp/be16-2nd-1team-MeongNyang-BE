@@ -129,12 +129,13 @@ public class RedisConfig {
 
     // redis pub/sub 리스너 객체
     @Bean
-    @Qualifier("ssePusSub")
+    @Qualifier("ssePubSub")
     public RedisMessageListenerContainer sseMessageListenerContainer(@Qualifier("sseFactory") RedisConnectionFactory connectionFactory,
                                                                      @Qualifier("sseListenerAdapter") MessageListenerAdapter listenerAdapter) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         container.addMessageListener(listenerAdapter, new PatternTopic("ordering"));
+        container.addMessageListener(listenerAdapter, new PatternTopic("block"));
         return container;
     }
 
