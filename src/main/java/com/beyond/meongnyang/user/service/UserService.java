@@ -63,16 +63,6 @@ public class UserService {
         }
     }
 
-//    public void checkPhone (UserCheckPhoneReq dto) {
-//        Optional<User> optionalUser = this.userRepository.findByPhone(dto.getPhone());
-//        if (optionalUser.isPresent()) {
-////            User user = optionalUser.get();
-////            if(user.getDelYn().equals("Y")) {
-////                throw new EntityExistsException("탈퇴한 전화번호입니다.");
-////            }
-//            throw new EntityExistsException("이미 사용중인 전화번호입니다.");
-//        }
-//    }
 
     // 이메일 인증코드 발급
     public void sendCode (UserCheckEmailReq req) {
@@ -150,15 +140,30 @@ public class UserService {
         return this.userRepository.findBySocialId(socialId);
 
     }
+    // email로 사용자 조회
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
 
-    public User createOauthTemp(String socialId, String email, SocialType socialType) {
-        User user = User.builder()
-                .email(email)
-                .socialId(socialId)
-                .socialType(socialType)
-                .userStatus(UserStatus.PENDING)
-                .build();
-        return user;
+    // 소셜 계정 연동: 기존 유저(userId)에 socialType/socialId를 세팅
+    @Transactional
+    public void linkSocialAccount(Long userId, SocialType type, String socialId) {
+        if (userId == null) throw new IllegalArgumentException("userId 필수");
+        if (type == null) throw new IllegalArgumentException("socialType 필수");
+        if (socialId == null || socialId.isBlank()) throw new IllegalArgumentException("socialId 필수");
+
+        User user = findEntityById(userId);
+
+
+        user.updateSocialType(type);
+        user.updateSocialId(socialId);
+        // JPA 변경감지로 자동 반영 (save 호출 불필요)
+    }
+
+    // 필수 조회용: 없으면 404 성격의 예외
+    public User findEntityById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
     }
 
     // oauth 로그인 후 추가 정보 등록 후 db 저장.
@@ -262,7 +267,7 @@ public class UserService {
     /* **************** 관리자 기능 **************** */
     // 회원 전체 조회
     public List<UserListRes> findAll() {
-        List<User> users = this.userRepository.findAllBydelYn("N");
+        List<User> users = this.userRepository.findAllByDelYn("N");
         return users.stream().map(a -> UserListRes.fromEntity(a)).toList();
 
     }

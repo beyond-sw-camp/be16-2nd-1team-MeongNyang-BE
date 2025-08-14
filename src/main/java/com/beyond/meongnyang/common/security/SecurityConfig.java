@@ -17,7 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Configuration
@@ -42,21 +42,25 @@ public class SecurityConfig {
                         e.authenticationEntryPoint(jwtAuthenticationHandler) // 401error
                         .accessDeniedHandler(jwtAuthorizationHandler))  // 403error
                 .authorizeHttpRequests(a -> a.requestMatchers(
-                                "/user/sign", "/user/login", "/user/find/email", "/user/check-email", "/user/check-nickname", "/user/check-phone", "/connect/**",
-                                "/user/verify-email", "/user/verify-email-check", "/user/lost-password",
-                                "/user/google/login",
-                                "/user/kakao/login",
-                                "/user/signup-extra")
+                                "/users/sign", "/users/login", "/users/find/email", "/users/check-email", "/users/check-nickname", "/users/check-phone", "/connect/**",
+                                "/users/verify-email", "/users/verify-email-check", "/users/lost-password",
+                                "/users/google/login",
+                                "/users/kakao/login",
+                                "/users/signup-extra",
+                                "/users/token/refresh",
+                                "users/logout")
                         .permitAll().anyRequest().authenticated())
                 .build();
     }
 
-    private CorsConfigurationSource corsConfiguration() {
+    public CorsConfigurationSource corsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("*"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true); // 쿠키 전송 필수
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization","Content-Type"));
+        configuration.setMaxAge(3600L); // preflight 1시간 캐시
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

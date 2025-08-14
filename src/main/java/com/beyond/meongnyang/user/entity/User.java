@@ -135,7 +135,19 @@ public class User extends CommonAt {
         this.password = newPassword;
     }
 
+    // 대표동물 설정
     public void changeMainPet(Long petId) {
         this.mainPetId = petId;
     }
+
+    // 소셜 id update
+    public void updateSocialId(String socialId) {
+        this.socialId = socialId;
+    }
+    // 소셜 type update
+    public void updateSocialType(SocialType socialType) {
+        this.socialType = socialType;
+    }
+
+
 }

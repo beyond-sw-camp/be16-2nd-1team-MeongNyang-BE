@@ -46,15 +46,7 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         return redisTemplate;
     }
-@Bean
-@Qualifier("rtInventoryObject")
-public RedisTemplate<String, Object> redisObjectTemplate(@Qualifier("rtInventory") RedisConnectionFactory connectionFactory) {
-    RedisTemplate<String, Object> template = new RedisTemplate<>();
-    template.setKeySerializer(new StringRedisSerializer());
-    template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-    template.setConnectionFactory(connectionFactory);
-    return template;
-}
+
     @Bean
     @Qualifier("chatFactory")
     public RedisConnectionFactory chatRedisConnectionFactory() {
