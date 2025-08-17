@@ -5,6 +5,7 @@ import com.beyond.meongnyang.common.handler.JwtAuthorizationHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -41,24 +42,27 @@ public class SecurityConfig {
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(jwtAuthenticationHandler) // 401error
                         .accessDeniedHandler(jwtAuthorizationHandler))  // 403error
-                .authorizeHttpRequests(a -> a.requestMatchers(
+                .authorizeHttpRequests(a -> a
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
+                        .requestMatchers(
                                 "/users/sign", "/users/login", "/users/find/email", "/users/check-email", "/users/check-nickname", "/users/check-phone", "/connect/**",
                                 "/users/verify-email", "/users/verify-email-check", "/users/lost-password",
                                 "/users/google/login",
                                 "/users/kakao/login",
                                 "/users/signup-extra",
                                 "/users/token/refresh",
-                                "users/logout")
+                                "/users/logout")
                         .permitAll().anyRequest().authenticated())
                 .build();
     }
 
+    @Bean
     public CorsConfigurationSource corsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowCredentials(true); // 쿠키 전송 필수
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowCredentials(false); // 쿠키/자격증명 미사용
+        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // 필요시 추가
         configuration.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization","Content-Type"));
+        configuration.setAllowedHeaders(List.of("Authorization","Content-Type","X-Refresh-Token"));
         configuration.setMaxAge(3600L); // preflight 1시간 캐시
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

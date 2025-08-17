@@ -94,16 +94,12 @@ public class JwtTokenProvider {
         }
         return user;
     }
-    public String reissueAt(String refreshToken) {
-        User user = validateRefreshToken(refreshToken);
-        return createAtToken(user);
-    }
 
     public void revokeRefreshToken(String email) {
         redisTemplate.delete(RT_PREFIX + email);
     }
 
-    public String createSignupTicket(String socialId, String email, String socialType, int minutes) {
+    public String createSignup(String socialId, String email, String socialType) {
         Date now = new Date();
         return Jwts.builder()
                 .claim("social_id", socialId)
@@ -115,7 +111,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public SignupTicket parseSignupTicket(String token) {
+    public SignupTicket parseSignup(String token) {
         Claims c = Jwts.parserBuilder().setSigningKey(secretATToken).build()
                 .parseClaimsJws(token).getBody();
         return new SignupTicket(

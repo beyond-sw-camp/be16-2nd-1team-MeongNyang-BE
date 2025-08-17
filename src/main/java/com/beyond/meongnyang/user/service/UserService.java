@@ -13,17 +13,14 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 
 @Service
@@ -95,9 +92,6 @@ public class UserService {
         if (userRepository.findByNickname(dto.getNickname()).isPresent()) {
             throw new EntityExistsException("이미 사용중인 닉네임입니다.");
         }
-//        if (userRepository.findByPhone(dto.getPhone()).isPresent()) {
-//            throw new EntityExistsException("이미 사용중인 전화번호입니다.");
-//        }
         String encodedPassword = this.passwordEncoder.encode(dto.getPassword());
         User user = dto.toCreateEntity(encodedPassword);
         this.userRepository.save(user);
@@ -157,7 +151,6 @@ public class UserService {
 
         user.updateSocialType(type);
         user.updateSocialId(socialId);
-        // JPA 변경감지로 자동 반영 (save 호출 불필요)
     }
 
     // 필수 조회용: 없으면 404 성격의 예외
@@ -179,14 +172,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    // 비밀번호 찾기: 임시 비밀번호 발급
-    public void wantTempPassword(UserFindPasswordReq req) {
-        User user = this.userRepository.findByNameAndEmail(req.getName(), req.getEmail()).orElseThrow(
-                () -> new EntityNotFoundException("등록된 회원정보가 없습니다.")
-        );
-        String tempPassword = this.userLockedService.generateTempPassword();
-        this.sendEmailService.sendTemporaryPassword(req.getEmail(), tempPassword);
-    }
 
     // 계정 락 풀기
     //TODO: 수정 읽음 동시성 문제 해결하기, 비밀번호 변경 , 임시 비밀번호 시간은?

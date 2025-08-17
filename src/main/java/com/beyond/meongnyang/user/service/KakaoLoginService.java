@@ -1,7 +1,6 @@
 package com.beyond.meongnyang.user.service;
 
 
-import com.beyond.meongnyang.user.dto.oauth2.GoogleOauthTokenRes;
 import com.beyond.meongnyang.user.dto.oauth2.KakaoOauthTokenRes;
 import com.beyond.meongnyang.user.dto.oauth2.KakapProfileRes;
 import org.springframework.beans.factory.annotation.Value;

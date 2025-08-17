@@ -13,9 +13,7 @@ import com.beyond.meongnyang.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -50,13 +48,15 @@ public class UserRestController {
                 null, HttpStatus.OK.value(), "인증번호가 발급되었습니다."
         ), HttpStatus.OK);
     }
+
     @PostMapping("/verify-email-check")
     public ResponseEntity<?> verifyCode(@RequestBody UserEmailVerifyReq req) {
-       this.userService.verifyCode(req);
+        this.userService.verifyCode(req);
         return new ResponseEntity<>(CommonRes.ofSuccess(
-            null, HttpStatus.OK.value(), "인증 완료되었습니다."
+                null, HttpStatus.OK.value(), "인증 완료되었습니다."
         ), HttpStatus.OK);
     }
+
     @PostMapping("/check-nickname")
     public ResponseEntity<?> checkNickname(@Valid @RequestBody UserCheckNicknameReq dto) {
         this.userService.checkNickname(dto);
@@ -69,87 +69,70 @@ public class UserRestController {
         this.userService.save(dto);
         return new ResponseEntity<>(CommonRes.ofSuccess(dto, HttpStatus.CREATED.value(), "회원가입이 완료되었습니다."), HttpStatus.CREATED);
     }
-    // 일반 로그인
+
+    //  일반 로그인
     @PostMapping("/login")
     public ResponseEntity<?> accessLogin(@Valid @RequestBody UserLoginReq request) {
         User user = this.userService.accessLogin(request);
-        String atToken = jwtTokenProvider.createAtToken(user);
-        String rtToken = jwtTokenProvider.createRtToken(user);
 
-        ResponseCookie rtCookie = ResponseCookie.from("RT", rtToken)
-                .httpOnly(true)
-                .secure(false)          // 로컬 http면 false, 배포는 true
-                .sameSite("Strict")     // 또는 "Lax"
-                .path("/users/token/refresh") // 이 경로에만 쿠키 자동 전송
-                .maxAge(expirationRt * 60 * 1000L)
+        String atToken = jwtTokenProvider.createAtToken(user);
+        String rtToken = jwtTokenProvider.createRtToken(user); // 내부에서 Redis 저장
+
+        UserLoginRes res = UserLoginRes.builder()
+                .accessToken(atToken)
+                .refreshToken(rtToken)
                 .build();
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, rtCookie.toString())
-                .body(CommonRes.ofSuccess(Map.of("accessToken", atToken), HttpStatus.OK.value(), "로그인되었습니다."));
+        return ResponseEntity.ok(
+                CommonRes.ofSuccess(res, HttpStatus.OK.value(), "로그인되었습니다.")
+        );
     }
-    // 구글 로그인
+
+    //  구글 로그인
     @PostMapping("/google/login")
     public ResponseEntity<?> googleLogin(@Valid @RequestBody RedirectReq redirectReq) {
         GoogleOauthTokenRes tokenRes = googleLoginService.getAccessToken(redirectReq.getCode());
         GoogleProfileRes profile = googleLoginService.getGoogleProfile(tokenRes.getAccess_token());
 
         String socialId = profile.getSub();
-        String email    = profile.getEmail();
+        String email = profile.getEmail();
 
-        // socialId로 기존회원
-        Optional<User> bySocial = userService.getUserBySocailId(socialId);
-        if (bySocial.isPresent()) {
-            User user = bySocial.get();
+        Optional<User> optionalSocial = userService.getUserBySocailId(socialId);
+        if (optionalSocial.isPresent()) {
+            User user = optionalSocial.get();
             String atToken = jwtTokenProvider.createAtToken(user);
             String rtToken = jwtTokenProvider.createRtToken(user);
-
-            ResponseCookie rtCookie = ResponseCookie.from("RT", rtToken)
-                    .httpOnly(true)
-                    .secure(false)
-                    .sameSite("Strict")
-                    .path("/users/token/refresh")
-                    .maxAge(expirationRt * 60 * 1000L)
-                    .build();
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, rtCookie.toString())
-                    .body(CommonRes.ofSuccess(Map.of("isNewUser", false, "id", user.getId(), "accessToken", atToken),
-                            HttpStatus.OK.value(), "로그인되었습니다."));
+            return ResponseEntity.ok(
+                    CommonRes.ofSuccess(
+                            Map.of("isNewUser", false, "id", user.getId(), "accessToken", atToken, "refreshToken", rtToken),
+                            HttpStatus.OK.value(), "로그인되었습니다."
+                    )
+            );
         }
 
-        // email로 기존계정 연동
-        Optional<User> byEmail = userService.getUserByEmail(email);
-        if (byEmail.isPresent()) {
-            User user = byEmail.get();
+        Optional<User> optionalEmail = userService.getUserByEmail(email);
+        if (optionalEmail.isPresent()) {
+            User user = optionalEmail.get();
             userService.linkSocialAccount(user.getId(), SocialType.GOOGLE, socialId);
             String atToken = jwtTokenProvider.createAtToken(user);
             String rtToken = jwtTokenProvider.createRtToken(user);
-
-            ResponseCookie rtCookie = ResponseCookie.from("RT", rtToken)
-                    .httpOnly(true)
-                    .secure(false)
-                    .sameSite("Strict")
-                    .path("/users/token/refresh")
-                    .maxAge(expirationRt * 60 * 1000L)
-                    .build();
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, rtCookie.toString())
-                    .body(CommonRes.ofSuccess(Map.of("isNewUser", false, "id", user.getId(), "accessToken", atToken),
-                            HttpStatus.OK.value(), "연동 후 로그인되었습니다."));
+            return ResponseEntity.ok(
+                    CommonRes.ofSuccess(
+                            Map.of("isNewUser", false, "id", user.getId(), "accessToken", atToken, "refreshToken", rtToken),
+                            HttpStatus.OK.value(), "연동 후 로그인되었습니다."
+                    )
+            );
         }
 
-        // 3) 신규 → signupTicket만 발급(10분)
-        String ticket = jwtTokenProvider.createSignupTicket(socialId, email, SocialType.GOOGLE.name(), 10);
+        // 신규가입 티켓
+        String newUser = jwtTokenProvider.createSignup(socialId, email, SocialType.GOOGLE.name());
         return new ResponseEntity<>(CommonRes.ofSuccess(
-                Map.of("isNewUser", true, "signupTicket", ticket, "email", email, "socialType", SocialType.GOOGLE),
+                Map.of("isNewUser", true, "signup", newUser, "email", email, "socialType", SocialType.GOOGLE),
                 HttpStatus.CREATED.value(), "추가 정보를 입력해주세요"
         ), HttpStatus.CREATED);
     }
 
-    // 카카오 로그인
-
+    //  카카오 로그인
     @PostMapping("/kakao/login")
     public ResponseEntity<?> kakaoLogin(@Valid @RequestBody RedirectReq redirectReq) {
         KakaoOauthTokenRes tokenRes = kakaoLoginService.getAccessToken(redirectReq.getCode());
@@ -158,65 +141,45 @@ public class UserRestController {
         String socialId = profile.getId();
         String email = profile.getKakao_account().getEmail();
 
-        // 1) socialId로 기존회원
-        Optional<User> bySocial = userService.getUserBySocailId(socialId);
-        if (bySocial.isPresent()) {
-            User user = bySocial.get();
+        Optional<User> optionalSocial = userService.getUserBySocailId(socialId);
+        if (optionalSocial.isPresent()) {
+            User user = optionalSocial.get();
             String atToken = jwtTokenProvider.createAtToken(user);
             String rtToken = jwtTokenProvider.createRtToken(user);
-
-            ResponseCookie rtCookie = ResponseCookie.from("RT", rtToken)
-                    .httpOnly(true)
-                    .secure(false)
-                    .sameSite("Strict")
-                    .path("/users/token/refresh")
-                    .maxAge(expirationRt * 60 * 1000L)
-                    .build();
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, rtCookie.toString())
-                    .body(CommonRes.ofSuccess(Map.of("isNewUser", false, "id", user.getId(), "accessToken", atToken),
-                            HttpStatus.OK.value(), "로그인되었습니다."));
+            return ResponseEntity.ok(
+                    CommonRes.ofSuccess(
+                            Map.of("isNewUser", false, "id", user.getId(), "accessToken", atToken, "refreshToken", rtToken),
+                            HttpStatus.OK.value(), "로그인되었습니다."
+                    )
+            );
         }
 
-        // 2) email 연동
-        Optional<User> byEmail = userService.getUserByEmail(email);
-        if (byEmail.isPresent()) {
-            User user = byEmail.get();
+        Optional<User> optionalEmail = userService.getUserByEmail(email);
+        if (optionalEmail.isPresent()) {
+            User user = optionalEmail.get();
             userService.linkSocialAccount(user.getId(), SocialType.KAKAO, socialId);
             String atToken = jwtTokenProvider.createAtToken(user);
             String rtToken = jwtTokenProvider.createRtToken(user);
-
-            ResponseCookie rtCookie = ResponseCookie.from("RT", rtToken)
-                    .httpOnly(true)
-                    .secure(false)
-                    .sameSite("Strict")
-                    .path("/users/token/refresh")
-                    .maxAge(expirationRt * 60 * 1000L)
-                    .build();
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, rtCookie.toString())
-                    .body(CommonRes.ofSuccess(Map.of("isNewUser", false, "id", user.getId(), "accessToken", atToken),
-                            HttpStatus.OK.value(), "연동 후 로그인되었습니다."));
+            return ResponseEntity.ok(
+                    CommonRes.ofSuccess(
+                            Map.of("isNewUser", false, "id", user.getId(), "accessToken", atToken, "refreshToken", rtToken),
+                            HttpStatus.OK.value(), "연동 후 로그인되었습니다."
+                    )
+            );
         }
 
-
-        // 3) 신규 → signupTicket만 발급
-        String ticket = jwtTokenProvider.createSignupTicket(socialId, email, SocialType.KAKAO.name(), 10);
+        String ticket = jwtTokenProvider.createSignup(socialId, email, SocialType.KAKAO.name());
         return new ResponseEntity<>(CommonRes.ofSuccess(
                 Map.of("isNewUser", true, "signupTicket", ticket, "email", email, "socialType", SocialType.KAKAO),
                 HttpStatus.CREATED.value(), "추가 정보를 입력해주세요"
         ), HttpStatus.CREATED);
     }
 
-    // 소셜 신규가입 최종화
-
+    //  추가정보 완료 후 로그인
     @PostMapping("/signup-extra")
     public ResponseEntity<?> signupExtra(@Valid @RequestBody SignupExtraReq req) {
-        JwtTokenProvider.SignupTicket ticket = jwtTokenProvider.parseSignupTicket(req.getSignupTicket());
+        JwtTokenProvider.SignupTicket ticket = jwtTokenProvider.parseSignup(req.getSignupTicket());
 
-        // DB 저장
         InitalSetReq extra = new InitalSetReq();
         extra.setName(req.getName());
         extra.setNickname(req.getNickname());
@@ -225,75 +188,60 @@ public class UserRestController {
                 ticket.socialId(), ticket.email(), extra, SocialType.valueOf(ticket.socialType())
         );
 
-        //  AT/RT 발급
         String atToken = jwtTokenProvider.createAtToken(user);
         String rtToken = jwtTokenProvider.createRtToken(user);
 
-        ResponseCookie rtCookie = ResponseCookie.from("RT", rtToken)
-                .httpOnly(true)
-                .secure(false)
-                .sameSite("Strict")
-                .path("/users/token/refresh")
-                .maxAge(expirationRt * 60 * 1000L)
-                .build();
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, rtCookie.toString())
-                .body(CommonRes.ofSuccess(Map.of("id", user.getId(), "accessToken", atToken),
-                        HttpStatus.OK.value(), "연동 후 로그인되었습니다."));
+        return ResponseEntity.ok(
+                CommonRes.ofSuccess(
+                        Map.of("id", user.getId(), "accessToken", atToken, "refreshToken", rtToken),
+                        HttpStatus.OK.value(), "연동 후 로그인되었습니다."
+                )
+        );
     }
 
-    // AT 재발급
-
+    // AT 재발급 — 헤더에서 RT 수신, 새 AT만 반환
     @PostMapping("/token/refresh")
-    public ResponseEntity<?> refresh(@CookieValue(value = "RT", required = false) String rtToken) {
-        if (rtToken == null) return ResponseEntity.status(401)
-                .body(CommonRes.ofFailure(401, "RT 쿠키가 없습니다."));
-        String newAt = jwtTokenProvider.reissueAt(rtToken);
-        return ResponseEntity.ok(CommonRes.ofSuccess(Map.of("accessToken", newAt), HttpStatus.OK.value(), "AT 재발급"));
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(@CookieValue(value = "RT", required = false) String rt) {
-        if (rt != null) {
+    public ResponseEntity<?> refresh(@RequestHeader(value = "X-Refresh-Token", required = false) String rtToken) {
+        if (rtToken == null || rtToken.isBlank()) {
+            return ResponseEntity.status(401).body(CommonRes.ofFailure(HttpStatus.UNAUTHORIZED.value(), "RT 헤더가 없습니다."));
+        }
+            //  validateRt + createAtToken
             try {
-                String email = jwtTokenProvider.getSubjectFromRefresh(rt);
-                jwtTokenProvider.revokeRefreshToken(email);
-            } catch (Exception ignore) { /* 이미 만료/위조면 무시 */ }
+                User user = jwtTokenProvider.validateRefreshToken(rtToken); // Redis 대조
+                String newAt = jwtTokenProvider.createAtToken(user);
+                return ResponseEntity.ok(CommonRes.ofSuccess(Map.of("accessToken", newAt), HttpStatus.OK.value(), "AT 재발급"));
+            } catch (Exception ex) {
+                return ResponseEntity.status(401).body(CommonRes.ofFailure(HttpStatus.UNAUTHORIZED.value(), "RT가 올바르지 않거나 만료되었습니다."));
+            }
         }
 
-        ResponseCookie del = ResponseCookie.from("RT","")
-                .httpOnly(true).secure(false).sameSite("Strict")
-                .path("/users/token/refresh").maxAge(0).build();
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, del.toString())
-                .body(CommonRes.ofSuccess(null, 200, "로그아웃 완료"));
+    //  로그아웃 — 헤더 RT로 Redis 제거
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = "X-Refresh-Token", required = false) String rtToken) {
+        if (rtToken != null && !rtToken.isBlank()) {
+            try {
+                // email redis에서 꺼내기
+                String subject = jwtTokenProvider.getSubjectFromRefresh(rtToken);
+                jwtTokenProvider.revokeRefreshToken(subject); // 내부에서 Redis 키 삭제
+            } catch (Exception ignore) { /* 이미 만료/위조면 무시 */ }
+        }
+        return ResponseEntity.ok(CommonRes.ofSuccess(null, HttpStatus.OK.value(), "로그아웃 완료"));
     }
 
 
 
-    // 비밀번호 찾기 :임시비밀번호 발급
+    // 비밀번호 찾기 & 잠금처리 초기화 :임시비밀번호 발급
     @PostMapping("/lost-password")
-    public ResponseEntity<?> wantTempPassword(@RequestBody UserFindPasswordReq req) {
-        this.userService.wantTempPassword(req);
-        return new ResponseEntity<>(CommonRes.ofSuccess(
-                null,  HttpStatus.OK.value(), "임시비밀번호가 이메일로 전송되었습니다."
-        ), HttpStatus.OK);
-    }
-
-
-    // 계정 unlock 풀기
-    @PostMapping("/unlock")
-    public ResponseEntity<?> unlock(@Valid @RequestBody UserUnlockReq req) {
+    public ResponseEntity<?> wantTempPassword(@RequestBody UserUnlockReq req) {
         this.userService.unlock(req);
         return new ResponseEntity<>(CommonRes.ofSuccess(
                 null,  HttpStatus.OK.value(), "임시비밀번호가 이메일로 전송되었습니다."
         ), HttpStatus.OK);
     }
 
+
     // 비밀번호 변경
-    @PutMapping("change/password")
+    @PutMapping("/change/password")
     public ResponseEntity<?> changePassword(@RequestBody UserChangePasswordReq req) {
         this.userService.changePassword(req);
         return new ResponseEntity<>(CommonRes.ofSuccess(
