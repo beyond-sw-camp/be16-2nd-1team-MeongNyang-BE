@@ -8,5 +8,4 @@ public enum AlarmType {
     CHAT, // 채팅방
     NOTICE, // 공지
     TRADE, // 중고거래
-    GATHERING // 모임
 }
