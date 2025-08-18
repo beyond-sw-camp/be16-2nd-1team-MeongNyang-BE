@@ -10,6 +10,7 @@ import com.beyond.meongnyang.market.entity.Wishlist;
 import com.beyond.meongnyang.market.repository.MarketPostRepository;
 import com.beyond.meongnyang.market.repository.ProductImageRepository;
 import com.beyond.meongnyang.market.repository.WishlistRepository;
+import com.beyond.meongnyang.user.entity.Role;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.*;
@@ -17,8 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -129,7 +128,7 @@ public class MarketService {
         MarketPost marketPost =  marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 거래글입니다."));
 
         // 작성자 확인 (로그인한 사용자, 거래글 작성자)
-        if (!Objects.equals(user.getId(), marketPost.getSeller().getId())) {
+        if (!Objects.equals(user.getId(), marketPost.getSeller().getId()) && user.getRole() != Role.ADMIN) {
             throw new AccessDeniedException("작성자 또는 관리자만 삭제 가능합니다.");
         }
         marketPost.deleteMarketPost("Y");

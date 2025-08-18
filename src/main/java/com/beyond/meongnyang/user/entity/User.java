@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.user.entity;
 
+import com.beyond.meongnyang.admin.dto.AdminUserUpdateReq;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.pet.entity.Pet;
 import jakarta.persistence.*;
@@ -87,6 +88,10 @@ public class User extends CommonAt {
     @Column(name = "deleted_at", nullable = true)
     private LocalDateTime deletedAt;
 
+    // 회원가입 승인 시에 기록
+    @Column(name = "approved_at", nullable = true)
+    private LocalDateTime approvedAt;
+
     /* ******************연관관계***************** */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -129,5 +134,19 @@ public class User extends CommonAt {
     // 권한 변경
     public void updateRole(Role role){
         this.role = role;
+    }
+
+    // 회원가입 승인
+    public void approve() {
+        this.approvedAt = LocalDateTime.now();
+        this.role = Role.USER;
+    }
+
+    // 회원정보 수정
+    public void updateUser(AdminUserUpdateReq req) {
+        this.name = req.getName();
+        this.nickname = req.getNickname();
+        this.location = req.getLocation();
+        this.point = req.getPoint();
     }
 }
