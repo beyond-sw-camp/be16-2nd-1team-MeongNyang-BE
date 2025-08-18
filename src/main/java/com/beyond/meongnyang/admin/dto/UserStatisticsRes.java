@@ -10,6 +10,6 @@
     @NoArgsConstructor
     @AllArgsConstructor
     public class UserStatisticsRes {
-        private LocalDate date;     // 일자(또는 주 시작일, 월 시작일)
+        private LocalDate date;     // 일자(또는 조회기간 내 주/월 시작일)
         private long signupCount;   // 회원가입 수
     }

@@ -65,12 +65,12 @@ public class AdminRestController {
         return new ResponseEntity<>(CommonRes.ofSuccess(userId, HttpStatus.OK.value(), "회원정보삭제 완료"), HttpStatus.OK);
     }
 
-//    // 회원가입 통계
-//    @GetMapping("/users/statistics")
-//    public ResponseEntity<?> findUserSignupStatistics(UserStatisticsReq req) {
-//        List<UserStatisticsRes> res = adminUserService.findUserSignupStatistics(req);
-//        return new ResponseEntity<>(CommonRes.ofSuccess(res, HttpStatus.OK.value(), "회원가입통계 조회 완료"), HttpStatus.OK);
-//    }
+    // 회원가입 통계
+    @GetMapping("/users/statistics")
+    public ResponseEntity<?> findUserSignupStatistics(UserStatisticsReq req) {
+        List<UserStatisticsRes> res = adminUserService.findUserSignupStatistics(req);
+        return new ResponseEntity<>(CommonRes.ofSuccess(res, HttpStatus.OK.value(), "회원가입통계 조회 완료"), HttpStatus.OK);
+    }
 
 
     // 탈퇴하지 않은 회원목록 조회
