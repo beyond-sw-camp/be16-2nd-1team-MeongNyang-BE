@@ -89,7 +89,7 @@ public class UserRestController {
     }
 
     //  구글 로그인
-    @PostMapping("/google/login")
+    @PostMapping("/login/google")
     public ResponseEntity<?> googleLogin(@Valid @RequestBody RedirectReq redirectReq) {
         GoogleOauthTokenRes tokenRes = googleLoginService.getAccessToken(redirectReq.getCode());
         GoogleProfileRes profile = googleLoginService.getGoogleProfile(tokenRes.getAccess_token());
@@ -133,7 +133,7 @@ public class UserRestController {
     }
 
     //  카카오 로그인
-    @PostMapping("/kakao/login")
+    @PostMapping("/login/kakao")
     public ResponseEntity<?> kakaoLogin(@Valid @RequestBody RedirectReq redirectReq) {
         KakaoOauthTokenRes tokenRes = kakaoLoginService.getAccessToken(redirectReq.getCode());
         KakapProfileRes profile = kakaoLoginService.getKakaoProfile(tokenRes.getAccess_token());

@@ -45,10 +45,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
                         .requestMatchers(
-                                "/users/sign", "/users/login", "/users/find/email", "/users/check-email", "/users/check-nickname", "/users/check-phone", "/connect/**",
+                                "/users/sign", "/users/login/**", "/users/find/email", "/users/check-email", "/users/check-nickname", "/users/check-phone", "/connect/**",
                                 "/users/verify-email", "/users/verify-email-check", "/users/lost-password",
-                                "/users/google/login",
-                                "/users/kakao/login",
                                 "/users/signup-extra",
                                 "/users/token/refresh",
                                 "/users/logout")
