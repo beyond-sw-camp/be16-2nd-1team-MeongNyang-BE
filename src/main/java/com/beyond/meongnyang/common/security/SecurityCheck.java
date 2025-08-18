@@ -15,8 +15,7 @@ public class SecurityCheck {
     private final CommonService commonService;
     private final UserRepository userRepository;
     public boolean checkUserAccess() {
-        User user = userRepository.findById(commonService.getCurrentUser().getId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = commonService.getCurrentUser();
 
         if (user.getRole() == Role.TEMPORARY_BLOCK || user.getRole() == Role.PERMANENT_BLOCK) {
             throw new BlockDeniedException("차단된 사용자 입니다.");

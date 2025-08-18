@@ -43,7 +43,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(jwtAuthorizationHandler))  // 403error
                 .authorizeHttpRequests(a -> a.requestMatchers(
                                 "/users/sign", "/users/login", "/users/find/email", "/users/check-email", "/users/check-nickname", "/users/check-phone", "/connect/**",
-                                "/users/verify-email", "/users/verify-email-check", "/users/lost-password", "/sse/**")
+                                "/users/verify-email", "/users/verify-email-check", "/users/lost-password")
                         .permitAll().anyRequest().authenticated())
                 .build();
     }

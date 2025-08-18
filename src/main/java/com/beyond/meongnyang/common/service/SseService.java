@@ -54,10 +54,6 @@ public class SseService implements MessageListener {
 //        pattern : 채널명
         String channel = new String(pattern);
         String event = "";
-//        여러개의 채널을 구독하고 있을 경우, 채널명으로 분기처리
-        if(channel.endsWith("/block")){
-            event = "block";
-        }
         try {
             SseMessageRes sseMessageRes = objectMapper.readValue(message.getBody(), SseMessageRes.class);
             log.info("메시지 : " + sseMessageRes);

@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @PreAuthorize("hasRole('ADMIN')")
@@ -64,7 +65,7 @@ public class AdminRestController {
 
     // 신고 처리
     @PostMapping("/reports/{id}")
-    public ResponseEntity<?> processReports(@PathVariable("id") Long id, @RequestBody ReportResultReq reportResultReq){
+    public ResponseEntity<?> processReports(@PathVariable("id") Long id, @RequestBody ReportResultReq reportResultReq) throws AccessDeniedException {
         reportService.processReport(id,reportResultReq);
         return new ResponseEntity<>(CommonRes.ofSuccess("신고 처리가 완료되었습니다.", HttpStatus.OK.value(), "신고 처리 완료"), HttpStatus.OK);
     }

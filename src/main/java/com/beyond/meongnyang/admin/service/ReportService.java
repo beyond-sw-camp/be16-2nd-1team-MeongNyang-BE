@@ -18,6 +18,7 @@ import com.beyond.meongnyang.market.repository.MarketPostRepository;
 import com.beyond.meongnyang.post.dto.PostListReq;
 import com.beyond.meongnyang.post.entity.Post;
 import com.beyond.meongnyang.post.repository.PostRepository;
+import com.beyond.meongnyang.post.service.PostService;
 import com.beyond.meongnyang.user.entity.Role;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
@@ -33,6 +34,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -52,6 +54,7 @@ public class ReportService {
     private final SseService sseService;
     private final CommonService commonService;
     private final UserService userService;
+    private final PostService postService;
 
     // 모든 신고조회
     @Transactional(readOnly = true)
@@ -86,7 +89,7 @@ public class ReportService {
     }
 
     // 신고 처리
-    public void processReport(Long reportId, ReportResultReq req) {
+    public void processReport(Long reportId, ReportResultReq req) throws AccessDeniedException {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new EntityNotFoundException("신고가 존재하지 않습니다."));
 
@@ -105,9 +108,7 @@ public class ReportService {
             case TEMPORARY_BLOCK -> userService.handleBan(admin, reportedUser, TEMPORARY_BLOCK, (long) req.getBlockSeconds());
             case PERMANENT_BLOCK -> userService.handleBan(admin, reportedUser, PERMANENT_BLOCK, 0L);
             case POST_DELETE -> {
-                Post post = postRepository.findById(report.getPost().getId())
-                        .orElseThrow(() -> new EntityNotFoundException("일기가 없습니다."));
-                post.deletePost("Y");
+                postService.deletePost(report.getPost().getId());
             }
         }
     }
