@@ -21,10 +21,6 @@ public class Alarm extends CommonAt {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id")
-    private User sender;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_id")
     private User receiver;
 
@@ -33,6 +29,6 @@ public class Alarm extends CommonAt {
     @Enumerated(EnumType.STRING)
     @Column(name = "alarm_type")
     private AlarmType alarmType;
-    @Column(name = "alarm_id")
-    private Long alarmId;
+    @Column(name = "target_id")
+    private Long targetId;
 }
