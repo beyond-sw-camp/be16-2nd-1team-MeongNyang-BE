@@ -253,7 +253,9 @@ public class UserService {
     public void follow(Long followingId){
         User follower = commonService.getCurrentUser();
         User following = userRepository.findById(followingId).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
-
+        if (follower.getId().equals(followingId)) {
+            throw new IllegalArgumentException("본인은 팔로우할 수 없습니다.");
+        }
         if (followRepository.findIdByFollowerAndFollowing(follower, following).isPresent()) {
             throw new EntityExistsException("이미 퍌로우중인 사용자입니다.");
 
