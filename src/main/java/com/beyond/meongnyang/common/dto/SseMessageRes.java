@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class SseMessageRes {
-    private String sender;
     private String receiver;
     private String event;
     private String message;

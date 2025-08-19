@@ -14,17 +14,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.Set;
 
 @Slf4j
 @Component
 public class SseService implements MessageListener {
     private final SseEmitterRegistry sseEmitterRegistry;
     private final RedisTemplate<String, String> ssePubSubTemplate;
+    private final ObjectMapper objectMapper;
 
-    public SseService(SseEmitterRegistry sseEmitterRegistry, @Qualifier("ssePubSub") RedisTemplate<String, String> ssePubSubTemplate) {
+    public SseService(SseEmitterRegistry sseEmitterRegistry, @Qualifier("ssePubSub") RedisTemplate<String, String> ssePubSubTemplate, ObjectMapper objectMapper) {
         this.sseEmitterRegistry = sseEmitterRegistry;
         this.ssePubSubTemplate = ssePubSubTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public SseEmitter connect() {
@@ -49,7 +50,6 @@ public class SseService implements MessageListener {
     //
     @Override
     public void onMessage(Message message, byte[] pattern) {
-        ObjectMapper objectMapper = new ObjectMapper();
         String event = "";
         try {
             SseMessageRes sseMessageRes = objectMapper.readValue(message.getBody(), SseMessageRes.class);
@@ -69,15 +69,12 @@ public class SseService implements MessageListener {
         }
     }
 
-    public void publishMessage(String event, String receiver, String sender, String message) {
+    public void publishMessage(String event, String receiver, String message) {
         SseMessageRes sseMessageRes = SseMessageRes.builder()
-                .sender(sender)
                 .receiver(receiver)
                 .event(event)
                 .message(message)
                 .build();
-
-        ObjectMapper objectMapper = new ObjectMapper();
         String data;
         try {
             data = objectMapper.writeValueAsString(sseMessageRes);

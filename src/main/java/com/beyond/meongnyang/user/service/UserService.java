@@ -412,7 +412,6 @@ public class UserService {
         sseService.publishMessage(
                 event,                 // "ban" | "unban"
                 user.getEmail(),       // receiver = 대상 사용자
-                admin.getEmail(),      // sender   = 관리자/시스템
                 message
         );
     }

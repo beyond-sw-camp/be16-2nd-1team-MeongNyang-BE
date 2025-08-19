@@ -41,7 +41,6 @@ public class CommonScheduler {
                 sseService.publishMessage(
                         "auto-unban",       // topic
                         user.getEmail(),    // receiver
-                        "시스템 자동 차단 해제", // sender
                         "차단이 해제되었습니다."
                 );
                 sent++;
