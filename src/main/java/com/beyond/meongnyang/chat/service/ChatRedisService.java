@@ -25,8 +25,9 @@ import java.util.*;
 @Service
 @Transactional
 public class ChatRedisService implements MessageListener {
-    private final SseEmitterRegistry sseEmitterRegistry;
+    private final ObjectMapper objectMapper;
 
+    private final SseEmitterRegistry sseEmitterRegistry;
     private final ChatParticipantRepository chatParticipantRepository;
 
     private final SimpMessageSendingOperations messageTemplate;
@@ -42,7 +43,8 @@ public class ChatRedisService implements MessageListener {
                             SimpMessageSendingOperations messageTemplate,
                             @Qualifier("chatPubSub") RedisTemplate<String, String> pubsubRedisTemplate,
                             @Qualifier("chatParticipants") RedisTemplate<String, Map<String, String>> chatParticipantsRedisTemplate,
-                            @Qualifier("chatOnlineParticipants") RedisTemplate<String, String> chatOnlineParticipantsRedisTemplate) {
+                            @Qualifier("chatOnlineParticipants") RedisTemplate<String, String> chatOnlineParticipantsRedisTemplate,
+                            ObjectMapper objectMapper) {
 
         this.sseEmitterRegistry = sseEmitterRegistry;
 
@@ -52,6 +54,7 @@ public class ChatRedisService implements MessageListener {
         this.chatPubsubRedisTemplate = pubsubRedisTemplate;
         this.chatParticipantsRedisTemplate = chatParticipantsRedisTemplate;
         this.chatOnlineParticipantsRedisTemplate = chatOnlineParticipantsRedisTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public void publishChatMessageToRedis(Long roomId, ChatMessageRes chatMessageRes) {
@@ -65,7 +68,6 @@ public class ChatRedisService implements MessageListener {
 
         chatParticipantsRedisTemplate.opsForValue().set(PARTICIPANTS_KEY_PREFIX + roomId, chatParticipants);
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String data = null;
         try {
             data = objectMapper.writeValueAsString(chatMessageRes);
@@ -130,7 +132,6 @@ public class ChatRedisService implements MessageListener {
             );
         }
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String data = null;
         try {
             data = objectMapper.writeValueAsString(chatParticipantResList);
@@ -152,7 +153,6 @@ public class ChatRedisService implements MessageListener {
             onlineParticipantEmails.forEach(onlineParticipantEmail -> chatOnlineParticipantResList.add(ChatOnlineParticipantRes.builder().email(onlineParticipantEmail).build()));
         }
 
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             String data = objectMapper.writeValueAsString(chatOnlineParticipantResList);
             chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", data);
@@ -172,7 +172,6 @@ public class ChatRedisService implements MessageListener {
             onlineParticipantEmails.forEach(onlineParticipantEmail -> chatOnlineParticipantResList.add(ChatOnlineParticipantRes.builder().email(onlineParticipantEmail).build()));
         }
 
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             String data = objectMapper.writeValueAsString(chatOnlineParticipantResList);
             chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-online-participants", data);
@@ -190,9 +189,6 @@ public class ChatRedisService implements MessageListener {
         String channel = new String(message.getChannel());
         String roomId = channel.split("/")[3];
 
-        System.out.println(channel);
-
-
         if (channel.endsWith("/chat-message")) {
             publishChatMessageToStompClient(roomId, message);
             sendNewMessageViaSse(roomId, message);
@@ -205,7 +201,6 @@ public class ChatRedisService implements MessageListener {
 
     public void publishChatMessageToStompClient(String roomId, Message message) {
         log.info("start publishChatMessageToStompClient : {}", new String(message.getBody()));
-        ObjectMapper objectMapper = new ObjectMapper();
         ChatMessageRes chatMessageRes = null;
         try {
             chatMessageRes = objectMapper.readValue(message.getBody(), ChatMessageRes.class);
@@ -218,7 +213,6 @@ public class ChatRedisService implements MessageListener {
 
     public void publishChatParticipantsToStompClient(String roomId, Message message) {
         log.info("start publishChatParticipantsToStompClient : {}", new String(message.getBody()));
-        ObjectMapper objectMapper = new ObjectMapper();
         List<ChatParticipantRes> chatParticipantResList = new ArrayList<>();
         try {
             JsonNode jsonNodes = objectMapper.readTree(message.getBody());
@@ -234,7 +228,6 @@ public class ChatRedisService implements MessageListener {
 
     public void publishChatOnlineParticipantsToStompClient(String roomId, Message message) {
         log.info("start publishChatOnlineParticipantsToStompClient : {}", new String(message.getBody()));
-        ObjectMapper objectMapper = new ObjectMapper();
         List<ChatOnlineParticipantRes> chatOnlineParticipantResList = new ArrayList<>();
         try {
             JsonNode jsonNodes = objectMapper.readTree(message.getBody());
