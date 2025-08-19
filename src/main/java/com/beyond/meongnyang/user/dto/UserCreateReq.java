@@ -21,8 +21,8 @@ public class UserCreateReq {
     private String name;
     @NotEmpty(message = "사용하실 사용자명을 입력해주세요")
     private String nickname;
-//    @NotEmpty(message = "전화번호를 입력해주세요")
-//    private String phone;
+    @NotEmpty(message = "전화번호를 입력해주세요")
+    private String phone;
 
     public User toCreateEntity (String encodedPassword) {
         return User.builder()
@@ -30,7 +30,7 @@ public class UserCreateReq {
                 .password(encodedPassword)
                 .name(this.name)
                 .nickname(this.nickname)
-//                .phone(this.phone)
+                .phone(this.phone)
                 .build();
     }
 }

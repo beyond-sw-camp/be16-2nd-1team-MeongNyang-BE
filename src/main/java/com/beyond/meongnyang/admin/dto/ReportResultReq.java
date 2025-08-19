@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class ReportResultReq {
-    private String userName;
+    private String userEmail;
     private ReportResult reportResult;
+    private String date;
 }

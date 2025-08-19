@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.common.handler;
 
+import com.beyond.meongnyang.common.customexception.BlockDeniedException;
 import com.beyond.meongnyang.common.dto.CommonRes;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -58,20 +59,27 @@ public class CommonExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<?> accessDeniedException(AccessDeniedException e) {
+    public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonRes.ofFailure(HttpStatus.FORBIDDEN.value(), e.getMessage()));
     }
 
 //    거래글 수정시 이미지 삭제하기 위한 핸들러
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> exception(Exception e) {
+    public ResponseEntity<?> handleException(Exception e) {
         e.printStackTrace();
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonRes.ofFailure(HttpStatus.FORBIDDEN.value(), e.getMessage()));
     }
 
     @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<?> authorizationDeniedException(AuthorizationDeniedException e) {
+    public ResponseEntity<?> handleAuthorizationDeniedException(AuthorizationDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonRes.ofFailure(HttpStatus.FORBIDDEN.value(), e.getMessage()));
+    }
+
+    // 차단된 사용자가 리소스에 접근하는 것을 막기 위한 핸들러
+    @ExceptionHandler(BlockDeniedException.class)
+    public ResponseEntity<?> handleBlockDeniedException(BlockDeniedException e) {
+        log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonRes.ofFailure(HttpStatus.FORBIDDEN.value(), e.getMessage()));
     }
 }

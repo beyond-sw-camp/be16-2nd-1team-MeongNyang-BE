@@ -30,6 +30,7 @@ public class PostRestController {
 
     // 일기 작성
     @PostMapping
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateReq postCreateRequest, @RequestPart(name = "files", required = false) List<MultipartFile> files) {
         Long id = postService.save(postCreateRequest, files);
         return new ResponseEntity<>(
@@ -43,6 +44,7 @@ public class PostRestController {
 
     // 일기 수정
     @PatchMapping("/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postUpdate(@PathVariable("id") Long id, @RequestPart PostEditReq postEditReq, @RequestPart List<MultipartFile> files) throws AccessDeniedException {
         postService.updatePost(id, postEditReq, files);
         return new ResponseEntity<>(
@@ -56,6 +58,7 @@ public class PostRestController {
 
     // 일기 삭제
     @DeleteMapping("/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postDelete(@PathVariable("id") Long id) throws AccessDeniedException {
         postService.deletePost(id);
         return new ResponseEntity<>(
@@ -95,6 +98,7 @@ public class PostRestController {
 
     // 좋아요
     @PostMapping("/like")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postLike(@RequestBody PostLikeReq postLikeReq) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
@@ -107,6 +111,7 @@ public class PostRestController {
 
     // 좋아요 취소
     @DeleteMapping("/{id}/like")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postLikeCancel(@PathVariable("id") Long id) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
@@ -131,6 +136,7 @@ public class PostRestController {
 
     // 댓글 달기
     @PostMapping("/{id}/comments")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postCreateComment(@PathVariable("id")Long id, @RequestBody PostCommentCreateReq postCommentCreateReq){
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
@@ -143,6 +149,7 @@ public class PostRestController {
 
     // 대댓글 달기
     @PostMapping("/comments/{id}/reply")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postCreateReply(@PathVariable("id") Long id, @RequestBody PostCommentReplyReq postCommentReplyReq){
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
@@ -155,6 +162,7 @@ public class PostRestController {
 
     // 댓글 수정
     @PatchMapping("/comments/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postEditComment(@PathVariable("id") Long commentId, @RequestBody PostCommentEditReq postCommentEditReq) throws AccessDeniedException {
         Long id = postService.editComment(commentId, postCommentEditReq);
         return new ResponseEntity<>(
@@ -168,6 +176,7 @@ public class PostRestController {
 
 //     댓글 삭제
     @DeleteMapping("/comments/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postDeleteComment(@PathVariable("id") Long commentId) throws AccessDeniedException {
         Long id = postService.deleteComment(commentId);
         return new ResponseEntity<>(
@@ -209,6 +218,7 @@ public class PostRestController {
 
     // 신고
     @PostMapping("/{id}/reports")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> reportPost(@PathVariable("id")Long postId, @RequestBody PostReportCreateReq postReportCreateReq){
         postService.reportPost(postId, postReportCreateReq);
         return new ResponseEntity<>(

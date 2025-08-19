@@ -22,6 +22,7 @@ public class ChatController {
 
     // 채팅방 개설
     @PostMapping("")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> createChatRoom(@RequestBody ChatRoomCreateReq chatRoomCreateReq) {
         Long chatRoomId = chatService.createChatRoom(chatRoomCreateReq);
         return ResponseEntity.status(HttpStatus.CREATED).body(
@@ -50,6 +51,7 @@ public class ChatController {
 
     // 참여자 추가
     @PostMapping("/{roomId}/participants")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> inviteUsers(@PathVariable Long roomId, @RequestBody List<ChatParticipantAddReq> chatParticipantAddReqList) {
         List<ChatParticipantAddRes> chatParticipantAddResList = chatService.inviteUsers(roomId, chatParticipantAddReqList);
         chatRedisService.publishInvitedUsersToRedis(roomId, chatParticipantAddResList);
@@ -60,6 +62,7 @@ public class ChatController {
 
     // 채팅방 나가기
     @DeleteMapping("/{roomId}/participants/me")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> leaveChatRoom(@PathVariable Long roomId) {
         chatService.leaveChatRoomAndRemoveIfEmpty(roomId);
         chatRedisService.publishLeftUserToRedis(roomId);
@@ -85,6 +88,7 @@ public class ChatController {
 //    }
   
     @PostMapping("/{roomId}/files")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> uploadFiles(@PathVariable Long roomId, @RequestParam List<MultipartFile> files) {
 
         List<String> fileUrls = chatService.uploadFiles(roomId, files);

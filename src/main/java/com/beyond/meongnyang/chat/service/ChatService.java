@@ -6,8 +6,8 @@ import com.beyond.meongnyang.chat.entity.*;
 import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
-import com.beyond.meongnyang.common.CommonService;
-import com.beyond.meongnyang.common.S3UploadService;
+import com.beyond.meongnyang.common.service.CommonService;
+import com.beyond.meongnyang.common.service.S3UploadService;
 import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;

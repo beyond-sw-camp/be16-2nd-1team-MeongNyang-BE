@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.common;
+package com.beyond.meongnyang.common.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

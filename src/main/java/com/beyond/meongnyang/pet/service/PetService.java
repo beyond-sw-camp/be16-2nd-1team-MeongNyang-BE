@@ -1,7 +1,7 @@
 package com.beyond.meongnyang.pet.service;
 
-import com.beyond.meongnyang.common.CommonService;
-import com.beyond.meongnyang.common.S3UploadService;
+import com.beyond.meongnyang.common.service.CommonService;
+import com.beyond.meongnyang.common.service.S3UploadService;
 import com.beyond.meongnyang.pet.dto.PetListRes;
 import com.beyond.meongnyang.pet.dto.PetRegisterReq;
 import com.beyond.meongnyang.pet.entity.Pet;
