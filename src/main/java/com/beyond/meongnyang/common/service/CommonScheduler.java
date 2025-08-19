@@ -23,7 +23,7 @@ public class CommonScheduler {
     private final UserRepository userRepository;
     private final SseService sseService;
     // 1분 주기로 기간 차단 만료된 유저 서비스 이용 차단 자동 해제
-    @Scheduled(initialDelay = 10_000, fixedDelay = 60_000) // 애플리케이션 시작 10초 후 첫 실행, 이후 60초마다 실행
+    @Scheduled(cron = "59 59 23 * * *") // 매일 23:59:59때 실행
     public void isUserBanExpiredCheck() {
         log.info("차단 만료된 유저 검색 시작..");
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));

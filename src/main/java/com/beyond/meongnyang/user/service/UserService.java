@@ -1,44 +1,34 @@
 package com.beyond.meongnyang.user.service;
 
-import com.beyond.meongnyang.common.CommonService;
+import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.SseService;
 import com.beyond.meongnyang.user.entity.*;
 import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckPasswordReq;
-import com.beyond.meongnyang.user.dto.check.UserCheckPhoneReq;
 import com.beyond.meongnyang.user.repository.FollowRepository;
 import com.beyond.meongnyang.user.repository.UserBlockRepository;
 import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.user.dto.check.*;
 import com.beyond.meongnyang.user.entity.User;
-import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.beyond.meongnyang.user.entity.Role.*;
 
@@ -392,12 +382,11 @@ public class UserService {
     }
 
     // 서비스 이용 차단 및 차단 해제 처리
-    public void handleBan(User admin, User user, Role newRole, Long seconds) {
+    public void handleBan(User admin, User user, Role newRole, LocalDateTime expiryDate) {
         // 1) 역할/만료일 갱신
         // 변경 결과에 따라 SSE 이벤트/메시지/만료시각을 준비
         String event = "";
         String message = "";
-        LocalDateTime expiryDate = LocalDateTime.now(ZoneId.of("Asia/Seoul")).plusSeconds(seconds);
 
         switch (newRole) {
             case TEMPORARY_BLOCK -> {

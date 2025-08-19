@@ -6,20 +6,16 @@ import com.beyond.meongnyang.admin.dto.ReportResultReq;
 import com.beyond.meongnyang.admin.entity.Report;
 import com.beyond.meongnyang.admin.entity.ReportResult;
 import com.beyond.meongnyang.admin.entity.ReportStatus;
-import com.beyond.meongnyang.admin.entity.ReportType;
 import com.beyond.meongnyang.admin.repository.ReportRepository;
 import com.beyond.meongnyang.chat.entity.ChatMessage;
 import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
-import com.beyond.meongnyang.common.CommonService;
-import com.beyond.meongnyang.common.dto.SseMessageRes;
+import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.SseService;
 import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.repository.MarketPostRepository;
-import com.beyond.meongnyang.post.dto.PostListReq;
 import com.beyond.meongnyang.post.entity.Post;
 import com.beyond.meongnyang.post.repository.PostRepository;
 import com.beyond.meongnyang.post.service.PostService;
-import com.beyond.meongnyang.user.entity.Role;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import com.beyond.meongnyang.user.service.UserService;
@@ -28,16 +24,13 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.connection.Message;
-import org.springframework.data.redis.connection.MessageListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.List;
+import java.time.LocalTime;
 
 import static com.beyond.meongnyang.user.entity.Role.*;
 
@@ -103,10 +96,11 @@ public class ReportService {
         User admin = commonService.getCurrentUser();
         User reportedUser = userRepository.findById(report.getReportedUser().getId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
+        LocalDateTime expiryDate = LocalDate.parse(req.getDate()).atTime(LocalTime.MAX); // 차단 만료 기간 설정
 
         switch (req.getReportResult()) {
-            case TEMPORARY_BLOCK -> userService.handleBan(admin, reportedUser, TEMPORARY_BLOCK, (long) req.getBlockSeconds());
-            case PERMANENT_BLOCK -> userService.handleBan(admin, reportedUser, PERMANENT_BLOCK, 0L);
+            case TEMPORARY_BLOCK -> userService.handleBan(admin, reportedUser, TEMPORARY_BLOCK, expiryDate);
+            case PERMANENT_BLOCK -> userService.handleBan(admin, reportedUser, PERMANENT_BLOCK, null);
             case POST_DELETE -> {
                 postService.deletePost(report.getPost().getId());
             }

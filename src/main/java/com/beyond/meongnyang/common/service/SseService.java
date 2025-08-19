@@ -50,9 +50,6 @@ public class SseService implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] pattern) {
         ObjectMapper objectMapper = new ObjectMapper();
-//        Message : 실질적인 메시지가 담겨있는 객체
-//        pattern : 채널명
-        String channel = new String(pattern);
         String event = "";
         try {
             SseMessageRes sseMessageRes = objectMapper.readValue(message.getBody(), SseMessageRes.class);

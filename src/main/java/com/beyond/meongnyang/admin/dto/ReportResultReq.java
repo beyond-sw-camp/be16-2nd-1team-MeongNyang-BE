@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 public class ReportResultReq {
     private String userEmail;
     private ReportResult reportResult;
-    private int blockSeconds;
+    private String date;
 }
