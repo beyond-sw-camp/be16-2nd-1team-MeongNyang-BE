@@ -14,11 +14,18 @@ import lombok.NoArgsConstructor;
 public class UserFollowRes {
     private String profileImage;
     private String userName;
+    private String userEmail;
 
-    public static UserFollowRes fromEntity(User user){
+    public static UserFollowRes fromEntity(User user) {
+        String profileImage = "";
+
+        if (user.getPets().stream().anyMatch(pet -> pet.getId().equals(user.getMainPetId())))
+            profileImage = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst().get().getPetProfileUrl();
+
         return UserFollowRes.builder()
-                .profileImage("아직 이미지가 없어여")
+                .profileImage(profileImage)
                 .userName(user.getName())
+                .userEmail(user.getEmail())
                 .build();
     }
 }
