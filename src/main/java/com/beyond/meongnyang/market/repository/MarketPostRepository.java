@@ -13,4 +13,7 @@ public interface MarketPostRepository extends JpaRepository<MarketPost, Long> {
 
     // 판매목록 조회용
     Page<MarketPost> findAllBySellerId(Long sellerId, Pageable pageable);
+
+    // 거래글목록 조회(delYn=N)
+    Page<MarketPost> findAllByDelYn(String delYn, Pageable pageable);
 }

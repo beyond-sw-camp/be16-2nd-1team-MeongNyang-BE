@@ -136,13 +136,9 @@ public class MarketService {
 
 //    거래글 목록조회
     @Transactional(readOnly = true)
-    public Page<MarketPostListReq> marketPostList(Pageable pageable) {
-//        1. pageable(page, size 정보)대로 marketPost를 list로 가져오기
-        Page<MarketPost> marketPostList = marketPostRepository.findAll(pageable);
-//        2. list에서 marketPost를 하나씩 꺼내서 dto로 변환 (+ 찜개수)
-        return marketPostList.map(post ->
-                MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post))
-        );
+    public Page<MarketPostListReq> findAllVisible(Pageable pageable) {
+        Page<MarketPost> page = marketPostRepository.findAllByDelYn("N", pageable);
+        return page.map(p -> MarketPostListReq.fromEntity(p, wishlistRepository.countByMarketPost(p)));
     }
 
 //    거래글 상세조회
@@ -223,10 +219,10 @@ public class MarketService {
         wishlistRepository.flush();
     }
 
-//    찜목록 조회
+    // 찜목록 조회
     @Transactional(readOnly = true)
     public Page<MarketPostListReq> findWishlist(Pageable pageable) {
-//        1. 로그인한 사용자 정보 가져오기
+        //  1. 로그인한 사용자 정보 가져오기
         User user = commonService.getCurrentUser();
 
         // 2. 해당 사용자의 찜(Wishlist) 페이지 조회
@@ -245,4 +241,16 @@ public class MarketService {
         MarketPost marketPost = marketPostRepository.findById(marketPostId).orElseThrow(()-> new EntityNotFoundException("해당 거래글이 존재하지 않습니다."));
         reportRepository.save(marketReportCreateReq.ReportToEntity(marketPost, reportUser));
     }
+
+    // 관리자 (전체 거래글 조회)
+    @Transactional(readOnly = true)
+    public Page<MarketPostListReq> marketPostList(Pageable pageable) {
+//        1. pageable(page, size 정보)대로 marketPost를 list로 가져오기
+        Page<MarketPost> marketPostList = marketPostRepository.findAll(pageable);
+//        2. list에서 marketPost를 하나씩 꺼내서 dto로 변환 (+ 찜개수)
+        return marketPostList.map(post ->
+                MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post))
+        );
+    }
+
 }

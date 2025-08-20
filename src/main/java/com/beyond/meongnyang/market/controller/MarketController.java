@@ -71,7 +71,7 @@ public class MarketController {
     public ResponseEntity<?> marketPostList(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        marketService.marketPostList(pageable),
+                        marketService.findAllVisible(pageable),
                         HttpStatus.OK.value(),
                         "거래글 목록 조회에 성공했습니다."
                 ), HttpStatus.OK
