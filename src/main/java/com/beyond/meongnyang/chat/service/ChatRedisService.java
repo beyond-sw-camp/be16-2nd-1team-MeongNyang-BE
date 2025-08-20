@@ -182,20 +182,31 @@ public class ChatRedisService implements MessageListener {
     }
 
 
-    // 레디스의 메세지를 받았을 때
+
+
+    public void publishNewChatRoomToRedis(ChatRoomSummaryRes chatRoomSummaryRes) {
+        try {
+            String data = objectMapper.writeValueAsString(chatRoomSummaryRes);
+            chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + chatRoomSummaryRes.getId() + "/new", data);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
+    // 레디스의 메세지를 받았을 때
     public void onMessage(Message message, byte[] pattern) {
-        String channel = new String(message.getChannel());
-        String roomId = channel.split("/")[3];
+        String channel = new String(pattern);
+        String roomId = new String(message.getChannel()).split("/")[3];
 
-        if (channel.endsWith("/chat-message")) {
-            publishChatMessageToStompClient(roomId, message);
-            sendNewMessageViaSse(roomId, message);
-        } else if (channel.endsWith("/chat-participants")) {
-            publishChatParticipantsToStompClient(roomId, message);
-        } else if (channel.endsWith("/chat-online-participants")) {
-            publishChatOnlineParticipantsToStompClient(roomId, message);
+        switch (channel) {
+            case "/topic/chat-rooms/*/chat-message" -> {
+                publishChatMessageToStompClient(roomId, message);
+                sendMessageViaSse(roomId, message);
+            }
+            case "/topic/chat-rooms/*/chat-participants" -> publishChatParticipantsToStompClient(roomId, message);
+            case "/topic/chat-rooms/*/chat-online-participants" -> publishChatOnlineParticipantsToStompClient(roomId, message);
+            case "/topic/chat-rooms/*/new" -> sendMessageViaSse(roomId, message);
         }
     }
 
@@ -241,7 +252,7 @@ public class ChatRedisService implements MessageListener {
         log.info("end publishChatOnlineParticipantsToStompClient : {}", new String(message.getBody()));
     }
 
-    public void sendNewMessageViaSse(String roomId, Message message) {
+    public void sendMessageViaSse(String roomId, Message message) {
         Set<String> emails = getOrLoadParticipantMap(Long.valueOf(roomId)).keySet();
         emails.forEach(email -> {
             SseEmitter emitter = sseEmitterRegistry.getEmitter(email);

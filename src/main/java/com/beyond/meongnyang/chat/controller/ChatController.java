@@ -24,9 +24,10 @@ public class ChatController {
     @PostMapping("")
     @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> createChatRoom(@RequestBody ChatRoomCreateReq chatRoomCreateReq) {
-        Long chatRoomId = chatService.createChatRoom(chatRoomCreateReq);
+        ChatRoomSummaryRes chatRoomSummaryRes = chatService.createChatRoom(chatRoomCreateReq);
+        chatRedisService.publishNewChatRoomToRedis(chatRoomSummaryRes);
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                CommonRes.ofSuccess(chatRoomId, HttpStatus.CREATED.value(), chatRoomCreateReq.getRoomName() + " 채팅방 개설")
+                CommonRes.ofSuccess(chatRoomSummaryRes, HttpStatus.CREATED.value(), chatRoomCreateReq.getRoomName() + " 채팅방 개설")
         );
     }
 
