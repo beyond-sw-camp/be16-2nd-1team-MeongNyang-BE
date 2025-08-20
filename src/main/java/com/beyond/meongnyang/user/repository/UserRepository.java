@@ -1,10 +1,9 @@
 package com.beyond.meongnyang.user.repository;
 
+import com.beyond.meongnyang.admin.dto.UserStatisticsRow;
 import com.beyond.meongnyang.user.entity.User;
 import io.lettuce.core.dynamic.annotation.Param;
-import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -31,36 +30,42 @@ public interface UserRepository  extends JpaRepository<User, Long> {
     Optional<User> findByIdAndDelYn(Long userId, String delYn);
 
     // 회원가입 통계
-    // 일간 집계 (DATE()로 날짜만 잘라 그룹핑)
+    // 일간
     @Query(value = """
-        SELECT DATE(u.created_at) AS bucket, COUNT(*) AS cnt
-        FROM user u
-        WHERE u.created_at BETWEEN :start AND :end
-        GROUP BY DATE(u.created_at)
-        ORDER BY bucket
+        SELECT DATE(u.created_at) AS periodStart,
+               COUNT(*)           AS signupCount
+        FROM `user` u
+        WHERE u.created_at >= :start
+          AND u.created_at <  :endExclusive
+        GROUP BY periodStart
+        ORDER BY periodStart
         """, nativeQuery = true)
-    List<Object[]> statDaily(@Param("start") LocalDateTime start,
-                             @Param("end") LocalDateTime end);
+    List<UserStatisticsRow> statDaily(@Param("start") LocalDateTime start,
+                                      @Param("endExclusive") LocalDateTime endExclusive);
 
-    // 주간 집계 (YEARWEEK(...,1) → 주 시작 월요일)
+    // 주간(월요일 시작)
     @Query(value = """
-        SELECT STR_TO_DATE(DATE_FORMAT(u.created_at, '%x%v Monday'), '%x%v %W') AS bucket, COUNT(*) AS cnt
-        FROM user u
-        WHERE u.created_at BETWEEN :start AND :end
-        GROUP BY YEARWEEK(u.created_at, 1)
-        ORDER BY bucket
+        SELECT DATE_SUB(DATE(u.created_at), INTERVAL WEEKDAY(u.created_at) DAY) AS periodStart,
+               COUNT(*)                                                         AS signupCount
+        FROM `user` u
+        WHERE u.created_at >= :start
+          AND u.created_at <  :endExclusive
+        GROUP BY periodStart
+        ORDER BY periodStart
         """, nativeQuery = true)
-    List<Object[]> statWeekly(@Param("start") LocalDateTime start,
-                              @Param("end") LocalDateTime end);
+    List<UserStatisticsRow> statWeekly(@Param("start") LocalDateTime start,
+                                       @Param("endExclusive") LocalDateTime endExclusive);
 
-    // 월간 집계 (각 월의 1일로 버킷팅)
+    // 월간(해당 월 1일)
     @Query(value = """
-        SELECT DATE_FORMAT(u.created_at, '%Y-%m-01') AS bucket, COUNT(*) AS cnt
-        FROM user u
-        WHERE u.created_at BETWEEN :start AND :end
-        GROUP BY DATE_FORMAT(u.created_at, '%Y-%m')
-        ORDER BY bucket
+        SELECT DATE(DATE_FORMAT(u.created_at, '%Y-%m-01')) AS periodStart,
+               COUNT(*)                                    AS signupCount
+        FROM `user` u
+        WHERE u.created_at >= :start
+          AND u.created_at <  :endExclusive
+        GROUP BY periodStart
+        ORDER BY periodStart
         """, nativeQuery = true)
-    List<Object[]> statMonthly(@Param("start") LocalDateTime start,
-                               @Param("end") LocalDateTime end);
+    List<UserStatisticsRow> statMonthly(@Param("start") LocalDateTime start,
+                                        @Param("endExclusive") LocalDateTime endExclusive);
 }

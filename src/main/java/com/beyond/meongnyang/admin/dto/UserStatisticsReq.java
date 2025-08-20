@@ -12,5 +12,5 @@ import java.time.LocalDate;
 public class UserStatisticsReq {
     private LocalDate from;
     private LocalDate to;
-    private String grain; // 해당 기간 내 조회기준 (일간,주간,월간)
+    private String grain;    // 해당 기간 내 조회기준 (일간/주간/월간)
 }
