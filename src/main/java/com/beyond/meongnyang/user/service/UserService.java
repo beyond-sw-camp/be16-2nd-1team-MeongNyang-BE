@@ -100,11 +100,9 @@ public class UserService {
 
     // 로그인
     public User accessLogin(UserLoginReq request) {
-        // 1. 이메일로 사용자 조회
         User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다."));
+                .orElseThrow(() -> new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다."));
 
-        // 2. 상태 체크
         if ("Y".equals(user.getDelYn())) {
             throw new IllegalArgumentException("사용하지 않는 계정입니다.");
         }
@@ -112,24 +110,23 @@ public class UserService {
             throw new IllegalArgumentException("잠긴 계정입니다.");
         }
 
-        // 3. 비밀번호 체크
+        // 소셜 계정은 비번 로그인 금지
+        if (user.getSocialType() != SocialType.COMMON || user.getPassword() == null) {
+            throw new EntityExistsException("소셜 연동 계정입니다. 소셜 로그인을 사용하세요.");
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             int failCount = userLockedService.increaseFailedCount(user.getId());
             int remain = 5 - failCount;
-
-            if(remain <=0) {
-                throw new IllegalArgumentException("로그인 시도횟수를 초과하여 계정이 잠겼습니다.");
-            }   else {
-                throw new IllegalArgumentException("로그인 시도 실패");
-            }
-
+            if (remain <= 0) throw new IllegalArgumentException("로그인 시도횟수를 초과하여 계정이 잠겼습니다.");
+            throw new IllegalArgumentException("로그인 시도 실패");
         }
 
-        // 4. 로그인 성공 시 실패 횟수 초기화
         userLockedService.resetFailedCount(user.getId());
-
         return user;
     }
+
+    // 소셜로 등록된 사용자 조회
     public Optional<User> getUserBySocailId(String socialId) {
         return this.userRepository.findBySocialId(socialId);
 
@@ -140,24 +137,21 @@ public class UserService {
     }
 
     // 소셜 계정 연동: 기존 유저(userId)에 socialType/socialId를 세팅
-    @Transactional
-    public void linkSocialAccount(Long userId, SocialType type, String socialId) {
-        if (userId == null) throw new IllegalArgumentException("userId 필수");
-        if (type == null) throw new IllegalArgumentException("socialType 필수");
-        if (socialId == null || socialId.isBlank()) throw new IllegalArgumentException("socialId 필수");
+    public void linkSocialAndDisablePassword(Long userId, SocialType socialType, String socialId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자 없음"));
 
-        User user = findEntityById(userId);
+        if (user.getSocialType() != SocialType.COMMON) {
+            throw new EntityExistsException("이미 소셜 연동된 계정");
+        }
 
-
-        user.updateSocialType(type);
+        user.updateSocialType(socialType);
         user.updateSocialId(socialId);
+
+        //  이후부터 비번 로그인 금지
+        user.updatePassword(null);
     }
 
-    // 필수 조회용: 없으면 404 성격의 예외
-    public User findEntityById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-    }
 
     // oauth 로그인 후 추가 정보 등록 후 db 저장.
     public User saveOauthUserWithExtraInfo(String socialId, String email, InitalSetReq extraInfo, SocialType socialType) {
@@ -195,6 +189,9 @@ public class UserService {
         User user = this.userRepository.findByEmail(email).orElseThrow(
                 () -> new EntityNotFoundException("등록된 회원정보가 없습니다.")
         );
+        if (user.getPassword() == null || user.getSocialType() != SocialType.COMMON) {
+            throw new EntityExistsException("소셜 계정은 비밀번호 변경이 불가합니다.");
+        }
 
         boolean check = passwordEncoder.matches(req.getOldPassword(), user.getPassword());
         if(!check) {
@@ -211,12 +208,10 @@ public class UserService {
 
 
     // 계정 삭제
-    public void deleteAccount(UserCheckPasswordReq dto) {
+    public void deleteAccount() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 이메일입니다."));
-        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
+        User user = this.userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("등록되지 않은 이메일입니다."));
         user.softDelete();
     }
 

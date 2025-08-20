@@ -49,7 +49,8 @@ public class SecurityConfig {
                                 "/users/verify-email", "/users/verify-email-check", "/users/lost-password",
                                 "/users/signup-extra",
                                 "/users/token/refresh",
-                                "/users/logout")
+                                "/users/logout",
+                                "/users/link/confirm")
                         .permitAll().anyRequest().authenticated())
                 .build();
     }
@@ -58,9 +59,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(false); // 쿠키/자격증명 미사용
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // 필요시 추가
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization","Content-Type","X-Refresh-Token"));
+        configuration.setExposedHeaders(List.of("X-Refresh-Token"));
         configuration.setMaxAge(3600L); // preflight 1시간 캐시
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

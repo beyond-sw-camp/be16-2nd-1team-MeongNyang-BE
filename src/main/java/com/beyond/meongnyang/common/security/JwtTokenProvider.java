@@ -94,38 +94,41 @@ public class JwtTokenProvider {
         }
         return user;
     }
-
+    // refreshToken redis에서 제거
     public void revokeRefreshToken(String email) {
         redisTemplate.delete(RT_PREFIX + email);
     }
 
-    public String createSignup(String socialId, String email, String socialType) {
+    public String createTicket(String socialId, String email, String socialType) {
         Date now = new Date();
         return Jwts.builder()
                 .claim("social_id", socialId)
                 .claim("email", email)
-                .claim("social_type",  socialType) // "GOOGLE"|"KAKAO"
+                .claim("social_type", socialType) // "GOOGLE"|"KAKAO"
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + expirationAt * 60 * 1000L))
-                .signWith(secretATToken) //
+                .signWith(secretATToken)
                 .compact();
     }
 
-    public SignupTicket parseSignup(String token) {
+    // ticket 검증
+    public Ticket parseTicket(String token) {
         Claims c = Jwts.parserBuilder().setSigningKey(secretATToken).build()
                 .parseClaimsJws(token).getBody();
-        return new SignupTicket(
+        return new Ticket(
                 c.get("social_id", String.class),
                 c.get("email", String.class),
-                c.get("social_type",  String.class)
+                c.get("social_type", String.class)
         );
     }
+    // 로그아웃 시 사용
     public String getSubjectFromRefresh(String refreshToken) {
         Claims c = Jwts.parserBuilder().setSigningKey(secretRtToken).build()
                 .parseClaimsJws(refreshToken).getBody();
         return c.getSubject();
     }
 
-    public record SignupTicket(String socialId, String email, String socialType) {}
+    public record Ticket(String socialId, String email, String socialType) {}
+
 }
 

@@ -32,9 +32,7 @@ public class User extends CommonAt {
     @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-//
-//    @Column(name = "phone", nullable = false, unique = true, length = 255)
-//    private String phone;
+
 
     // TODO: nickname 수정 사항 해야함
     @Column(name = "nickname", nullable = false, unique = true, length = 255)
@@ -54,9 +52,6 @@ public class User extends CommonAt {
 
     @Column(name = "location",nullable = true, length = 255)
     private String location;
-    // TODO: 간편인증
-    @Column(name = "third_party", nullable = true, length = 255)
-    private String thirdParty;
 
     // 계정 잠금 여부 : Y면 계정 잠금 상태
     @Column(name = "is_locked", nullable = false)

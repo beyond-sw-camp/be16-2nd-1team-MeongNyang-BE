@@ -10,6 +10,8 @@ import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.service.GoogleLoginService;
 import com.beyond.meongnyang.user.service.KakaoLoginService;
 import com.beyond.meongnyang.user.service.UserService;
+import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +36,14 @@ public class UserRestController {
     private final JwtTokenProvider jwtTokenProvider;
     private final GoogleLoginService googleLoginService;
     private final KakaoLoginService kakaoLoginService;
+
+    // 헤더로 rt 응답 공통부분
+    private ResponseEntity<?> okWithRtHeader(Object body, String refreshToken) {
+        return ResponseEntity.ok()
+                .header("X-Refresh-Token", refreshToken)
+                .body(body);
+    }
+
 
     @PostMapping("/check-email")
     public ResponseEntity<?> checkEmail(@Valid @RequestBody UserCheckEmailReq dto) {
@@ -70,25 +80,17 @@ public class UserRestController {
         return new ResponseEntity<>(CommonRes.ofSuccess(dto, HttpStatus.CREATED.value(), "회원가입이 완료되었습니다."), HttpStatus.CREATED);
     }
 
-    //  일반 로그인
     @PostMapping("/login")
     public ResponseEntity<?> accessLogin(@Valid @RequestBody UserLoginReq request) {
         User user = this.userService.accessLogin(request);
 
-        String atToken = jwtTokenProvider.createAtToken(user);
-        String rtToken = jwtTokenProvider.createRtToken(user); // 내부에서 Redis 저장
-
-        UserLoginRes res = UserLoginRes.builder()
-                .accessToken(atToken)
-                .refreshToken(rtToken)
-                .build();
-
-        return ResponseEntity.ok(
-                CommonRes.ofSuccess(res, HttpStatus.OK.value(), "로그인되었습니다.")
-        );
+        String accessToken = jwtTokenProvider.createAtToken(user);
+        String refreshToken = jwtTokenProvider.createRtToken(user);
+        Map<String, Object> body = Map.of("id", user.getId(), "accessToken", accessToken);
+        return okWithRtHeader(CommonRes.ofSuccess(body, HttpStatus.OK.value(), "로그인되었습니다."), refreshToken);
     }
 
-    //  구글 로그인
+    // 구글 로그인
     @PostMapping("/login/google")
     public ResponseEntity<?> googleLogin(@Valid @RequestBody RedirectReq redirectReq) {
         GoogleOauthTokenRes tokenRes = googleLoginService.getAccessToken(redirectReq.getCode());
@@ -97,37 +99,46 @@ public class UserRestController {
         String socialId = profile.getSub();
         String email = profile.getEmail();
 
+        // socialId로 이미 연동된 계정 → 즉시 로그인
         Optional<User> optionalSocial = userService.getUserBySocailId(socialId);
         if (optionalSocial.isPresent()) {
             User user = optionalSocial.get();
-            String atToken = jwtTokenProvider.createAtToken(user);
-            String rtToken = jwtTokenProvider.createRtToken(user);
-            return ResponseEntity.ok(
-                    CommonRes.ofSuccess(
-                            Map.of("isNewUser", false, "id", user.getId(), "accessToken", atToken, "refreshToken", rtToken),
-                            HttpStatus.OK.value(), "로그인되었습니다."
-                    )
-            );
+
+            if (user.getSocialType() != SocialType.GOOGLE) {
+                throw new EntityExistsException("이미 다른 방식으로 연동된 계정입니다.");
+            }
+
+            String accessToken = jwtTokenProvider.createAtToken(user);
+            String refreshToken = jwtTokenProvider.createRtToken(user);
+            Map<String, Object> body = Map.of("isNewUser", false, "id", user.getId(), "accessToken", accessToken);
+            return okWithRtHeader(CommonRes.ofSuccess(body, HttpStatus.OK.value(), "로그인되었습니다."), refreshToken);
         }
 
+        // 이메일 매칭 → 연동 확인 필요
         Optional<User> optionalEmail = userService.getUserByEmail(email);
         if (optionalEmail.isPresent()) {
             User user = optionalEmail.get();
-            userService.linkSocialAccount(user.getId(), SocialType.GOOGLE, socialId);
-            String atToken = jwtTokenProvider.createAtToken(user);
-            String rtToken = jwtTokenProvider.createRtToken(user);
-            return ResponseEntity.ok(
-                    CommonRes.ofSuccess(
-                            Map.of("isNewUser", false, "id", user.getId(), "accessToken", atToken, "refreshToken", rtToken),
-                            HttpStatus.OK.value(), "연동 후 로그인되었습니다."
-                    )
+
+            if (user.getSocialType() != SocialType.COMMON) {
+                throw new EntityExistsException("이미 소셜 연동된 계정입니다.");
+            }
+
+            String linkTicket = jwtTokenProvider.createTicket(socialId, email, SocialType.GOOGLE.name());
+
+            Map<String, Object> body = Map.of(
+                    "needLink", true,
+                    "email", email,
+                    "socialType", SocialType.GOOGLE,
+                    "linkTicket", linkTicket,
+                    "message", "기존 이메일 계정과 구글 계정을 연동하시겠습니까?"
             );
+            return new ResponseEntity<>(CommonRes.ofSuccess(body, HttpStatus.OK.value(), "연동 확인 필요"), HttpStatus.OK);
         }
 
-        // 신규가입 티켓
-        String newUser = jwtTokenProvider.createSignup(socialId, email, SocialType.GOOGLE.name());
+        // 신규가입
+        String signupTicket = jwtTokenProvider.createTicket(socialId, email, SocialType.GOOGLE.name());
         return new ResponseEntity<>(CommonRes.ofSuccess(
-                Map.of("isNewUser", true, "signup", newUser, "email", email, "socialType", SocialType.GOOGLE),
+                Map.of("isNewUser", true, "signupTicket", signupTicket, "email", email, "socialType", SocialType.GOOGLE),
                 HttpStatus.CREATED.value(), "추가 정보를 입력해주세요"
         ), HttpStatus.CREATED);
     }
@@ -141,63 +152,97 @@ public class UserRestController {
         String socialId = profile.getId();
         String email = profile.getKakao_account().getEmail();
 
+        // 1) socialId 매칭 → 즉시 로그인
         Optional<User> optionalSocial = userService.getUserBySocailId(socialId);
         if (optionalSocial.isPresent()) {
             User user = optionalSocial.get();
-            String atToken = jwtTokenProvider.createAtToken(user);
-            String rtToken = jwtTokenProvider.createRtToken(user);
-            return ResponseEntity.ok(
-                    CommonRes.ofSuccess(
-                            Map.of("isNewUser", false, "id", user.getId(), "accessToken", atToken, "refreshToken", rtToken),
-                            HttpStatus.OK.value(), "로그인되었습니다."
-                    )
-            );
+
+            if (user.getSocialType() != SocialType.KAKAO) {
+                throw new EntityExistsException("이미 다른 방식으로 연동된 계정입니다.");
+            }
+
+            String accessToken = jwtTokenProvider.createAtToken(user);
+            String refreshToken = jwtTokenProvider.createRtToken(user);
+            Map<String, Object> body = Map.of("isNewUser", false, "id", user.getId(), "accessToken", accessToken);
+            return okWithRtHeader(CommonRes.ofSuccess(body, HttpStatus.OK.value(), "로그인되었습니다."), refreshToken);
         }
 
+        // 2) 이메일 매칭 → 연동 확인 필요
         Optional<User> optionalEmail = userService.getUserByEmail(email);
         if (optionalEmail.isPresent()) {
             User user = optionalEmail.get();
-            userService.linkSocialAccount(user.getId(), SocialType.KAKAO, socialId);
-            String atToken = jwtTokenProvider.createAtToken(user);
-            String rtToken = jwtTokenProvider.createRtToken(user);
-            return ResponseEntity.ok(
-                    CommonRes.ofSuccess(
-                            Map.of("isNewUser", false, "id", user.getId(), "accessToken", atToken, "refreshToken", rtToken),
-                            HttpStatus.OK.value(), "연동 후 로그인되었습니다."
-                    )
+
+            if (user.getSocialType() != SocialType.COMMON) {
+                throw new EntityExistsException("이미 소셜 연동된 계정입니다.");
+            }
+
+            String linkTicket = jwtTokenProvider.createTicket(socialId, email, SocialType.KAKAO.name());
+            Map<String, Object> body = Map.of(
+                    "needLink", true,
+                    "email", email,
+                    "socialType", SocialType.KAKAO,
+                    "linkTicket", linkTicket,
+                    "message", "기존 이메일 계정과 카카오 계정을 연동하시겠습니까?"
             );
+            return new ResponseEntity<>(CommonRes.ofSuccess(body, HttpStatus.OK.value(), "연동 확인 필요"), HttpStatus.OK);
         }
 
-        String ticket = jwtTokenProvider.createSignup(socialId, email, SocialType.KAKAO.name());
+        // 3) 신규가입
+        String signupTicket = jwtTokenProvider.createTicket(socialId, email, SocialType.KAKAO.name());
         return new ResponseEntity<>(CommonRes.ofSuccess(
-                Map.of("isNewUser", true, "signupTicket", ticket, "email", email, "socialType", SocialType.KAKAO),
+                Map.of("isNewUser", true, "signupTicket", signupTicket, "email", email, "socialType", SocialType.KAKAO),
                 HttpStatus.CREATED.value(), "추가 정보를 입력해주세요"
         ), HttpStatus.CREATED);
     }
 
-    //  추가정보 완료 후 로그인
-    @PostMapping("/signup-extra")
-    public ResponseEntity<?> signupExtra(@Valid @RequestBody SignupExtraReq req) {
-        JwtTokenProvider.SignupTicket ticket = jwtTokenProvider.parseSignup(req.getSignupTicket());
+    // 연동 확인
+    @PostMapping("/link/confirm")
+    public ResponseEntity<?> confirmLink(@RequestBody LinkConfirmReq req) {
+        JwtTokenProvider.Ticket linkTicket = jwtTokenProvider.parseTicket(req.getLinkTicket());
 
-        InitalSetReq extra = new InitalSetReq();
-        extra.setName(req.getName());
-        extra.setNickname(req.getNickname());
-
-        User user = userService.saveOauthUserWithExtraInfo(
-                ticket.socialId(), ticket.email(), extra, SocialType.valueOf(ticket.socialType())
+        User user = userService.getUserByEmail(linkTicket.email()).orElseThrow(
+                () -> new EntityNotFoundException("없는 사용자입니다.")
         );
 
-        String atToken = jwtTokenProvider.createAtToken(user);
-        String rtToken = jwtTokenProvider.createRtToken(user);
+        if (user.getSocialType() != SocialType.COMMON) {
+            throw new EntityExistsException("이미 소셜 연동된 계정입니다.");
+        }
 
-        return ResponseEntity.ok(
-                CommonRes.ofSuccess(
-                        Map.of("id", user.getId(), "accessToken", atToken, "refreshToken", rtToken),
-                        HttpStatus.OK.value(), "연동 후 로그인되었습니다."
-                )
+        userService.linkSocialAndDisablePassword(
+                user.getId(),
+                SocialType.valueOf(linkTicket.socialType()),
+                linkTicket.socialId()
         );
+
+        String accessToken = jwtTokenProvider.createAtToken(user);
+        String refreshToken = jwtTokenProvider.createRtToken(user);
+
+        Map<String, Object> body = Map.of("id", user.getId(), "accessToken", accessToken, "message", "연동 완료 및 로그인");
+        return okWithRtHeader(CommonRes.ofSuccess(body, HttpStatus.OK.value(), "연동 완료"), refreshToken);
     }
+
+
+        //  추가정보 완료 후 로그인
+        @PostMapping("/signup-extra")
+        public ResponseEntity<?> signupExtra(@Valid @RequestBody SignupExtraReq req) {
+            JwtTokenProvider.Ticket ticket = jwtTokenProvider.parseTicket(req.getSignupTicket());
+
+            InitalSetReq extra = new InitalSetReq();
+            extra.setName(req.getName());
+            extra.setNickname(req.getNickname());
+
+            User user = userService.saveOauthUserWithExtraInfo(
+                    ticket.socialId(), ticket.email(), extra, SocialType.valueOf(ticket.socialType())
+            );
+
+            String accessToken = jwtTokenProvider.createAtToken(user);
+            String refreshToken = jwtTokenProvider.createRtToken(user);
+
+            Map<String, Object> body = Map.of("id", user.getId(), "accessToken", accessToken);
+            return okWithRtHeader(CommonRes.ofSuccess(body, HttpStatus.OK.value(), "연동 후 로그인되었습니다."), refreshToken);
+        }
+
+
 
     // AT 재발급 — 헤더에서 RT 수신, 새 AT만 반환
     @PostMapping("/token/refresh")
@@ -251,9 +296,23 @@ public class UserRestController {
 
     //계정 삭제
     @PostMapping("/delete")
-    public ResponseEntity<?> deleteAccount(@Valid @RequestBody UserCheckPasswordReq dto) {
-        this.userService.deleteAccount(dto);
-        return new ResponseEntity<>(CommonRes.ofSuccess("회원 탈퇴되었습니다.", HttpStatus.OK.value(), "회원탈퇴 완료"), HttpStatus.OK);
+    public ResponseEntity<?> deleteAccount(
+            @RequestHeader(value = "X-Refresh-Token", required = false) String rtToken) {
+
+        // 현재 로그인 사용자 기준으로 즉시 탈퇴
+        userService.deleteAccount();
+
+        // 세션/RT 정리(있으면)
+        if (rtToken != null && !rtToken.isBlank()) {
+            try {
+                String subject = jwtTokenProvider.getSubjectFromRefresh(rtToken);
+                jwtTokenProvider.revokeRefreshToken(subject);
+            } catch (Exception ignore) { /* 이미 만료/위조면 무시 */ }
+        }
+
+        return ResponseEntity.ok(
+                CommonRes.ofSuccess("회원 탈퇴되었습니다.", HttpStatus.OK.value(), "회원탈퇴 완료")
+        );
     }
     /* ****************마이페이지&설정 관련- (pet) ********************* */
     // 대표동물 설정
