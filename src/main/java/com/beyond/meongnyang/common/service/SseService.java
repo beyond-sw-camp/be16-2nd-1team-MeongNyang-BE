@@ -1,6 +1,8 @@
 package com.beyond.meongnyang.common.service;
 
+import com.beyond.meongnyang.common.dto.SseMessageRes;
 import com.beyond.meongnyang.common.registry.SseEmitterRegistry;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,10 +20,12 @@ import java.io.IOException;
 public class SseService implements MessageListener {
     private final SseEmitterRegistry sseEmitterRegistry;
     private final RedisTemplate<String, String> ssePubSubTemplate;
+    private final ObjectMapper objectMapper;
 
-    public SseService(SseEmitterRegistry sseEmitterRegistry, @Qualifier("ssePubSub") RedisTemplate<String, String> ssePubSubTemplate) {
+    public SseService(SseEmitterRegistry sseEmitterRegistry, @Qualifier("ssePubSub") RedisTemplate<String, String> ssePubSubTemplate, ObjectMapper objectMapper) {
         this.sseEmitterRegistry = sseEmitterRegistry;
         this.ssePubSubTemplate = ssePubSubTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public SseEmitter connect() {
@@ -46,9 +50,49 @@ public class SseService implements MessageListener {
     //
     @Override
     public void onMessage(Message message, byte[] pattern) {
-        // message : 실질적인 메세지가 담겨있는 객체
-        // pattern : 채널명
-        ObjectMapper objectMapper = new ObjectMapper();
+        String event = "";
+        try {
+            SseMessageRes sseMessageRes = objectMapper.readValue(message.getBody(), SseMessageRes.class);
+            log.info("메시지 : " + sseMessageRes);
+            SseEmitter sseEmitter = sseEmitterRegistry.getEmitter(sseMessageRes.getReceiver());
+            if (sseEmitter != null) {
+                try {
+                    sseEmitter.send(sseEmitter.event().name(event).data(sseMessageRes));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
 
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void publishMessage(String event, String receiver, String message) {
+        SseMessageRes sseMessageRes = SseMessageRes.builder()
+                .receiver(receiver)
+                .event(event)
+                .message(message)
+                .build();
+        String data;
+        try {
+            data = objectMapper.writeValueAsString(sseMessageRes);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+//        emmiter객체를 통해 메시지 전송
+        SseEmitter sseEmitter = sseEmitterRegistry.getEmitter(receiver);
+//        emitter객체가 현재 서버에 있으면, 직접 알림 발송. 그렇지 않으면, redis에 publish
+        if (sseEmitter != null) {
+            try {
+                sseEmitter.send(SseEmitter.event().name(event).data(data));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            ssePubSubTemplate.convertAndSend(event, data);
+        }
     }
 }

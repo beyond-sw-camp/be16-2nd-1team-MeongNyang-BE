@@ -1,8 +1,8 @@
 package com.beyond.meongnyang.market.service;
 
 import com.beyond.meongnyang.admin.repository.ReportRepository;
-import com.beyond.meongnyang.common.CommonService;
-import com.beyond.meongnyang.common.S3UploadService;
+import com.beyond.meongnyang.common.service.CommonService;
+import com.beyond.meongnyang.common.service.S3UploadService;
 import com.beyond.meongnyang.market.dto.*;
 import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.entity.ProductImage;

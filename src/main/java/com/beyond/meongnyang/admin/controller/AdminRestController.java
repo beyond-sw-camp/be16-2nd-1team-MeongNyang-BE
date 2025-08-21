@@ -23,6 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @PreAuthorize("hasRole('ADMIN')")
@@ -36,7 +37,7 @@ public class AdminRestController {
     private final AdminUserService adminUserService;
     private final MarketService marketService;
 
-    // 회원 관련 관리자 기능
+    /** 회원 관련 관리자 기능 **/
     // 회원가입 승인
     @PatchMapping("/user/{id}/approve")
     public ResponseEntity<?> approveUser(@PathVariable Long id) {
@@ -111,26 +112,31 @@ public class AdminRestController {
         );
     }
 
-    // 일기 관련 관리자 기능
-    // 채팅 관련 관리자 기능
-    // 신고 처리 기능
+    // 서비스 이용 차단 해제
+    @PostMapping("/users/bans/{id}")
+    public ResponseEntity<?> unbanUser(@PathVariable Long id) {
+        userService.unbanByAdmin(id);
+        return new ResponseEntity<>(CommonRes.ofSuccess("해당 이용자에 대한 서비스 이용 차단이 해제되었습니다.", HttpStatus.OK.value(), "차단 해제 완료"), HttpStatus.OK);
+    }
+    /** 일기 관련 관리자 기능 **/
+    /** 채팅 관련 관리자 기능 **/
+    /** 신고 처리 기능 **/
     // 모든 신고 조회
     @GetMapping("/reports")
     public ResponseEntity<?> findAllReports(@PageableDefault(size=10, direction = Sort.Direction.DESC)Pageable pageable){
-        return new ResponseEntity<>(CommonRes.ofSuccess(reportService.findAll(pageable), HttpStatus.OK.value(), "회원 상세 조회 완료"), HttpStatus.OK);
+        return new ResponseEntity<>(CommonRes.ofSuccess(reportService.findAll(pageable), HttpStatus.OK.value(), "신고 목록 조회 완료"), HttpStatus.OK);
     }
 
-    // 신고 타입별 조회(검색)
     // 신고 상세 내용
     @GetMapping("/reports/{id}")
     public ResponseEntity<?> findReportsById(@PathVariable("id") Long id){
-        return new ResponseEntity<>(CommonRes.ofSuccess(reportService.findById(id), HttpStatus.OK.value(), "회원 상세 조회 완료"), HttpStatus.OK);
+        return new ResponseEntity<>(CommonRes.ofSuccess(reportService.findById(id), HttpStatus.OK.value(), "신고 상세 조회 완료"), HttpStatus.OK);
     }
 
-    // 신고처리
-    // ToDo : SSE를 이용한 실시간 차단 로직 구현 필요
+    // 신고 처리
     @PostMapping("/reports/{id}")
-    public ResponseEntity<?> processReports(@PathVariable("id") Long id, @RequestBody ReportResultReq reportResultReq){
-        return new ResponseEntity<>(CommonRes.ofSuccess("", HttpStatus.OK.value(), "회원 상세 조회 완료"), HttpStatus.OK);
+    public ResponseEntity<?> processReports(@PathVariable("id") Long id, @RequestBody ReportResultReq reportResultReq) throws AccessDeniedException {
+        reportService.processReport(id,reportResultReq);
+        return new ResponseEntity<>(CommonRes.ofSuccess("신고 처리가 완료되었습니다.", HttpStatus.OK.value(), "신고 처리 완료"), HttpStatus.OK);
     }
 }

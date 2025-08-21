@@ -1,11 +1,11 @@
 package com.beyond.meongnyang.post.service;
 
 import com.beyond.meongnyang.admin.repository.ReportRepository;
-import com.beyond.meongnyang.common.CommonService;
+import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.post.dto.*;
-import com.beyond.meongnyang.common.S3UploadService;
+import com.beyond.meongnyang.common.service.S3UploadService;
 import com.beyond.meongnyang.post.entity.*;
 import com.beyond.meongnyang.post.repository.*;
 import com.beyond.meongnyang.user.entity.User;
@@ -17,12 +17,8 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;

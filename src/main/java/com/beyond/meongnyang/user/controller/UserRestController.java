@@ -144,6 +144,7 @@ public class UserRestController {
 
     // 팔로우
     @PostMapping("/follows/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> follow(@PathVariable("id") Long id){
         userService.follow(id);
         return new ResponseEntity<>(CommonRes.ofSuccess("팔로우 완료", HttpStatus.OK.value(), "팔로우를 성공했습니다."), HttpStatus.OK);
@@ -151,6 +152,7 @@ public class UserRestController {
 
     // 언팔로우
     @DeleteMapping("/follows/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> unFollow(@PathVariable Long id){
         userService.unFollow(id);
         return new ResponseEntity<>(CommonRes.ofSuccess("언팔로우 완료", HttpStatus.OK.value(), "언팔로우를 성공했습니다."), HttpStatus.OK);
@@ -179,6 +181,7 @@ public class UserRestController {
 
     // 차단
     @PostMapping("/blocks/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> blockUser(@PathVariable Long id) {
         userService.blockUser(id);
         return new ResponseEntity<>(CommonRes.ofSuccess("차단 완료", HttpStatus.OK.value(), "회원 차단 완료"), HttpStatus.OK);
@@ -186,6 +189,7 @@ public class UserRestController {
 
     // 차단해제
     @DeleteMapping("/blocks/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> unBlockUser(@PathVariable Long id) {
         userService.unBlockUser(id);
         return new ResponseEntity<>(CommonRes.ofSuccess("차단 해제 완료", HttpStatus.OK.value(), "차단 해제 완료"), HttpStatus.OK);

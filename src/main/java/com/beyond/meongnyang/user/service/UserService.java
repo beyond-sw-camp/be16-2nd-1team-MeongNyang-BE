@@ -1,39 +1,36 @@
 package com.beyond.meongnyang.user.service;
 
-import com.beyond.meongnyang.common.CommonService;
-import com.beyond.meongnyang.user.entity.UserFollow;
-import com.beyond.meongnyang.user.entity.User;
+import com.beyond.meongnyang.common.service.CommonService;
+import com.beyond.meongnyang.common.service.SseService;
+import com.beyond.meongnyang.user.entity.*;
 import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckPasswordReq;
-import com.beyond.meongnyang.user.dto.check.UserCheckPhoneReq;
-import com.beyond.meongnyang.user.entity.UserBlock;
 import com.beyond.meongnyang.user.repository.FollowRepository;
 import com.beyond.meongnyang.user.repository.UserBlockRepository;
 import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.user.dto.check.*;
 import com.beyond.meongnyang.user.entity.User;
-import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
+import static com.beyond.meongnyang.user.entity.Role.*;
 
 
 @Service
@@ -43,13 +40,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
     private final UserBlockRepository userBlockRepository;
+    private final PetRepository petRepository;
     private final PasswordEncoder passwordEncoder;
     private final CommonService commonService;
     private final UserLockedService userLockedService;
-
-    private final PetRepository petRepository;
+    private final SseService sseService;
     private final SendEmailService sendEmailService;
     private final EmailVerificationService emailVerificationService;
+    private final EntityManager em;
 
 
     //회원 가입 시 이메일, 전화번호, 닉네임 각각 인증
@@ -255,7 +253,9 @@ public class UserService {
     public void follow(Long followingId){
         User follower = commonService.getCurrentUser();
         User following = userRepository.findById(followingId).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
-
+        if (follower.getId().equals(followingId)) {
+            throw new IllegalArgumentException("본인은 팔로우할 수 없습니다.");
+        }
         if (followRepository.findIdByFollowerAndFollowing(follower, following).isPresent()) {
             throw new EntityExistsException("이미 퍌로우중인 사용자입니다.");
 
@@ -300,7 +300,7 @@ public class UserService {
                 .map(UserFollow::getFollowing).map(UserFollowRes::fromEntity);
     }
 
-    // 사용자 차단
+    // 사용자 차단(사용자가 사용자를 차단)
     public void blockUser(Long blockUserId){
         User user = commonService.getCurrentUser();
         User blockUser = userRepository.findById(blockUserId).orElseThrow(() -> new EntityNotFoundException());
@@ -329,7 +329,6 @@ public class UserService {
         }
         return users.map(UserBlockDetailRes::fromEntity);
     }
-
     /* ****************마이페이지&설정 관련-(pet) ********************* */
     // 대표동물 설정
     public Long setMainPet(Long petId) {
@@ -383,5 +382,45 @@ public class UserService {
         return UserDetailRes.fromEntity(user);
     }
 
+    // 관리자에 의한 서비스 이용 차단 해제
+    public void unbanByAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
+        user.unblock();
+    }
 
+    // 서비스 이용 차단 및 차단 해제 처리
+    public void handleBan(User admin, User user, Role newRole, LocalDateTime expiryDate) {
+        // 1) 역할/만료일 갱신
+        // 변경 결과에 따라 SSE 이벤트/메시지/만료시각을 준비
+        String event = "";
+        String message = "";
+
+        switch (newRole) {
+            case TEMPORARY_BLOCK -> {
+                event = "ban";
+                message = "계정이 기간 차단되었습니다.";
+                user.updateRole(TEMPORARY_BLOCK);
+                user.setBlockExpiryDate(expiryDate);
+            }
+            case PERMANENT_BLOCK -> {
+                event = "ban";
+                message = "계정이 영구 차단되었습니다.";
+                user.updateRole(PERMANENT_BLOCK);
+            }
+            case USER -> { // 차단 해제
+                event = "unban";
+                message = "차단이 해제되었습니다.";
+                user.updateRole(USER);
+            }
+        }
+        em.flush();
+
+        // SSE 전송 (message만 보내는 버전)
+        sseService.publishMessage(
+                event,                 // "ban" | "unban"
+                user.getEmail(),       // receiver = 대상 사용자
+                message
+        );
+    }
 }

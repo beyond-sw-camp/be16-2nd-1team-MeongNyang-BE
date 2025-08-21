@@ -18,6 +18,7 @@ public class SpeciesDataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (!speciesRepository.findAll().isEmpty()) return;
 // 🐶 강아지
         speciesRepository.saveAll(List.of(
                 // 🐶 강아지

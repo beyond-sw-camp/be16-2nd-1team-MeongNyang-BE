@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.common;
+package com.beyond.meongnyang.common.service;
 
 import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.user.entity.User;

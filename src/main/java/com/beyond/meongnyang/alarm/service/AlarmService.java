@@ -3,7 +3,7 @@ package com.beyond.meongnyang.alarm.service;
 import com.beyond.meongnyang.alarm.dto.AlarmRes;
 import com.beyond.meongnyang.alarm.entity.Alarm;
 import com.beyond.meongnyang.alarm.repository.AlarmRepository;
-import com.beyond.meongnyang.common.CommonService;
+import com.beyond.meongnyang.common.service.CommonService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
