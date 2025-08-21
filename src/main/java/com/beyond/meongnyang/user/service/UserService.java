@@ -241,6 +241,7 @@ public class UserService {
                 .createdAt(user.getCreatedAt())
                 .mainPetId(mainPet != null ? mainPet.getId() : null)
                 .mainPetImage(mainPet != null ? mainPet.getPetProfileUrl() : null)
+                .socialType(user.getSocialType())
                 .build();
     }
 

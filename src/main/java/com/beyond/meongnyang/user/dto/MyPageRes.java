@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.user.dto;
 
+import com.beyond.meongnyang.user.entity.SocialType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,4 +18,5 @@ public class MyPageRes {
     private LocalDateTime createdAt;
     private Long mainPetId;
     private String mainPetImage;
+    private SocialType socialType;
 }
