@@ -359,6 +359,12 @@ public class UserService {
     }
 
     /* **************** 관리자 기능 **************** */
+    // 회원 전체 조회 (탈퇴회원포함)
+    public Page<UserListRes> findAllUser(Pageable pageable) {
+        Page<User> users = this.userRepository.findAll(pageable);
+        return users.map(UserListRes::fromEntity);
+    }
+
     // 회원 전체 조회
     public List<UserListRes> findAll() {
         List<User> users = this.userRepository.findAllBydelYn("N");

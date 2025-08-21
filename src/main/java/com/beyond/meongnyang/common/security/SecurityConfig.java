@@ -44,7 +44,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(a -> a.requestMatchers(
                                 "/users/sign", "/users/login", "/users/find/email", "/users/check-email", "/users/check-nickname", "/users/check-phone", "/connect/**",
                                 "/users/verify-email", "/users/verify-email-check", "/users/lost-password")
-                        .permitAll().anyRequest().authenticated())
+//                        .permitAll().anyRequest().authenticated()
+                                .permitAll()
+                                .anyRequest().hasAnyRole("USER", "ADMIN")) // APPLICANT 접근불가
                 .build();
     }
 

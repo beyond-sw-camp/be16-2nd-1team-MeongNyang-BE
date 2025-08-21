@@ -16,9 +16,9 @@ public class MarketPostListReq {
     private int price;
     private String saleStatus;       // 판매상태 (enum -> String)
     private String thumbnailUrl;
-    private long likeCount;           // 찜 개수
+    private int likeCount;           // 찜 개수
 
-    public static MarketPostListReq fromEntity(MarketPost post, long likeCount) {
+    public static MarketPostListReq fromEntity(MarketPost post, int likeCount) {
         return MarketPostListReq.builder()
                 .id(post.getId())
                 .title(post.getTitle())
