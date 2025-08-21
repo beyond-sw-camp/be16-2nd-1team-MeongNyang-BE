@@ -19,6 +19,7 @@ public class MarketPostListRes {
     private String thumbnailUrl;
     private int likeCount;           // 찜 개수
     private Category category;
+    private String region;
 
     public static MarketPostListRes fromEntity(MarketPost post, int likeCount) {
         return MarketPostListRes.builder()
@@ -29,6 +30,7 @@ public class MarketPostListRes {
                 .thumbnailUrl(post.getThumbnailUrl())
                 .likeCount(likeCount)
                 .category(post.getCategory())
+                .region(post.getRegion())
                 .build();
     }
 }
