@@ -37,7 +37,7 @@ public class MarketService {
     private final ReportRepository reportRepository;
     private final WishlistRepository wishlistRepository;
 
-//    거래글 생성
+    //    거래글 생성
     public Long createMarketPost(MarketPostCreateReq marketPostCreateReq,
                                  List<MultipartFile> imageFiles) {
 //        1. 로그인한 사용자 정보 가져오기
@@ -72,7 +72,7 @@ public class MarketService {
         return marketPostRepository.save(marketPost).getId();
     }
 
-//    거래글 수정
+    //    거래글 수정
     public Long updateMarketPost(Long id,
                                  MarketPostUpdateReq marketPostUpdateReq,
                                  List<MultipartFile> imageFiles) {
@@ -119,7 +119,7 @@ public class MarketService {
         return marketPost.getId();
     }
 
-//    거래글 삭제
+    //    거래글 삭제
     public void deleteMarketPost(Long id) throws AccessDeniedException {
 //        1. 로그인한 사용자 정보 가져오기
         User user = commonService.getCurrentUser();
@@ -134,24 +134,24 @@ public class MarketService {
         marketPost.deleteMarketPost("Y");
     }
 
-//    거래글 목록조회
+    //    거래글 목록조회
     @Transactional(readOnly = true)
-    public Page<MarketPostListReq> findAllVisible(Pageable pageable) {
+    public Page<MarketPostListRes> findAllVisible(Pageable pageable) {
         Page<MarketPost> page = marketPostRepository.findAllByDelYn("N", pageable);
-        return page.map(p -> MarketPostListReq.fromEntity(p, wishlistRepository.countByMarketPost(p)));
+        return page.map(p -> MarketPostListRes.fromEntity(p, wishlistRepository.countByMarketPost(p)));
     }
 
-//    거래글 상세조회
+    //    거래글 상세조회
     @Transactional(readOnly = true)
     public MarketPostDetailRes marketPostDetail(Long id) {
         MarketPost marketPost = marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 거래글입니다."));
         return MarketPostDetailRes.fromEntity(marketPost);
     }
 
-//    TODO : 결제기능 구현 후에 buyer 세팅 가능
+    //    TODO : 결제기능 구현 후에 buyer 세팅 가능
 //    구매목록 조회
     @Transactional(readOnly = true)
-    public Page<MarketPostListReq> findPurchases(Pageable pageable) {
+    public Page<MarketPostListRes> findPurchases(Pageable pageable) {
 //        1. 로그인한 사용자 정보 가져오기
         User user = commonService.getCurrentUser();
 
@@ -160,13 +160,13 @@ public class MarketService {
 
 //        3. 각 거래글 객체를 dto로 변환해서 반환 (+ 찜개수)
         return marketPostList.map(post ->
-                MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post))
+                MarketPostListRes.fromEntity(post, wishlistRepository.countByMarketPost(post))
         );
     }
 
-//    판매목록 조회
+    //    판매목록 조회
     @Transactional(readOnly = true)
-    public Page<MarketPostListReq> findSales(Pageable pageable) {
+    public Page<MarketPostListRes> findSales(Pageable pageable) {
 //        1. 로그인한 사용자 정보 가져오기
         User user = commonService.getCurrentUser();
 
@@ -175,11 +175,11 @@ public class MarketService {
 
 //        3. 각 거래글 객체를 dto로 변환해서 반환 (+ 찜개수)
         return marketPostList.map(post ->
-                MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post))
+                MarketPostListRes.fromEntity(post, wishlistRepository.countByMarketPost(post))
         );
     }
 
-//    찜하기
+    //    찜하기
     public Long likeMarketPost(Long postId) {
 //        1. 로그인한 사용자 정보 가져오기
         User user = commonService.getCurrentUser();
@@ -205,7 +205,7 @@ public class MarketService {
         return wishlist.getId();
     }
 
-//    찜 취소
+    //    찜 취소
     public void unlikeMarketPost(Long id) {
 //        1. 로그인한 사용자 정보 가져오기
         User user = commonService.getCurrentUser();
@@ -221,7 +221,7 @@ public class MarketService {
 
     // 찜목록 조회
     @Transactional(readOnly = true)
-    public Page<MarketPostListReq> findWishlist(Pageable pageable) {
+    public Page<MarketPostListRes> findWishlist(Pageable pageable) {
         //  1. 로그인한 사용자 정보 가져오기
         User user = commonService.getCurrentUser();
 
@@ -231,7 +231,7 @@ public class MarketService {
         // 3. 각 Wishlist → MarketPost 꺼내서 DTO 변환 + 전체 찜 개수 포함
         return wishlistPage.map(w -> {
             MarketPost post = w.getMarketPost();
-            return MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post));
+            return MarketPostListRes.fromEntity(post, wishlistRepository.countByMarketPost(post));
         });
     }
 
@@ -244,12 +244,12 @@ public class MarketService {
 
     // 관리자 (전체 거래글 조회)
     @Transactional(readOnly = true)
-    public Page<MarketPostListReq> marketPostList(Pageable pageable) {
+    public Page<MarketPostListRes> marketPostList(Pageable pageable) {
 //        1. pageable(page, size 정보)대로 marketPost를 list로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAll(pageable);
 //        2. list에서 marketPost를 하나씩 꺼내서 dto로 변환 (+ 찜개수)
         return marketPostList.map(post ->
-                MarketPostListReq.fromEntity(post, wishlistRepository.countByMarketPost(post))
+                MarketPostListRes.fromEntity(post, wishlistRepository.countByMarketPost(post))
         );
     }
 

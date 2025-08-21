@@ -2,7 +2,7 @@ package com.beyond.meongnyang.market.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.market.dto.MarketPostCreateReq;
-import com.beyond.meongnyang.market.dto.MarketPostListReq;
+import com.beyond.meongnyang.market.dto.MarketPostListRes;
 import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
 import com.beyond.meongnyang.market.service.MarketService;
 import lombok.RequiredArgsConstructor;
@@ -117,7 +117,7 @@ public class MarketController {
         );
     }
 
-//    찜하기
+    //    찜하기
     @PostMapping("/{id}/like")
     @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> likeMarketPost(@PathVariable("id") Long postId) {
@@ -131,7 +131,7 @@ public class MarketController {
         );
     }
 
-//    찜 취소
+    //    찜 취소
     @DeleteMapping("/{id}/like")
     @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> unlikeMarketPost(@PathVariable("id") Long postId) {
@@ -145,10 +145,10 @@ public class MarketController {
         );
     }
 
-//    찜 목록조회
+    //    찜 목록조회
     @GetMapping("/like")
     public ResponseEntity<?> findWishlist(@PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<MarketPostListReq> page = marketService.findWishlist(pageable);
+        Page<MarketPostListRes> page = marketService.findWishlist(pageable);
         return ResponseEntity.ok(page);
     }
 }
