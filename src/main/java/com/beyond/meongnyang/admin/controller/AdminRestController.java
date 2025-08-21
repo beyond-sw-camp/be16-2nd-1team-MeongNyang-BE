@@ -39,7 +39,7 @@ public class AdminRestController {
 
     /** 회원 관련 관리자 기능 **/
     // 회원가입 승인
-    @PatchMapping("/user/{id}/approve")
+    @PatchMapping("/users/{id}/approve")
     public ResponseEntity<?> approveUser(@PathVariable Long id) {
         Long userId = adminUserService.approveUser(id);
         return new ResponseEntity<>(CommonRes.ofSuccess(userId, HttpStatus.OK.value(), "회원가입 승인 완료"), HttpStatus.OK);
@@ -53,14 +53,14 @@ public class AdminRestController {
         return new ResponseEntity<>(CommonRes.ofSuccess(userList, HttpStatus.OK.value(), "전체회원목록 조회 완료"), HttpStatus.OK);
     }
     // 회원정보 수정
-    @PatchMapping("/user/{id}")
+    @PatchMapping("/users/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id,
                                         @RequestBody AdminUserUpdateReq req) {
         Long userId = adminUserService.updateUser(id, req);
         return new ResponseEntity<>(CommonRes.ofSuccess(userId, HttpStatus.OK.value(), "회원정보수정 완료"), HttpStatus.OK);
     }
     // 회원정보 삭제
-    @DeleteMapping("/user/{id}")
+    @DeleteMapping("/users/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         Long userId = adminUserService.deleteUser(id);
         return new ResponseEntity<>(CommonRes.ofSuccess(userId, HttpStatus.OK.value(), "회원정보삭제 완료"), HttpStatus.OK);

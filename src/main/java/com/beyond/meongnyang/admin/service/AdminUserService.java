@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Stream.iterate;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -115,16 +117,16 @@ public class AdminUserService {
 //    오름차순 정렬
     private static List<LocalDate> datesBetween(LocalDate from, LocalDate to) {
         long days = to.toEpochDay() - from.toEpochDay() + 1;
-        return java.util.stream.Stream.iterate(from, d -> d.plusDays(1)).limit(days).toList();
+        return iterate(from, d -> d.plusDays(1)).limit(days).toList();
     }
     private static List<LocalDate> weeksBetween(LocalDate startMonday, LocalDate endMonday) {
         long weeks = (endMonday.toEpochDay() - startMonday.toEpochDay()) / 7 + 1;
-        return java.util.stream.Stream.iterate(startMonday, d -> d.plusWeeks(1)).limit(weeks).toList();
+        return iterate(startMonday, d -> d.plusWeeks(1)).limit(weeks).toList();
     }
     private static List<LocalDate> monthsBetween(LocalDate startMonth, LocalDate endMonth) {
         int months = (endMonth.getYear() - startMonth.getYear()) * 12
                 + endMonth.getMonthValue() - startMonth.getMonthValue() + 1;
-        return java.util.stream.Stream.iterate(startMonth, d -> d.plusMonths(1)).limit(months).toList();
+        return iterate(startMonth, d -> d.plusMonths(1)).limit(months).toList();
     }
 
 }
