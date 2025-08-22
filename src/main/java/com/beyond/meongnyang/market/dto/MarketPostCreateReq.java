@@ -22,8 +22,14 @@ public class MarketPostCreateReq {
     private Category category;
     @NotNull(message = "가격을 입력해주세요.")
     private Integer price;
+//    @NotBlank(message = "지역을 입력해주세요.")
+//    private String region;
     @NotBlank(message = "지역을 입력해주세요.")
-    private String region;
+    private String regionSido;
+    @NotBlank(message = "지역을 입력해주세요.")
+    private String regionSigungu;
+    @NotBlank(message = "지역을 입력해주세요.")
+    private String regionDong;
     @NotBlank(message = "내용을 입력해주세요.")
     private String description;
 
@@ -33,7 +39,10 @@ public class MarketPostCreateReq {
                 .category(this.category)
                 .description(this.description)
                 .price(this.price)
-                .region(this.region)
+//                .region(this.region)
+                .regionSido(this.getRegionSido())
+                .regionSigungu(this.getRegionSigungu())
+                .regionDong(this.getRegionDong())
                 .build();
     }
 }

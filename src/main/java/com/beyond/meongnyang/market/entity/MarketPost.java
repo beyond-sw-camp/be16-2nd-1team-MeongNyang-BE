@@ -44,8 +44,23 @@ public class MarketPost extends CommonAt {
     @Column(nullable = false)
     private int price;
 
-    @Column(length = 100, nullable = false)
-    private String region;
+//    @Column(length = 100, nullable = false)
+//    private String region;
+
+    @Column(name = "region_sido", length = 50)
+    private String regionSido;
+
+    @Column(name = "region_sigungu", length = 50)
+    private String regionSigungu;
+
+    @Column(name = "region_dong", length = 50)
+    private String regionDong;
+
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -81,7 +96,10 @@ public class MarketPost extends CommonAt {
         this.title = marketPostUpdateReq.getTitle();
         this.category = marketPostUpdateReq.getCategory();
         this.price = marketPostUpdateReq.getPrice();
-        this.region = marketPostUpdateReq.getRegion();
+//        this.region = marketPostUpdateReq.getRegion();
+        this.regionSido = marketPostUpdateReq.getRegionSido();
+        this.regionSigungu = marketPostUpdateReq.getRegionSigungu();
+        this.regionDong = marketPostUpdateReq.getRegionDong();
         this.description = marketPostUpdateReq.getDescription();
     }
     public void deleteMarketPost(String delYn){
