@@ -90,15 +90,19 @@ public class PostService {
         post.deletePost("Y");
     }
 
-    // 내 일기 목록 조회
-    public Page<PostListReq> myPosts(Pageable pageable) {
-        User user = commonService.getCurrentUser();
+    // 일기 목록 조회
+    public Page<PostListReq> posts(Pageable pageable, Long userId) {
+        User user;
+        if(userId != null){
+            user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
+        } else {
+            user = commonService.getCurrentUser();
+        }
         Page<Post> postList = postRepository.findAllByUserId(user.getId(), pageable);
         return postList.map(p -> PostListReq.fromEntity(p));
     }
-
     // 일기 상세 조회
-    public PostDetailRes myPost(Long postId) {
+    public PostDetailRes findByPostId(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
         Pet pet = petRepository.findByUserIdAndFirstPetAndDelYn(post.getUser().getId(), true, "N").orElseThrow(() -> new EntityNotFoundException("해당 펫이 존재하지 않습니다"));
         int likeCount = likeRepository.countByPostId(postId);
@@ -113,8 +117,11 @@ public class PostService {
         if (isLike) {
             throw new EntityExistsException("이미 좋아요를 누른 포스트입니다.");
         } else {
-            PostLikeRes postLikeRes = new PostLikeRes();
-            return likeRepository.save(postLikeRes.likeToEntity(post, user)).getId();
+            Like like = Like.builder()
+                    .post(post)
+                    .user(user)
+                    .build();
+            return likeRepository.save(like).getId();
         }
     }
 
@@ -157,16 +164,15 @@ public class PostService {
 
     // 댓글 목록
     public Page<PostCommentListRes> commentList(Long postId, Pageable pageable) {
-        Page<Comment> comments = commentRepository.findAllByPostId(postId, pageable);
+        Page<Comment> comments = commentRepository.findAllByPostIdExcludingReplies(postId, pageable);
         return comments.map(comment -> {
             List<CommentTag> tags = commentTagRepository.findAllByParentComment(comment);
             List<PostCommentReplyRes> replies = tags.stream()
-                    .map(PostCommentReplyRes::fromEntity)
+                    .map(PostCommentReplyRes::fromEntity)  // CommentTag를 넘김
                     .collect(Collectors.toList());
             return PostCommentListRes.fromEntity(comment, replies);
         });
     }
-
     // 댓글 수정
     public Long editComment(Long commentId, PostCommentEditReq postCommentEditReq) throws AccessDeniedException {
         User user = commonService.getCurrentUser();
@@ -197,7 +203,7 @@ public class PostService {
 
     // 검색
     public Page<PostSearchRes> searchPost(SearchType type, String keyword, Pageable pageable) {
-        if (keyword == null || keyword.trim().isEmpty()) {
+            if (keyword == null || keyword.trim().isEmpty()) {
             // 키워드 없으면 빈 결과 반환(또는 IllegalArgumentException 던져도 됨)
             throw new IllegalArgumentException("지원하지 않는 검색 타입입니다.");
         }

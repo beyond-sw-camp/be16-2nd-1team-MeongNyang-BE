@@ -52,6 +52,9 @@ public class Pet extends CommonAt {
     @Column(name = "birthday", nullable = true)
     private LocalDate birthday;
 
+    @Column(name = "introduce", nullable = true)
+    private String introduce;
+
     // pet 등록 관련 소프트 딜리트
     @Column(name = "is_del", nullable = false)
     @Builder.Default
@@ -75,10 +78,12 @@ public class Pet extends CommonAt {
         this.gender = req.getGender();
         this.weight = req.getWeight();
         this.birthday = req.getBirthday();
+        this.introduce = req.getIntroduce();
         this.petProfileUrl = req.getUrl();
         this.species = species;
-
     }
+
+    public void changeMainPet(boolean status){ this.firstPet = status;}
 
     public void delPet() {
         this.delYn = "Y";

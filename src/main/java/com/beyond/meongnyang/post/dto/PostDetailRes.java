@@ -21,6 +21,7 @@ public class PostDetailRes {
     private Long id;
     private String petName;
     private String petImage;
+    private Long userId;
     private String title;
     private String content;
     private int likeCount;
@@ -35,6 +36,7 @@ public class PostDetailRes {
                 .id(post.getId())
                 .petName(pet.getName())
                 .petImage(pet.getPetProfileUrl())
+                .userId(post.getUser().getId())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .likeCount(likeCount)

@@ -12,14 +12,13 @@ import org.hibernate.annotations.Where;
 import java.util.ArrayList;
 import java.util.List;
 
-// Comment.java (Entity)
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Where(clause = "del_yn = false")
+@Where(clause = "del_yn = 'FALSE'")
 public class Comment extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +36,8 @@ public class Comment extends CommonAt {
     private String content;
 
     @Enumerated(EnumType.STRING)
-    private Bool delYn = Bool.FALSE;
+    @Column(nullable = false)
+    private Bool delYn;
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommentTag> commentTags = new ArrayList<>();

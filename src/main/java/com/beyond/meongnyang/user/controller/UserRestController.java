@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @RequiredArgsConstructor
@@ -153,17 +154,30 @@ public class UserRestController {
     // 언팔로우
     @DeleteMapping("/follows/{id}")
     @PreAuthorize("@securityCheck.checkUserAccess()")
-    public ResponseEntity<?> unFollow(@PathVariable Long id){
+    public ResponseEntity<?> unFollow(@PathVariable("id") Long id){
         userService.unFollow(id);
         return new ResponseEntity<>(CommonRes.ofSuccess("언팔로우 완료", HttpStatus.OK.value(), "언팔로우를 성공했습니다."), HttpStatus.OK);
+    }
+
+    @GetMapping("/follows/{id}/status")
+    public ResponseEntity<?> checkFollowStatus(@PathVariable("id") Long followingId) {
+        boolean isFollowing = userService.checkFollowStatus(followingId);
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        Map.of("isFollowing", isFollowing),
+                        HttpStatus.OK.value(),
+                        "팔로우 상태를 확인했습니다."
+                ),
+                HttpStatus.OK
+        );
     }
 
     // 팔로워 목록 조회
     @GetMapping("/follows/followers")
     public ResponseEntity<?> getFollowers(
-            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false, value = "userId") Long userId) {
         return new ResponseEntity<>(
-                CommonRes.ofSuccess(userService.getFollowers(pageable), HttpStatus.OK.value(), "팔로워 목록 조회 완료"),
+                CommonRes.ofSuccess(userService.getFollowers(pageable, userId), HttpStatus.OK.value(), "팔로워 목록 조회 완료"),
                 HttpStatus.OK
         );
     }
@@ -172,9 +186,9 @@ public class UserRestController {
     // 팔로잉 목록 조회
     @GetMapping("/follows/followings")
     public ResponseEntity<?> getFollowings(
-            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false, value = "userId") Long userId) {
         return new ResponseEntity<>(
-                CommonRes.ofSuccess(userService.getFollowings(pageable), HttpStatus.OK.value(), "팔로잉 목록 조회 완료"),
+                CommonRes.ofSuccess(userService.getFollowings(pageable, userId), HttpStatus.OK.value(), "팔로잉 목록 조회 완료"),
                 HttpStatus.OK
         );
     }
