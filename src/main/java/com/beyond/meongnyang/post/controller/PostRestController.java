@@ -72,22 +72,21 @@ public class PostRestController {
 
     // 일기 목록 조회
     @GetMapping
-    public ResponseEntity<?> posts(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<?> posts(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false, value = "userId") Long userId) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        postService.myPosts(pageable),
+                        postService.posts(pageable, userId),
                         HttpStatus.OK.value(),
-                        "내 일기를 불러왔습니다."
+                        "내 일기 목록을 불러왔습니다."
                 ), HttpStatus.OK
         );
     }
-
     // 일기 상세 조회
     @GetMapping("/{id}")
     public ResponseEntity<?> postDetail(@PathVariable("id") Long postId) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        postService.myPost(postId),
+                        postService.findByPostId(postId),
                         HttpStatus.OK.value(),
                         "일기를 불러왔습니다."
                 ), HttpStatus.OK
@@ -97,12 +96,12 @@ public class PostRestController {
 
 
     // 좋아요
-    @PostMapping("/like")
+    @PostMapping("/{id}/like")
     @PreAuthorize("@securityCheck.checkUserAccess()")
-    public ResponseEntity<?> postLike(@RequestBody PostLikeReq postLikeReq) {
+    public ResponseEntity<?> postLike(@PathVariable("id") Long id) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        postService.postLike(postLikeReq.getPostId()),
+                        postService.postLike(id),
                         HttpStatus.OK.value(),
                         "성공"
                 ), HttpStatus.OK
@@ -206,7 +205,7 @@ public class PostRestController {
     // 검색
     @GetMapping("/search")
     public ResponseEntity<?> postComments(@RequestParam SearchType searchType, @RequestParam String keyword,
-                                          @PageableDefault(value = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
+                                          @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
                         postService.searchPost(searchType, keyword, pageable),

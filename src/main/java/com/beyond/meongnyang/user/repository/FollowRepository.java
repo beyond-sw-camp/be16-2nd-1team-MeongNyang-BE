@@ -13,7 +13,6 @@ import java.util.Optional;
 public interface FollowRepository extends JpaRepository<UserFollow, Long> {
     Optional<UserFollow> findByFollowerIdAndFollowingId(Long followerId, Long followingId);
 
-
     Page<UserFollow> findByFollower(User user, Pageable pageable);
 
     Page<UserFollow> findByFollowing(User user, Pageable pageable);

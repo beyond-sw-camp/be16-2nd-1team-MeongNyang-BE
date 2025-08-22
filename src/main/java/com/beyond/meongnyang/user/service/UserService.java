@@ -285,17 +285,42 @@ public class UserService {
         followRepository.delete(userFollow);
     }
 
+    // 팔로우 상태 확인
+    public boolean checkFollowStatus(Long followingId) {
+        User follower = commonService.getCurrentUser();
+        User following = userRepository.findById(followingId).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
+
+        // 본인인지 확인
+        if (follower.equals(following)) {
+            return false; // 본인은 팔로우할 수 없으므로 false 반환
+        }
+
+        // 팔로우 관계 확인
+        return followRepository.findIdByFollowerAndFollowing(follower, following)
+                .isPresent();
+    }
+
 
     // 나를 팔로우하는 사람 목록 (followers)
-    public Page<UserFollowRes> getFollowers(Pageable pageable) {
-        User user = commonService.getCurrentUser();
+    public Page<UserFollowRes> getFollowers(Pageable pageable, Long userId) {
+        User user;
+        if(userId != null){
+            user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
+        } else {
+            user = commonService.getCurrentUser();
+        }
         return followRepository.findByFollowing(user, pageable)
                 .map(UserFollow::getFollower).map(UserFollowRes::fromEntity);
     }
 
     // 내가 팔로우하는 사람 목록 (followings)
-    public Page<UserFollowRes> getFollowings(Pageable pageable) {
-        User user = commonService.getCurrentUser();
+    public Page<UserFollowRes> getFollowings(Pageable pageable, Long userId) {
+        User user;
+        if(userId != null){
+            user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
+        } else {
+            user = commonService.getCurrentUser();
+        }
         return followRepository.findByFollower(user, pageable)
                 .map(UserFollow::getFollowing).map(UserFollowRes::fromEntity);
     }

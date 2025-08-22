@@ -25,9 +25,9 @@ public class PetController {
     }
 
     // 유저가 등록한 애완동물 목록
-    @GetMapping("/list")
-    public ResponseEntity<?> findByUser() {
-        return new ResponseEntity<>(CommonRes.ofSuccess(petService.findByUser(), HttpStatus.OK.value(), "Pet 목록 조회 완료"), HttpStatus.OK);
+    @GetMapping("")
+    public ResponseEntity<?> findByUser(@RequestParam(required = false, value = "userId") Long userId) {
+        return new ResponseEntity<>(CommonRes.ofSuccess(petService.findByUser(userId), HttpStatus.OK.value(), "Pet 목록 조회 완료"), HttpStatus.OK);
     }
 
     // 유저가 등록한 펫 수정
@@ -36,6 +36,13 @@ public class PetController {
         this.petService.updatePet(id, req, petImg);
         return new ResponseEntity<>(CommonRes.ofSuccess("애완동물 수정이 완료됐습니다.",
                 HttpStatus.OK.value(), "애완동물 수정 완료"), HttpStatus.OK);
+    }
+
+    // 대표 펫 변경
+    @PutMapping("/{petId}/main")
+    public ResponseEntity<?> setMainPet(@PathVariable Long petId) {
+        petService.changeMainPet(petId);
+        return ResponseEntity.ok(CommonRes.ofSuccess(null, HttpStatus.OK.value(), "대표 펫이 변경되었습니다."));
     }
 
     // 유저가 등록한 펫 삭제

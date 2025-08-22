@@ -16,6 +16,7 @@ import java.time.LocalDate;
 @Builder
 
 public class PetDetailRes {
+    private Long id;
     private String petOrder;
     private String species;
     private String name;
@@ -24,9 +25,12 @@ public class PetDetailRes {
     private BigDecimal weight;
     private String url;
     private LocalDate birthday;
+    private String introduce;
+    private Boolean firstPet;
 
     public static PetDetailRes fromEntity(Pet pet) {
         return PetDetailRes.builder()
+                .id(pet.getId())
                 .petOrder(pet.getSpecies().getPetOrder())
                 .species(pet.getSpecies().getSpecies())
                 .name(pet.getName())
@@ -35,6 +39,8 @@ public class PetDetailRes {
                 .weight(pet.getWeight())
                 .url(pet.getPetProfileUrl())
                 .birthday(pet.getBirthday())
+                .introduce(pet.getIntroduce())
+                .firstPet(pet.isFirstPet())
                 .build();
     }
 }

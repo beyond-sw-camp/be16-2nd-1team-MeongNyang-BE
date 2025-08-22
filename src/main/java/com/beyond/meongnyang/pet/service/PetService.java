@@ -32,9 +32,7 @@ public class PetService {
 
     // 애완동물 등록
     public void register(PetRegisterReq req, MultipartFile file) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("사용자 정보가 틀립니다."));
+        User user = commonService.getCurrentUser();
         Species species = speciesRepository.findById(req.getSpeciesId())
                 .orElseThrow(() -> new EntityNotFoundException("종 정보가 없습니다."));
 
@@ -52,17 +50,20 @@ public class PetService {
 
 
     // 유저가 등록한 애완동물 목록
-    public PetListRes findByUser() {
-        User user = commonService.getCurrentUser();
+    public PetListRes findByUser(Long userId) {
+        User user;
+        if(userId != null){
+            user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
+        } else {
+            user = commonService.getCurrentUser();
+        }
         List<Pet> pets =this.petRepository.findAllByUserAndDelYn(user, "N");
         return PetListRes.fromEntity(user, pets);
     }
 
     // 애완동물 수정 펫 수정하기 선택 시 해당 petId 가져옴
     public void updatePet(Long petId, PetRegisterReq req, MultipartFile file) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("사용자 정보가 틀립니다."));
+        User user = commonService.getCurrentUser();
 
         Pet pet = petRepository.findById(petId)
                 .orElseThrow(() -> new EntityNotFoundException("펫 정보가 틀립니다."));
@@ -85,11 +86,30 @@ public class PetService {
         }
         pet.updatePet(req, species);
     }
+
+    public void changeMainPet(Long petId) {
+        User user = commonService.getCurrentUser();
+        // 기존 대표 펫을 false로 설정
+        clearMainPet(user);
+
+        // 새로운 대표 펫을 설정
+        Pet pet = petRepository.findById(petId).orElseThrow(() -> new EntityNotFoundException("펫 정보가 틀립니다."));
+        pet.changeMainPet(true); // Pet 엔티티의 메서드 호출
+    }
+
     // 등록한 애완동물 삭제
     public String deletPet(Long id) {
         User user = commonService.getCurrentUser();
         Pet pet = this.petRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("펫 정보가 틀립니다."));
         pet.delPet();
         return pet.getName();
+    }
+
+    private void clearMainPet(User user) {
+        // 기존 대표 펫들을 모두 false로 설정
+        List<Pet> mainPets = petRepository.findAllByUserAndFirstPetTrue(user);
+        for (Pet mainPet : mainPets) {
+            mainPet.changeMainPet(false);
+        }
     }
 }

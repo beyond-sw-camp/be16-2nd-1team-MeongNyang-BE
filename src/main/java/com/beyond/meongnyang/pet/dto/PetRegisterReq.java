@@ -29,6 +29,7 @@ public class PetRegisterReq {
     private BigDecimal weight;
     private String url;
     private LocalDate birthday;
+    private String introduce;
 
     // 프론트에서 선택한 speciesId가 넘어옴.
     private Long speciesId;
@@ -41,6 +42,7 @@ public class PetRegisterReq {
                 .weight(this.weight)
                 .petProfileUrl(this.url)
                 .birthday(this.birthday)
+                .introduce(this.introduce)
                 .user(user)
                 .species(species)
                 .build();
