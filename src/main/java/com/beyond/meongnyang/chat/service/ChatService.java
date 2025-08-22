@@ -79,7 +79,6 @@ public class ChatService {
 //        });
 
         // 메세지 저장
-        // TODO : 메세지에 파일(사진, 오디오, 동영상)이 있을 경우 처리해야 함
         chatMessageReq.getFileUrls().forEach(url -> {
             ChatMedia chatMedia = ChatMedia.builder()
                     .url(url)
@@ -94,7 +93,7 @@ public class ChatService {
         return ChatMessageRes.fromEntity(chatMessage);
     }
 
-    public Long createChatRoom(ChatRoomCreateReq chatRoomCreateReq) {
+    public ChatRoomSummaryRes createChatRoom(ChatRoomCreateReq chatRoomCreateReq) {
         // 채팅방 객체 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(chatRoomCreateReq.getRoomName())
@@ -117,7 +116,7 @@ public class ChatService {
         // 채팅방 참여자 저장
         chatRoomRepository.save(chatRoom);
 
-        return chatRoom.getId();
+        return ChatRoomSummaryRes.fromEntity(chatRoom, 0);
     }
 
     public List<ChatRoomSummaryRes> getMyChatRooms() {
@@ -163,7 +162,10 @@ public class ChatService {
                     .build();
 
             // 혹시나 이미 채팅방에 참여 중인 유저가 초대한 유저 목록에 넘어왔을 경우(참여자 테이블에 중복으로 쌓이면 머리 아플 것 같아서 데이터 무결성 강화)
-            if (!participantIdSet.contains(user.getId())) chatRoom.getChatParticipantList().add(chatParticipant);
+            if (!participantIdSet.contains(user.getId())) {
+                participantIdSet.add(user.getId());
+                chatRoom.getChatParticipantList().add(chatParticipant);
+            }
         });
 
         if (chatRoom.getChatParticipantList().size() > 2) chatRoom.updateIsGroupChat(Bool.TRUE);
