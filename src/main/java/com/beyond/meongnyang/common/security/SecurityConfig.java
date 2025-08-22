@@ -5,6 +5,7 @@ import com.beyond.meongnyang.common.handler.JwtAuthorizationHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -17,7 +18,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Configuration
@@ -41,21 +42,29 @@ public class SecurityConfig {
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(jwtAuthenticationHandler) // 401error
                         .accessDeniedHandler(jwtAuthorizationHandler))  // 403error
-                .authorizeHttpRequests(a -> a.requestMatchers(
-                                "/users/sign", "/users/login", "/users/find/email", "/users/check-email", "/users/check-nickname", "/users/check-phone", "/connect/**",
-                                "/users/verify-email", "/users/verify-email-check", "/users/lost-password")
-//                        .permitAll().anyRequest().authenticated()
-                                .permitAll()
-                                .anyRequest().hasAnyRole("USER", "ADMIN")) // APPLICANT 접근불가
+                .authorizeHttpRequests(a -> a
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
+                        .requestMatchers(
+                                "/users/sign", "/users/login/**", "/users/find/email", "/users/check-email", "/users/check-nickname", "/users/check-phone", "/connect/**",
+                                "/users/verify-email", "/users/verify-email-check", "/users/lost-password",
+                                "/users/signup-extra",
+                                "/users/token/refresh",
+                                "/users/logout",
+                                "/users/link/confirm")
+                        .permitAll().anyRequest().authenticated())
                 .build();
     }
 
-    private CorsConfigurationSource corsConfiguration() {
+    @Bean
+    public CorsConfigurationSource corsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("*"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(false); // 쿠키/자격증명 미사용
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization","Content-Type","X-Refresh-Token"));
+        configuration.setExposedHeaders(List.of("X-Refresh-Token"));
+        configuration.setMaxAge(3600L); // preflight 1시간 캐시
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

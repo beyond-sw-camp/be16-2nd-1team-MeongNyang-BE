@@ -27,14 +27,12 @@ public class User extends CommonAt {
     @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "password", nullable = false, unique = true, length = 255)
+//    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
     @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @Column(name = "phone", nullable = false, unique = true, length = 255)
-    private String phone;
 
     // TODO: nickname 수정 사항 해야함
     @Column(name = "nickname", nullable = false, unique = true, length = 255)
@@ -54,9 +52,6 @@ public class User extends CommonAt {
 
     @Column(name = "location",nullable = true, length = 255)
     private String location;
-    // TODO: 간편인증
-    @Column(name = "third_party", nullable = true, length = 255)
-    private String thirdParty;
 
     // 계정 잠금 여부 : Y면 계정 잠금 상태
     @Column(name = "is_locked", nullable = false)
@@ -87,6 +82,17 @@ public class User extends CommonAt {
     @Column(name = "deleted_at", nullable = true)
     private LocalDateTime deletedAt;
 
+    /* ****************** social Login ******************* */
+    @Column(name = "social_id", nullable = true)
+    private String socialId;
+    @Column(name = "social_type", nullable = true)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private SocialType socialType = SocialType.COMMON;
+    @Column(name = "user_status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private UserStatus userStatus = UserStatus.ACTIVE;
     // 차단 만료 일시
     @Column(name = "block_expiry_date", nullable = true)
     private LocalDateTime blockExpiryDate;
@@ -102,6 +108,7 @@ public class User extends CommonAt {
 
     @Column(name = "main_pet_id", nullable = true)
     private Long mainPetId;
+
 
 
     /* ******************메소드******************* */
@@ -130,9 +137,20 @@ public class User extends CommonAt {
         this.password = newPassword;
     }
 
+    // 대표동물 설정
     public void changeMainPet(Long petId) {
         this.mainPetId = petId;
     }
+
+    // 소셜 id update
+    public void updateSocialId(String socialId) {
+        this.socialId = socialId;
+    }
+    // 소셜 type update
+    public void updateSocialType(SocialType socialType) {
+        this.socialType = socialType;
+    }
+
 
     // 권한 변경
     public void updateRole(Role role){

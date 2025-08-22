@@ -24,14 +24,16 @@ public interface UserRepository  extends JpaRepository<User, Long> {
 
 //    Optional<User> findByNameAndPhone (String name, String phone);
 
-    Optional<User> findByNameAndEmail (String name, String phone);
+    Optional<User> findByNameAndEmail (String name, String Email);
 
-    List<User> findAllBydelYn(String delYn);
+    List<User> findAllByDelYn(String delYn);
 
     Optional<User> findByEmailAndDelYn(String email, String delYn);
 
     Optional<User> findByIdAndDelYn(Long userId, String delYn);
 
+    Optional<User> findBySocialId(String socialId);
+  
     @Query("SELECT u " +
             "FROM User u " +
             "WHERE u.role = :role " +

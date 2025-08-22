@@ -12,12 +12,17 @@ import com.beyond.meongnyang.user.repository.UserBlockRepository;
 import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.user.dto.check.*;
+import com.beyond.meongnyang.user.dto.oauth2.InitalSetReq;
+import com.beyond.meongnyang.user.entity.SocialType;
 import com.beyond.meongnyang.user.entity.User;
+import com.beyond.meongnyang.user.dto.*;
+import com.beyond.meongnyang.user.entity.UserStatus;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -72,16 +77,6 @@ public class UserService {
         }
     }
 
-//    public void checkPhone (UserCheckPhoneReq dto) {
-//        Optional<User> optionalUser = this.userRepository.findByPhone(dto.getPhone());
-//        if (optionalUser.isPresent()) {
-////            User user = optionalUser.get();
-////            if(user.getDelYn().equals("Y")) {
-////                throw new EntityExistsException("탈퇴한 전화번호입니다.");
-////            }
-//            throw new EntityExistsException("이미 사용중인 전화번호입니다.");
-//        }
-//    }
 
     // 이메일 인증코드 발급
     public void sendCode (UserCheckEmailReq req) {
@@ -114,9 +109,6 @@ public class UserService {
         if (userRepository.findByNickname(dto.getNickname()).isPresent()) {
             throw new EntityExistsException("이미 사용중인 닉네임입니다.");
         }
-//        if (userRepository.findByPhone(dto.getPhone()).isPresent()) {
-//            throw new EntityExistsException("이미 사용중인 전화번호입니다.");
-//        }
         String encodedPassword = this.passwordEncoder.encode(dto.getPassword());
         User user = dto.toCreateEntity(encodedPassword);
         this.userRepository.save(user);
@@ -124,39 +116,10 @@ public class UserService {
     }
 
     // 로그인
-//    public User accessLogin(UserLoginReq request) {
-//            //  존재 확인
-//            User user = userRepository.findByEmail(request.getEmail())
-//                    .orElseThrow(() -> new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다."));
-//
-//            //  상태 체크
-//            if ("Y".equals(user.getDelYn())) {
-//                throw new IllegalArgumentException("사용하지 않는 계정입니다.");
-//            }
-//            if ("Y".equals(user.getIsLocked())) {
-//                throw new IllegalArgumentException("잠긴 계정입니다.");
-//            }
-//            //  비밀번호 체크
-//            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-//                user.updateCount(user.getFailedCount() + 1); // DB에 저장되는 필드
-//                userRepository.saveAndFlush(user);
-//                if (user.getFailedCount() >= 5) {
-//                    user.lockedAccount();
-////                    throw new IllegalArgumentException("5번 틀려서 계정이 잠겼습니다.");
-//                }
-//                throw new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다.");
-//            }
-//            //  로그인 성공 시 실패 횟수 초기화
-//            user.updateCount(0);
-//
-//            return user;
-//        }
     public User accessLogin(UserLoginReq request) {
-        // 1. 이메일로 사용자 조회
         User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다."));
+                .orElseThrow(() -> new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다."));
 
-        // 2. 상태 체크
         if ("Y".equals(user.getDelYn())) {
             throw new IllegalArgumentException("사용하지 않는 계정입니다.");
         }
@@ -164,44 +127,62 @@ public class UserService {
             throw new IllegalArgumentException("잠긴 계정입니다.");
         }
 
-        // 3. 비밀번호 체크
+        // 소셜 계정은 비번 로그인 금지
+        if (user.getSocialType() != SocialType.COMMON || user.getPassword() == null) {
+            throw new EntityExistsException("소셜 연동 계정입니다. 소셜 로그인을 사용하세요.");
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             int failCount = userLockedService.increaseFailedCount(user.getId());
             int remain = 5 - failCount;
-
-            if(remain <=0) {
-                throw new IllegalArgumentException("로그인 시도횟수를 초과하여 계정이 잠겼습니다.");
-            }   else {
-                throw new IllegalArgumentException("로그인 시도 실패");
-            }
-
+            if (remain <= 0) throw new IllegalArgumentException("로그인 시도횟수를 초과하여 계정이 잠겼습니다.");
+            throw new IllegalArgumentException("로그인 시도 실패");
         }
 
-        // 4. 로그인 성공 시 실패 횟수 초기화
         userLockedService.resetFailedCount(user.getId());
-
         return user;
     }
 
+    // 소셜로 등록된 사용자 조회
+    public Optional<User> getUserBySocailId(String socialId) {
+        return this.userRepository.findBySocialId(socialId);
 
-//    // 이메일 찾기
-//
-//    public String findEmail(UserFindEmailReq dto) {
-//        User user = this.userRepository.findByPhone(dto.getPhone()).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 전화번호입니다."));
-//        if(!user.getName().equals(dto.getName())) {
-//            throw new EntityNotFoundException("이름이 일치하지 않습니다.");
-//        }
-//        return user.getEmail();
-//    }
-
-    // 비밀번호 찾기: 임시 비밀번호 발급
-    public void wantTempPassword(UserFindPasswordReq req) {
-        User user = this.userRepository.findByNameAndEmail(req.getName(), req.getEmail()).orElseThrow(
-                () -> new EntityNotFoundException("등록된 회원정보가 없습니다.")
-        );
-        String tempPassword = this.userLockedService.generateTempPassword();
-        this.sendEmailService.sendTemporaryPassword(req.getEmail(), tempPassword);
     }
+    // email로 사용자 조회
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    // 소셜 계정 연동: 기존 유저(userId)에 socialType/socialId를 세팅
+    public void linkSocialAndDisablePassword(Long userId, SocialType socialType, String socialId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자 없음"));
+
+        if (user.getSocialType() != SocialType.COMMON) {
+            throw new EntityExistsException("이미 소셜 연동된 계정");
+        }
+
+        user.updateSocialType(socialType);
+        user.updateSocialId(socialId);
+
+        //  이후부터 비번 로그인 금지
+        user.updatePassword(null);
+    }
+
+
+    // oauth 로그인 후 추가 정보 등록 후 db 저장.
+    public User saveOauthUserWithExtraInfo(String socialId, String email, InitalSetReq extraInfo, SocialType socialType) {
+        User user = User.builder()
+                .socialId(socialId)
+                .email(email)
+                .name(extraInfo.getName())
+                .nickname(extraInfo.getNickname())
+                .socialType(socialType)
+                .userStatus(UserStatus.ACTIVE)
+                .build();
+        return userRepository.save(user);
+    }
+
 
     // 계정 락 풀기
     //TODO: 수정 읽음 동시성 문제 해결하기, 비밀번호 변경 , 임시 비밀번호 시간은?
@@ -225,6 +206,9 @@ public class UserService {
         User user = this.userRepository.findByEmail(email).orElseThrow(
                 () -> new EntityNotFoundException("등록된 회원정보가 없습니다.")
         );
+        if (user.getPassword() == null || user.getSocialType() != SocialType.COMMON) {
+            throw new EntityExistsException("소셜 계정은 비밀번호 변경이 불가합니다.");
+        }
 
         boolean check = passwordEncoder.matches(req.getOldPassword(), user.getPassword());
         if(!check) {
@@ -241,11 +225,8 @@ public class UserService {
 
 
     // 계정 삭제
-    public void deleteAccount(UserCheckPasswordReq dto) {
+    public void deleteAccount() {
         User user = commonService.getCurrentUser();
-        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
         user.softDelete();
     }
   
@@ -380,6 +361,7 @@ public class UserService {
                 .createdAt(user.getCreatedAt())
                 .mainPetId(mainPet != null ? mainPet.getId() : null)
                 .mainPetImage(mainPet != null ? mainPet.getPetProfileUrl() : null)
+                .socialType(user.getSocialType())
                 .build();
     }
 
@@ -394,7 +376,6 @@ public class UserService {
     public List<UserListRes> findAll() {
         List<User> users = this.userRepository.findAllBydelYn("N");
         return users.stream().map(UserListRes::fromEntity).toList();
-
     }
 
     // 회원 상세조회

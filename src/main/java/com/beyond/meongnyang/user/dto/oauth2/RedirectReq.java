@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.user.dto;
+package com.beyond.meongnyang.user.dto.oauth2;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class UserFindPasswordReq {
-    private String name;
-    private String email;
+public class RedirectReq {
+    private String code;
 }
