@@ -13,10 +13,28 @@ import java.util.Optional;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    Page<Comment> findAllByPostId(Long postId, Pageable pageable);
+    @Query("""
+        select c
+        from Comment c
+        where c.post.id = :postId
+          and c.delYn = 'FALSE'
+          and not exists (
+              select 1
+              from CommentTag ct
+              where ct.comment = c
+                and ct.parentComment is not null
+          )
+        order by c.id desc
+    """)
+    Page<Comment> findAllByPostIdExcludingReplies(@Param("postId") Long postId, Pageable pageable);
 
-    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND c.id NOT IN " +
-            "(SELECT ct.comment.id FROM CommentTag ct)")
-    Page<Comment> findAllRootComments(@Param("postId") Long postId, Pageable pageable);
+    @Query("""
+        select c
+        from Comment c
+        where c.post.id = :postId
+          and c.delYn = 'FALSE'
+        order by c.id desc
+    """)
+    Page<Comment> findAllByPostId(@Param("postId") Long postId, Pageable pageable);
 }
 

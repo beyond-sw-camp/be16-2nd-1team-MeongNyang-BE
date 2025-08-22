@@ -15,6 +15,11 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.apache.coyote.Response;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -332,21 +337,75 @@ public class UserRestController {
         ), HttpStatus.OK);
     }
 
-
-    /* ******************** 관리자 기능 ******************** */
-    // 탈퇴하지 않은 회원목록 조회
-    @GetMapping("/list")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> findAll() {
-        List<UserListRes> userList = this.userService.findAll();
-        return new ResponseEntity<>(CommonRes.ofSuccess(userList, HttpStatus.OK.value(), "회원 목록 조회 완료"), HttpStatus.OK);
+    // 팔로우
+    @PostMapping("/follows/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
+    public ResponseEntity<?> follow(@PathVariable("id") Long id){
+        userService.follow(id);
+        return new ResponseEntity<>(CommonRes.ofSuccess("팔로우 완료", HttpStatus.OK.value(), "팔로우를 성공했습니다."), HttpStatus.OK);
     }
 
-    // 회원 상세 조회
-    @GetMapping("/detail/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> findById(@PathVariable Long id) {
-        UserDetailRes user = this.userService.findById(id);
-        return new ResponseEntity<>(CommonRes.ofSuccess(user, HttpStatus.OK.value(), "회원 상세 조회 완료"), HttpStatus.OK);
+    // 언팔로우
+    @DeleteMapping("/follows/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
+    public ResponseEntity<?> unFollow(@PathVariable("id") Long id){
+        userService.unFollow(id);
+        return new ResponseEntity<>(CommonRes.ofSuccess("언팔로우 완료", HttpStatus.OK.value(), "언팔로우를 성공했습니다."), HttpStatus.OK);
+    }
+
+    @GetMapping("/follows/{id}/status")
+    public ResponseEntity<?> checkFollowStatus(@PathVariable("id") Long followingId) {
+        boolean isFollowing = userService.checkFollowStatus(followingId);
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        Map.of("isFollowing", isFollowing),
+                        HttpStatus.OK.value(),
+                        "팔로우 상태를 확인했습니다."
+                ),
+                HttpStatus.OK
+        );
+    }
+
+    // 팔로워 목록 조회
+    @GetMapping("/follows/followers")
+    public ResponseEntity<?> getFollowers(
+            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false, value = "userId") Long userId) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(userService.getFollowers(pageable, userId), HttpStatus.OK.value(), "팔로워 목록 조회 완료"),
+                HttpStatus.OK
+        );
+    }
+
+
+    // 팔로잉 목록 조회
+    @GetMapping("/follows/followings")
+    public ResponseEntity<?> getFollowings(
+            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false, value = "userId") Long userId) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(userService.getFollowings(pageable, userId), HttpStatus.OK.value(), "팔로잉 목록 조회 완료"),
+                HttpStatus.OK
+        );
+    }
+
+    // 차단
+    @PostMapping("/blocks/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
+    public ResponseEntity<?> blockUser(@PathVariable Long id) {
+        userService.blockUser(id);
+        return new ResponseEntity<>(CommonRes.ofSuccess("차단 완료", HttpStatus.OK.value(), "회원 차단 완료"), HttpStatus.OK);
+    }
+
+    // 차단해제
+    @DeleteMapping("/blocks/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
+    public ResponseEntity<?> unBlockUser(@PathVariable Long id) {
+        userService.unBlockUser(id);
+        return new ResponseEntity<>(CommonRes.ofSuccess("차단 해제 완료", HttpStatus.OK.value(), "차단 해제 완료"), HttpStatus.OK);
+    }
+
+    // 차단 목록 조회
+    @GetMapping("/blocks")
+    public ResponseEntity<?> blockList(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam("type") String name){
+        return new ResponseEntity<>(CommonRes.ofSuccess(userService.blockUsers(name, pageable), HttpStatus.OK.value(), "차단 목록을 조회했습니다."), HttpStatus.OK);
     }
 }

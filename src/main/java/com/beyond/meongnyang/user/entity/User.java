@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.user.entity;
 
+import com.beyond.meongnyang.admin.dto.AdminUserUpdateReq;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.pet.entity.Pet;
 import jakarta.persistence.*;
@@ -33,7 +34,6 @@ public class User extends CommonAt {
     private String name;
 
 
-
     // TODO: nickname 수정 사항 해야함
     @Column(name = "nickname", nullable = false, unique = true, length = 255)
     private String nickname;
@@ -43,7 +43,7 @@ public class User extends CommonAt {
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private Role role = Role.USER;
+    private Role role = Role.APPLICANT;
 
     //TODO 활동시 point 쌓기, 초기 설정 0으로 잡아두기
     @Column(name = "point", nullable = false)
@@ -93,6 +93,13 @@ public class User extends CommonAt {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private UserStatus userStatus = UserStatus.ACTIVE;
+    // 차단 만료 일시
+    @Column(name = "block_expiry_date", nullable = true)
+    private LocalDateTime blockExpiryDate;
+
+    // 회원가입 승인 시에 기록
+    @Column(name = "approved_at", nullable = true)
+    private LocalDateTime approvedAt;
 
     /* ******************연관관계***************** */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -145,4 +152,33 @@ public class User extends CommonAt {
     }
 
 
+    // 권한 변경
+    public void updateRole(Role role){
+        this.role = role;
+    }
+
+    // 차단 기간 설정(기간 차단)
+    public void setBlockExpiryDate(LocalDateTime blockExpiryDate) {
+        this.blockExpiryDate = blockExpiryDate;
+    }
+
+    // 차단 해제
+    public void unblock(){
+        this.role = Role.USER;
+        this.blockExpiryDate = null;
+    }
+
+    // 회원가입 승인
+    public void approve() {
+        this.approvedAt = LocalDateTime.now();
+        this.role = Role.USER;
+    }
+
+    // 회원정보 수정
+    public void updateUser(AdminUserUpdateReq req) {
+        this.name = req.getName();
+        this.nickname = req.getNickname();
+        this.location = req.getLocation();
+        this.point = req.getPoint();
+    }
 }

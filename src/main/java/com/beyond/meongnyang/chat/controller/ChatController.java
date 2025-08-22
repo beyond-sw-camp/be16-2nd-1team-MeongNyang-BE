@@ -7,6 +7,7 @@ import com.beyond.meongnyang.common.dto.CommonRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,10 +22,12 @@ public class ChatController {
 
     // 채팅방 개설
     @PostMapping("")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> createChatRoom(@RequestBody ChatRoomCreateReq chatRoomCreateReq) {
-        Long chatRoomId = chatService.createChatRoom(chatRoomCreateReq);
+        ChatRoomSummaryRes chatRoomSummaryRes = chatService.createChatRoom(chatRoomCreateReq);
+        chatRedisService.publishNewChatRoomToRedis(chatRoomSummaryRes);
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                CommonRes.ofSuccess(chatRoomId, HttpStatus.CREATED.value(), chatRoomCreateReq.getRoomName() + " 채팅방 개설")
+                CommonRes.ofSuccess(chatRoomSummaryRes, HttpStatus.CREATED.value(), chatRoomCreateReq.getRoomName() + " 채팅방 개설")
         );
     }
 
@@ -49,6 +52,7 @@ public class ChatController {
 
     // 참여자 추가
     @PostMapping("/{roomId}/participants")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> inviteUsers(@PathVariable Long roomId, @RequestBody List<ChatParticipantAddReq> chatParticipantAddReqList) {
         List<ChatParticipantAddRes> chatParticipantAddResList = chatService.inviteUsers(roomId, chatParticipantAddReqList);
         chatRedisService.publishInvitedUsersToRedis(roomId, chatParticipantAddResList);
@@ -59,6 +63,7 @@ public class ChatController {
 
     // 채팅방 나가기
     @DeleteMapping("/{roomId}/participants/me")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> leaveChatRoom(@PathVariable Long roomId) {
         chatService.leaveChatRoomAndRemoveIfEmpty(roomId);
         chatRedisService.publishLeftUserToRedis(roomId);
@@ -84,6 +89,7 @@ public class ChatController {
 //    }
   
     @PostMapping("/{roomId}/files")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> uploadFiles(@PathVariable Long roomId, @RequestParam List<MultipartFile> files) {
 
         List<String> fileUrls = chatService.uploadFiles(roomId, files);

@@ -1,5 +1,5 @@
 package com.beyond.meongnyang.user.entity;
 
 public enum Role {
-    ADMIN, USER
+    APPLICANT, ADMIN, USER, TEMPORARY_BLOCK, PERMANENT_BLOCK
 }

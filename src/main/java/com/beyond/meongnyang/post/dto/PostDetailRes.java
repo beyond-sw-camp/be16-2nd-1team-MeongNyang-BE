@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.post.dto;
 
+import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.post.entity.Like;
 import com.beyond.meongnyang.post.entity.Media;
 import com.beyond.meongnyang.post.entity.Post;
@@ -18,7 +19,9 @@ import java.util.List;
 @Builder
 public class PostDetailRes {
     private Long id;
-    private String userName;
+    private String petName;
+    private String petImage;
+    private Long userId;
     private String title;
     private String content;
     private int likeCount;
@@ -26,12 +29,14 @@ public class PostDetailRes {
     private List<String> mediaList;
     private String date;
 
-    public static PostDetailRes fromEntity(Post post, int likeCount){
+    public static PostDetailRes fromEntity(Post post, Pet pet, int likeCount){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일");
 
         return PostDetailRes.builder()
                 .id(post.getId())
-                .userName(post.getUser().getName())
+                .petName(pet.getName())
+                .petImage(pet.getPetProfileUrl())
+                .userId(post.getUser().getId())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .likeCount(likeCount)

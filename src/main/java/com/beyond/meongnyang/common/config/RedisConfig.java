@@ -2,6 +2,7 @@ package com.beyond.meongnyang.common.config;
 
 
 import com.beyond.meongnyang.chat.service.ChatRedisService;
+import com.beyond.meongnyang.common.service.SseService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -57,6 +58,16 @@ public class RedisConfig {
         return new LettuceConnectionFactory(configuration);
     }
 
+    @Bean
+    @Qualifier("sseFactory")
+    public RedisConnectionFactory ssePubSubConnectionFactory() {
+        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
+        configuration.setHostName(host);
+        configuration.setPort(port);
+        // red pub/sub기능은 db에 값을 저장하는 기능이 아니므로, 특정 db에 의존적이지 않음
+        return new LettuceConnectionFactory(configuration);
+    }
+
 
     @Bean
     @Qualifier("emailCodeInventory")
@@ -77,6 +88,8 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(chatRedisConnectionFactory);
         return redisTemplate;
     }
+
+
 
     @Bean
     @Qualifier("chatParticipants")
@@ -105,23 +118,53 @@ public class RedisConfig {
         return redisTemplate;
     }
 
+    @Bean
+    @Qualifier("ssePubSub")
+    public RedisTemplate<String, String> ssePubSubTemplate(@Qualifier("sseFactory") RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        return redisTemplate;
+    }
+
+    // redis pub/sub 리스너 객체
+    @Bean
+    @Qualifier("ssePubSub")
+    public RedisMessageListenerContainer sseMessageListenerContainer(@Qualifier("sseFactory") RedisConnectionFactory connectionFactory,
+                                                                     @Qualifier("sseListenerAdapter") MessageListenerAdapter listenerAdapter) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.addMessageListener(listenerAdapter, new PatternTopic("ordering"));
+        container.addMessageListener(listenerAdapter, new PatternTopic("block"));
+        return container;
+    }
 
     @Bean
     @Qualifier("chatMessageListenerContainer")
     public RedisMessageListenerContainer redisMessageListenerContainer(@Qualifier("chatFactory") RedisConnectionFactory connectionFactory,
-                                                                       MessageListenerAdapter chatListenerAdapter) {
+                                                                       @Qualifier("chatListenerAdapter") MessageListenerAdapter chatListenerAdapter) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/chat-message"));
         container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/chat-participants"));
         container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/chat-online-participants"));
+        container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/new"));
         return container;
     }
 
     @Bean
+    @Qualifier("chatListenerAdapter")
     public MessageListenerAdapter chatListenerAdapter(ChatRedisService chatRedisService) {
-        // 채널로 부터 수신되는 message 처리를 SseAlarmService 객체로 던져주고, SseAlarmService의 onMessage 메서드에서 처리한다.
+        // 채널로 부터 수신되는 message 처리를 SseService 객체로 던져주고, SseAlarmService의 onMessage 메서드에서 처리한다.
         return new MessageListenerAdapter(chatRedisService, "onMessage");
+    }
+
+    @Bean
+    @Qualifier("sseListenerAdapter")
+    public MessageListenerAdapter sseListenerAdapter(SseService sseService) {
+        // 채널로 부터 수신되는 message 처리를 SseService 객체로 던져주고, SseAlarmService의 onMessage 메서드에서 처리한다.
+        return new MessageListenerAdapter(sseService, "onMessage");
     }
 
     @Bean  

@@ -2,6 +2,7 @@ package com.beyond.meongnyang.post.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.post.dto.*;
+import com.beyond.meongnyang.post.entity.SearchType;
 import com.beyond.meongnyang.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +30,7 @@ public class PostRestController {
 
     // 일기 작성
     @PostMapping
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> save(@RequestPart(name = "postCreateRequest") @Valid PostCreateReq postCreateRequest, @RequestPart(name = "files", required = false) List<MultipartFile> files) {
         Long id = postService.save(postCreateRequest, files);
         return new ResponseEntity<>(
@@ -41,6 +44,7 @@ public class PostRestController {
 
     // 일기 수정
     @PatchMapping("/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postUpdate(@PathVariable("id") Long id, @RequestPart PostEditReq postEditReq, @RequestPart List<MultipartFile> files) throws AccessDeniedException {
         postService.updatePost(id, postEditReq, files);
         return new ResponseEntity<>(
@@ -54,6 +58,7 @@ public class PostRestController {
 
     // 일기 삭제
     @DeleteMapping("/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postDelete(@PathVariable("id") Long id) throws AccessDeniedException {
         postService.deletePost(id);
         return new ResponseEntity<>(
@@ -67,22 +72,21 @@ public class PostRestController {
 
     // 일기 목록 조회
     @GetMapping
-    public ResponseEntity<?> posts(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<?> posts(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false, value = "userId") Long userId) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        postService.myPosts(pageable),
+                        postService.posts(pageable, userId),
                         HttpStatus.OK.value(),
-                        "내 일기를 불러왔습니다."
+                        "내 일기 목록을 불러왔습니다."
                 ), HttpStatus.OK
         );
     }
-
     // 일기 상세 조회
     @GetMapping("/{id}")
     public ResponseEntity<?> postDetail(@PathVariable("id") Long postId) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        postService.myPost(postId),
+                        postService.findByPostId(postId),
                         HttpStatus.OK.value(),
                         "일기를 불러왔습니다."
                 ), HttpStatus.OK
@@ -92,11 +96,12 @@ public class PostRestController {
 
 
     // 좋아요
-    @PostMapping("/like")
-    public ResponseEntity<?> postLike(@RequestBody PostLikeReq postLikeReq) {
+    @PostMapping("/{id}/like")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
+    public ResponseEntity<?> postLike(@PathVariable("id") Long id) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        postService.postLike(postLikeReq.getPostId()),
+                        postService.postLike(id),
                         HttpStatus.OK.value(),
                         "성공"
                 ), HttpStatus.OK
@@ -105,6 +110,7 @@ public class PostRestController {
 
     // 좋아요 취소
     @DeleteMapping("/{id}/like")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postLikeCancel(@PathVariable("id") Long id) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
@@ -129,6 +135,7 @@ public class PostRestController {
 
     // 댓글 달기
     @PostMapping("/{id}/comments")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postCreateComment(@PathVariable("id")Long id, @RequestBody PostCommentCreateReq postCommentCreateReq){
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
@@ -141,6 +148,7 @@ public class PostRestController {
 
     // 대댓글 달기
     @PostMapping("/comments/{id}/reply")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postCreateReply(@PathVariable("id") Long id, @RequestBody PostCommentReplyReq postCommentReplyReq){
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
@@ -153,6 +161,7 @@ public class PostRestController {
 
     // 댓글 수정
     @PatchMapping("/comments/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postEditComment(@PathVariable("id") Long commentId, @RequestBody PostCommentEditReq postCommentEditReq) throws AccessDeniedException {
         Long id = postService.editComment(commentId, postCommentEditReq);
         return new ResponseEntity<>(
@@ -166,6 +175,7 @@ public class PostRestController {
 
 //     댓글 삭제
     @DeleteMapping("/comments/{id}")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> postDeleteComment(@PathVariable("id") Long commentId) throws AccessDeniedException {
         Long id = postService.deleteComment(commentId);
         return new ResponseEntity<>(
@@ -193,14 +203,29 @@ public class PostRestController {
     // 친구 추천
 
     // 검색
-
-    // 팔로워 수 조회
-
-    // 팔로우
-
-    // 언팔로우
+    @GetMapping("/search")
+    public ResponseEntity<?> postComments(@RequestParam SearchType searchType, @RequestParam String keyword,
+                                          @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.searchPost(searchType, keyword, pageable),
+                        HttpStatus.OK.value(),
+                        "성공"
+                ), HttpStatus.OK
+        );
+    }
 
     // 신고
-
-    // 차단
+    @PostMapping("/{id}/reports")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
+    public ResponseEntity<?> reportPost(@PathVariable("id")Long postId, @RequestBody PostReportCreateReq postReportCreateReq){
+        postService.reportPost(postId, postReportCreateReq);
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        "신고가 완료되었습니다.",
+                        HttpStatus.OK.value(),
+                        "신고 완료."
+                ), HttpStatus.OK
+        );
+    }
 }

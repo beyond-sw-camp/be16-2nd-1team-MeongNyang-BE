@@ -10,6 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface PetRepository extends JpaRepository<Pet, Long> {
-    List<Pet> findAllByUserAndIsDel(User user, String isDel);
-    Optional<Pet> findByUserIdAndIsDel(Long userId, String isDel);
+    List<Pet> findAllByUserAndDelYn(User user, String delYn);
+    Optional<Pet> findByUserIdAndFirstPetAndDelYn(Long userId, Boolean firstPet, String delYn);
+    List<Pet> findAllByUserAndFirstPetTrue(User user);
 }

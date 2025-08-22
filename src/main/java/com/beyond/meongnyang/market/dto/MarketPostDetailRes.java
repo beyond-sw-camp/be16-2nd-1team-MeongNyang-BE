@@ -18,7 +18,10 @@ import java.util.List;
 public class MarketPostDetailRes {
     private Long id;                         // 거래글 id
     private String title;
-    private String region;
+//    private String region;
+    private String regionSido;
+    private String regionSigungu;
+    private String regionDong;
     private LocalDateTime createdAt;
     private int price;
     private String category;
@@ -40,7 +43,10 @@ public class MarketPostDetailRes {
                 .title(post.getTitle())
                 .productImageList(urls)                          // ProductImageList객체에서 가져온 이미지list
                 .thumbnailUrl(post.getThumbnailUrl())
-                .region(post.getRegion())
+//                .region(post.getRegion())
+                .regionSido(post.getRegionSido())
+                .regionSigungu(post.getRegionSigungu())
+                .regionDong(post.getRegionDong())
                 .createdAt(post.getCreatedAt())
                 .price(post.getPrice())
                 .category(post.getCategory().name())             // category는 enum타입으로 문자열변환

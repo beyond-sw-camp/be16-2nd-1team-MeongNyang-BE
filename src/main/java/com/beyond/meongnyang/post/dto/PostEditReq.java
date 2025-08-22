@@ -13,5 +13,6 @@ import java.util.List;
 public class PostEditReq {
     private String title;
     private String content;
+    private List<String> existingMediaUrls; // 기존 미디어 URL들
     private List<MultipartFile> fileList;
 }

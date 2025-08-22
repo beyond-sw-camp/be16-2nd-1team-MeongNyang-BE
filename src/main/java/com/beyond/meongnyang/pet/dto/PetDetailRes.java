@@ -25,6 +25,8 @@ public class PetDetailRes {
     private BigDecimal weight;
     private String url;
     private LocalDate birthday;
+    private String introduce;
+    private Boolean firstPet;
 
     public static PetDetailRes fromEntity(Pet pet) {
         return PetDetailRes.builder()
@@ -37,6 +39,8 @@ public class PetDetailRes {
                 .weight(pet.getWeight())
                 .url(pet.getPetProfileUrl())
                 .birthday(pet.getBirthday())
+                .introduce(pet.getIntroduce())
+                .firstPet(pet.isFirstPet())
                 .build();
     }
 }

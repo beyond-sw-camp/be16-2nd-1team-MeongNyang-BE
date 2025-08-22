@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.post.dto;
 
+import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.post.entity.Comment;
 import com.beyond.meongnyang.post.entity.CommentTag;
 import com.beyond.meongnyang.post.entity.Post;
@@ -20,6 +21,7 @@ public class PostCommentReplyReq {
                 .user(replyUser)
                 .post(post)
                 .content(this.content)
+                .delYn(Bool.FALSE)
                 .build();
     }
 

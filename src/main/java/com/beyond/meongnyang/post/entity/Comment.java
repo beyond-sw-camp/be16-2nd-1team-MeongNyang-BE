@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.post.entity;
 
+import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.*;
@@ -11,14 +12,13 @@ import org.hibernate.annotations.Where;
 import java.util.ArrayList;
 import java.util.List;
 
-// Comment.java (Entity)
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Where(clause = "del_yn = false")
+@Where(clause = "del_yn = 'FALSE'")
 public class Comment extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,8 +35,9 @@ public class Comment extends CommonAt {
     @Column(nullable = false)
     private String content;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private boolean delYn = false;
+    private Bool delYn;
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommentTag> commentTags = new ArrayList<>();
@@ -46,6 +47,6 @@ public class Comment extends CommonAt {
     }
 
     public void softDelete() {
-        this.delYn = true;
+        this.delYn = Bool.TRUE;
     }
 }

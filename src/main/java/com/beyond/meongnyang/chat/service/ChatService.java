@@ -1,13 +1,13 @@
 package com.beyond.meongnyang.chat.service;
 
+import com.beyond.meongnyang.admin.repository.ReportRepository;
 import com.beyond.meongnyang.chat.dto.*;
-import com.beyond.meongnyang.chat.entity.ChatMessage;
-import com.beyond.meongnyang.chat.entity.ChatParticipant;
-import com.beyond.meongnyang.chat.entity.ChatRoom;
+import com.beyond.meongnyang.chat.entity.*;
 import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
-import com.beyond.meongnyang.common.S3UploadService;
+import com.beyond.meongnyang.common.service.CommonService;
+import com.beyond.meongnyang.common.service.S3UploadService;
 import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -34,7 +33,9 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatParticipantRepository chatParticipantRepository;
+    private final ReportRepository reportRepository;
     private final S3UploadService s3UploadService;
+    private final CommonService commonService;
 
 //    @Autowired
 //    public ChatService(UserRepository userRepository, ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, ChatParticipantRepository chatParticipantRepository) {
@@ -78,13 +79,21 @@ public class ChatService {
 //        });
 
         // 메세지 저장
-        chatMessageRepository.save(chatMessage);
-        // TODO : 메세지에 파일(사진, 오디오, 동영상)이 있을 경우 처리해야 함
+        chatMessageReq.getFileUrls().forEach(url -> {
+            ChatMedia chatMedia = ChatMedia.builder()
+                    .url(url)
+                    .chatMessage(chatMessage)
+                    .build();
 
+            chatMessage.getChatMediaList().add(chatMedia);
+        });
+
+
+        chatMessageRepository.save(chatMessage);
         return ChatMessageRes.fromEntity(chatMessage);
     }
 
-    public Long createChatRoom(ChatRoomCreateReq chatRoomCreateReq) {
+    public ChatRoomSummaryRes createChatRoom(ChatRoomCreateReq chatRoomCreateReq) {
         // 채팅방 객체 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(chatRoomCreateReq.getRoomName())
@@ -107,7 +116,7 @@ public class ChatService {
         // 채팅방 참여자 저장
         chatRoomRepository.save(chatRoom);
 
-        return chatRoom.getId();
+        return ChatRoomSummaryRes.fromEntity(chatRoom, 0);
     }
 
     public List<ChatRoomSummaryRes> getMyChatRooms() {
@@ -153,7 +162,10 @@ public class ChatService {
                     .build();
 
             // 혹시나 이미 채팅방에 참여 중인 유저가 초대한 유저 목록에 넘어왔을 경우(참여자 테이블에 중복으로 쌓이면 머리 아플 것 같아서 데이터 무결성 강화)
-            if (!participantIdSet.contains(user.getId())) chatRoom.getChatParticipantList().add(chatParticipant);
+            if (!participantIdSet.contains(user.getId())) {
+                participantIdSet.add(user.getId());
+                chatRoom.getChatParticipantList().add(chatParticipant);
+            }
         });
 
         if (chatRoom.getChatParticipantList().size() > 2) chatRoom.updateIsGroupChat(Bool.TRUE);
@@ -208,13 +220,13 @@ public class ChatService {
                 .findFirst().orElseThrow(() -> new AccessDeniedException("Access Denied"));
     }
 
-    public void readMessages(Long roomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        ChatParticipant chatParticipant = chatParticipantRepository.findByUserEmailAndChatRoom(email, chatRoom).orElseThrow(() -> new EntityNotFoundException("participant not found"));
-
-        chatParticipant.read(chatRoom.getChatParticipantList().get(chatRoom.getChatMessageList().size() - 1).getLastReadMessage());
-    }
+//    public void readMessages(Long roomId) {
+//        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+//        ChatParticipant chatParticipant = chatParticipantRepository.findByUserEmailAndChatRoom(email, chatRoom).orElseThrow(() -> new EntityNotFoundException("participant not found"));
+//
+//        chatParticipant.read(chatRoom.getChatParticipantList().get(chatRoom.getChatMessageList().size() - 1).getLastReadMessage());
+//    }
 
     public void readMessages(Long roomId,String userEmail) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
@@ -224,12 +236,18 @@ public class ChatService {
     }
 
     public List<String> uploadFiles(Long roomId, List<MultipartFile> files) {
-        // TODO: 유저가 소속되어 있는 지 검증 필요
-//        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
-
+        validChatRoomParticipant(roomId);
 
         LocalDateTime now = LocalDateTime.now();
         String pattern = String.format("chat/%d/%d/%02d/%02d/%s-*", roomId, now.getYear(), now.getMonthValue(), now.getDayOfMonth(), UUID.randomUUID());
         return s3UploadService.upload(files, pattern);
+    }
+
+    // 채팅 신고하기
+    // ToDo : 컨트롤러 부분만 설계 부탁드립니다.
+    public void reportChatMessage(Long chatMessageId, ChatMessageReportCreateReq chatMessageReportCreateReq) {
+        User reportUser = commonService.getCurrentUser();
+        ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId).orElseThrow(()-> new EntityNotFoundException("해당 채팅 메시지가 존재하지 않습니다."));
+        reportRepository.save(chatMessageReportCreateReq.ReportToEntity(chatMessage, reportUser));
     }
 }
