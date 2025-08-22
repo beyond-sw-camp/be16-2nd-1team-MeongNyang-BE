@@ -2,6 +2,7 @@ package com.beyond.meongnyang.market.dto;
 
 import com.beyond.meongnyang.market.entity.Category;
 import com.beyond.meongnyang.market.entity.MarketPost;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +20,9 @@ public class MarketPostListRes {
     private String thumbnailUrl;
     private int likeCount;           // 찜 개수
     private Category category;
-    private String region;
+    private String regionSido;
+    private String regionSigungu;
+    private String regionDong;
 
     public static MarketPostListRes fromEntity(MarketPost post, int likeCount) {
         return MarketPostListRes.builder()
@@ -30,7 +33,9 @@ public class MarketPostListRes {
                 .thumbnailUrl(post.getThumbnailUrl())
                 .likeCount(likeCount)
                 .category(post.getCategory())
-                .region(post.getRegion())
+                .regionSido(post.getRegionSido())
+                .regionSigungu(post.getRegionSigungu())
+                .regionDong(post.getRegionDong())
                 .build();
     }
 }
