@@ -14,4 +14,5 @@ import java.util.Optional;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificationExecutor<Post> {
     Page<Post> findAllByUserId(Long userId, Pageable pageable);
+    Page<Post> findAllByDelYnFalse(Pageable pageable);
 }
