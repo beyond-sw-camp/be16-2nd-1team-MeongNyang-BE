@@ -19,12 +19,13 @@ public class MarketPostListRes {
     private String saleStatus;       // 판매상태 (enum -> String)
     private String thumbnailUrl;
     private int likeCount;           // 찜 개수
+    private boolean isLiked;
     private Category category;
     private String regionSido;
     private String regionSigungu;
     private String regionDong;
 
-    public static MarketPostListRes fromEntity(MarketPost post, int likeCount) {
+    public static MarketPostListRes fromEntity(MarketPost post, int likeCount, boolean isLiked) {
         return MarketPostListRes.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -36,6 +37,7 @@ public class MarketPostListRes {
                 .regionSido(post.getRegionSido())
                 .regionSigungu(post.getRegionSigungu())
                 .regionDong(post.getRegionDong())
+                .isLiked(isLiked)
                 .build();
     }
 }

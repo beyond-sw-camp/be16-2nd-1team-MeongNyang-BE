@@ -137,15 +137,35 @@ public class MarketService {
     //    거래글 목록조회
     @Transactional(readOnly = true)
     public Page<MarketPostListRes> findAllVisible(Pageable pageable) {
+        // 1. 거래글 목록 조회
         Page<MarketPost> page = marketPostRepository.findAllByDelYn("N", pageable);
-        return page.map(p -> MarketPostListRes.fromEntity(p, wishlistRepository.countByMarketPost(p)));
+
+        // 2. 로그인한 사용자 조회
+        User user = commonService.getCurrentUser();
+
+        // 3. Page<MarketPost> -> Page<MarketPostListRes> 변환
+        return page.map(post -> {
+            // 찜 개수 조회
+            int likeCount = wishlistRepository.countByMarketPost(post);
+
+            // 현재 유저가 찜했는지 여부 확인
+            boolean alreadyLiked = wishlistRepository.existsByUserAndMarketPost(user, post);
+
+            // DTO 변환
+            return MarketPostListRes.fromEntity(post, likeCount, alreadyLiked);
+        });
     }
 
     //    거래글 상세조회
     @Transactional(readOnly = true)
     public MarketPostDetailRes marketPostDetail(Long id) {
+        User user = commonService.getCurrentUser();
         MarketPost marketPost = marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 거래글입니다."));
-        return MarketPostDetailRes.fromEntity(marketPost);
+
+        // 찜여부 확인
+        boolean alreadLiked = wishlistRepository.existsByUserAndMarketPost(user, marketPost);
+
+        return MarketPostDetailRes.fromEntity(marketPost, alreadLiked);
     }
 
     //    TODO : 결제기능 구현 후에 buyer 세팅 가능
@@ -158,10 +178,17 @@ public class MarketService {
 //        2. 거래글 객체를 구매자id로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAllByBuyerId(user.getId(), pageable);
 
-//        3. 각 거래글 객체를 dto로 변환해서 반환 (+ 찜개수)
-        return marketPostList.map(post ->
-                MarketPostListRes.fromEntity(post, wishlistRepository.countByMarketPost(post))
-        );
+//        3. Page<MarketPost> -> Page<MarketPostListRes> 변환
+        return marketPostList.map(post -> {
+            // 찜 개수 조회
+            int likeCount = wishlistRepository.countByMarketPost(post);
+
+            // 현재 유저가 찜했는지 여부 확인
+            boolean alreadyLiked = wishlistRepository.existsByUserAndMarketPost(user, post);
+
+            // DTO 변환
+            return MarketPostListRes.fromEntity(post, likeCount, alreadyLiked);
+        });
     }
 
     //    판매목록 조회
@@ -173,10 +200,17 @@ public class MarketService {
 //        2. 거래글 객체를 판매자id로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAllBySellerId(user.getId(), pageable);
 
-//        3. 각 거래글 객체를 dto로 변환해서 반환 (+ 찜개수)
-        return marketPostList.map(post ->
-                MarketPostListRes.fromEntity(post, wishlistRepository.countByMarketPost(post))
-        );
+//        3. Page<MarketPost> -> Page<MarketPostListRes> 변환
+        return marketPostList.map(post -> {
+            // 찜 개수 조회
+            int likeCount = wishlistRepository.countByMarketPost(post);
+
+            // 현재 유저가 찜했는지 여부 확인
+            boolean alreadyLiked = wishlistRepository.existsByUserAndMarketPost(user, post);
+
+            // DTO 변환
+            return MarketPostListRes.fromEntity(post, likeCount, alreadyLiked);
+        });
     }
 
     //    찜하기
@@ -189,7 +223,7 @@ public class MarketService {
                 .orElseThrow(() -> new EntityNotFoundException("없는 거래글입니다."));
 
 //        3. 중복 찜 여부 확인하기
-        boolean alreadLiked = wishlistRepository.findByUserAndMarketPost(user, marketPost).isPresent();
+        boolean alreadLiked = wishlistRepository.existsByUserAndMarketPost(user, marketPost);
         if(alreadLiked) {
             throw new IllegalStateException("이미 찜한 거래글입니다.");
         }
@@ -231,7 +265,12 @@ public class MarketService {
         // 3. 각 Wishlist → MarketPost 꺼내서 DTO 변환 + 전체 찜 개수 포함
         return wishlistPage.map(w -> {
             MarketPost post = w.getMarketPost();
-            return MarketPostListRes.fromEntity(post, wishlistRepository.countByMarketPost(post));
+            // 찜 개수 조회
+            int likeCount = wishlistRepository.countByMarketPost(post);
+            // 현재 유저가 찜했는지 여부 확인
+            boolean alreadyLiked = wishlistRepository.existsByUserAndMarketPost(user, post);
+            // DTO 변환
+            return MarketPostListRes.fromEntity(post, likeCount, alreadyLiked);
         });
     }
 
@@ -247,10 +286,19 @@ public class MarketService {
     public Page<MarketPostListRes> marketPostList(Pageable pageable) {
 //        1. pageable(page, size 정보)대로 marketPost를 list로 가져오기
         Page<MarketPost> marketPostList = marketPostRepository.findAll(pageable);
+
+        User user = commonService.getCurrentUser();
+
 //        2. list에서 marketPost를 하나씩 꺼내서 dto로 변환 (+ 찜개수)
-        return marketPostList.map(post ->
-                MarketPostListRes.fromEntity(post, wishlistRepository.countByMarketPost(post))
-        );
+        return marketPostList.map(post -> {
+            // 찜 개수 조회
+            int likeCount = wishlistRepository.countByMarketPost(post);
+
+            // 현재 유저가 찜했는지 여부 확인
+            boolean alreadyLiked = wishlistRepository.existsByUserAndMarketPost(user, post);
+
+            return MarketPostListRes.fromEntity(post, likeCount, alreadyLiked);
+        });
     }
 
 }
