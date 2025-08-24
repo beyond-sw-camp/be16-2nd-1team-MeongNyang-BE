@@ -76,14 +76,23 @@ public class PetService {
         }
 
         if (file != null && !file.isEmpty()) {
+            // 새 이미지 업로드
             if (pet.getPetProfileUrl() != null) {
                 s3UploadService.delete(pet.getPetProfileUrl());
             }
             String newImageUrl = s3UploadService.upload(file);
             req.setUrl(newImageUrl);
+        } else if (file == null) {
+            // 🔥 이미지 제거 요청: null로 설정하고 S3에서도 삭제
+            if (pet.getPetProfileUrl() != null) {
+                s3UploadService.delete(pet.getPetProfileUrl());
+            }
+            req.setUrl(null);
         } else {
+            // 기존 이미지 유지 (file이 빈 파일인 경우)
             req.setUrl(pet.getPetProfileUrl());
         }
+
         pet.updatePet(req, species);
     }
 

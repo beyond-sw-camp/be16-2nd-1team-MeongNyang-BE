@@ -55,20 +55,34 @@ public class SecurityConfig {
                 .build();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfiguration() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowCredentials(false); // 쿠키/자격증명 미사용
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization","Content-Type","X-Refresh-Token"));
-        configuration.setExposedHeaders(List.of("X-Refresh-Token"));
-        configuration.setMaxAge(3600L); // preflight 1시간 캐시
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfiguration() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowCredentials(false); // 쿠키/자격증명 미사용
+//        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+//        configuration.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+//        configuration.setAllowedHeaders(List.of("Authorization","Content-Type","X-Refresh-Token"));
+//        configuration.setExposedHeaders(List.of("X-Refresh-Token"));
+//        configuration.setMaxAge(3600L); // preflight 1시간 캐시
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//
+//    }
+@Bean
+public CorsConfigurationSource corsConfiguration() {
+    CorsConfiguration c = new CorsConfiguration();
+    c.setAllowCredentials(false); // JWT만 쓰면 false OK
+    c.setAllowedOriginPatterns(List.of("http://localhost:3000","http://localhost:5173","https://*.mydomain.com"));
+    c.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+    c.setAllowedHeaders(List.of("Authorization","Content-Type","X-Requested-With","X-Refresh-Token"));
+    c.setExposedHeaders(List.of("X-Refresh-Token"));
+    c.setMaxAge(3600L);
+    UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+    src.registerCorsConfiguration("/**", c);
+    return src;
+}
 
     @Bean
     public PasswordEncoder passwordEncoder() {

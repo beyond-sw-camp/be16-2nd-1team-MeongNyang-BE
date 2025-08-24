@@ -38,8 +38,7 @@ public class Pet extends CommonAt {
     @Column(name = "weight", nullable = false, precision = 5, scale = 2)
     private BigDecimal weight;
 
-    // TODO: 공개 여부는 후에
-
+    private Boolean firstPet;
 
     @Column(name = "pet_profile", nullable = true, length = 255)
     private String petProfileUrl;

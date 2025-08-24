@@ -374,7 +374,7 @@ public class UserService {
 
     // 회원 전체 조회
     public List<UserListRes> findAll() {
-        List<User> users = this.userRepository.findAllBydelYn("N");
+        List<User> users = this.userRepository.findAllByDelYn("N");
         return users.stream().map(UserListRes::fromEntity).toList();
     }
 

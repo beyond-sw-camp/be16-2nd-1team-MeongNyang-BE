@@ -40,7 +40,7 @@ public class PetDetailRes {
                 .url(pet.getPetProfileUrl())
                 .birthday(pet.getBirthday())
                 .introduce(pet.getIntroduce())
-                .firstPet(pet.isFirstPet())
+                .firstPet(pet.getFirstPet())
                 .build();
     }
 }
