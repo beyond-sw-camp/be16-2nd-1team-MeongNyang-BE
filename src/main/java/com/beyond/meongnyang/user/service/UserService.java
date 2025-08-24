@@ -2,11 +2,11 @@ package com.beyond.meongnyang.user.service;
 
 import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.SseService;
+import com.beyond.meongnyang.user.dto.ProfileUpdateRes;
 import com.beyond.meongnyang.user.entity.*;
 import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
-import com.beyond.meongnyang.user.dto.check.UserCheckPasswordReq;
 import com.beyond.meongnyang.user.repository.FollowRepository;
 import com.beyond.meongnyang.user.repository.UserBlockRepository;
 import com.beyond.meongnyang.pet.entity.Pet;
@@ -15,7 +15,6 @@ import com.beyond.meongnyang.user.dto.check.*;
 import com.beyond.meongnyang.user.dto.oauth2.InitalSetReq;
 import com.beyond.meongnyang.user.entity.SocialType;
 import com.beyond.meongnyang.user.entity.User;
-import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.entity.UserStatus;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
@@ -356,12 +355,28 @@ public class UserService {
             mainPet = this.petRepository.findById(user.getMainPetId()).orElse(null);
         }
         return MyPageRes.builder()
+                .name(user.getName())
                 .nickname(user.getNickname())
                 .email(user.getEmail())
                 .createdAt(user.getCreatedAt())
                 .mainPetId(mainPet != null ? mainPet.getId() : null)
                 .mainPetImage(mainPet != null ? mainPet.getPetProfileUrl() : null)
                 .socialType(user.getSocialType())
+                .userStatus(user.getUserStatus())
+                .build();
+    }
+
+    public ProfileUpdateRes updateProfile(ProfileUpdateReq request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = this.userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // 이름과 닉네임 업데이트
+        user.updateProfile(request);
+
+        return ProfileUpdateRes.builder()
+                .name(request.getName())
+                .nickname(request.getNickname())
                 .build();
     }
 

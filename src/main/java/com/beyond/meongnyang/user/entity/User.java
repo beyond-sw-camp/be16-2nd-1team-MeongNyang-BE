@@ -3,6 +3,7 @@ package com.beyond.meongnyang.user.entity;
 import com.beyond.meongnyang.admin.dto.AdminUserUpdateReq;
 import com.beyond.meongnyang.common.domain.CommonAt;
 import com.beyond.meongnyang.pet.entity.Pet;
+import com.beyond.meongnyang.user.dto.ProfileUpdateReq;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -180,5 +181,11 @@ public class User extends CommonAt {
         this.nickname = req.getNickname();
         this.location = req.getLocation();
         this.point = req.getPoint();
+    }
+
+    // 회원 프로필 수정
+    public void updateProfile(ProfileUpdateReq req) {
+        this.name = req.getName();
+        this.nickname = req.getNickname();
     }
 }

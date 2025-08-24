@@ -337,6 +337,16 @@ public class UserRestController {
         ), HttpStatus.OK);
     }
 
+    // UserRestController.java에 추가
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody ProfileUpdateReq request) {
+        ProfileUpdateRes response = this.userService.updateProfile(request);
+        return new ResponseEntity<>(CommonRes.ofSuccess(
+                response, HttpStatus.OK.value(), "프로필 수정 완료"
+        ), HttpStatus.OK);
+    }
+
+
     // 팔로우
     @PostMapping("/follows/{id}")
     @PreAuthorize("@securityCheck.checkUserAccess()")
