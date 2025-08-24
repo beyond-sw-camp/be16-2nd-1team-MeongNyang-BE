@@ -221,9 +221,6 @@ public class UserService {
         user.updatePassword(newPassword);
     }
 
-
-
-
     // 계정 삭제
     public void deleteAccount() {
         User user = commonService.getCurrentUser();

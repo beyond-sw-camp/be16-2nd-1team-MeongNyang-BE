@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.post.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
+import com.beyond.meongnyang.pet.service.PetService;
 import com.beyond.meongnyang.post.dto.*;
 import com.beyond.meongnyang.post.entity.SearchType;
 import com.beyond.meongnyang.post.service.PostService;
@@ -27,7 +28,6 @@ import java.util.List;
 @RequestMapping("/posts")
 public class PostRestController {
     private final PostService postService;
-
     // 일기 작성
     @PostMapping
     @PreAuthorize("@securityCheck.checkUserAccess()")
@@ -202,8 +202,7 @@ public class PostRestController {
 
     // 댓글 목록 조회
     @GetMapping("/{id}/comments")
-    public ResponseEntity<?> postComments(@PathVariable("id") Long id,
-                                          @PageableDefault(value = 10, sort = "id", direction = Sort.Direction.ASC) Pageable commentPageable){
+    public ResponseEntity<?> postComments(@PathVariable("id") Long id, @PageableDefault(value = 10, sort = "id", direction = Sort.Direction.ASC) Pageable commentPageable){
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
                         postService.commentList(id, commentPageable),

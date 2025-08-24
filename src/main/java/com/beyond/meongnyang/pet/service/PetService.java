@@ -87,16 +87,6 @@ public class PetService {
         pet.updatePet(req, species);
     }
 
-    public void changeMainPet(Long petId) {
-        User user = commonService.getCurrentUser();
-        // 기존 대표 펫을 false로 설정
-        clearMainPet(user);
-
-        // 새로운 대표 펫을 설정
-        Pet pet = petRepository.findById(petId).orElseThrow(() -> new EntityNotFoundException("펫 정보가 틀립니다."));
-        pet.changeMainPet(true); // Pet 엔티티의 메서드 호출
-    }
-
     // 등록한 애완동물 삭제
     public String deletPet(Long id) {
         User user = commonService.getCurrentUser();
@@ -105,11 +95,12 @@ public class PetService {
         return pet.getName();
     }
 
-    private void clearMainPet(User user) {
-        // 기존 대표 펫들을 모두 false로 설정
-        List<Pet> mainPets = petRepository.findAllByUserAndFirstPetTrue(user);
-        for (Pet mainPet : mainPets) {
-            mainPet.changeMainPet(false);
+    // 펫 등록된 상태인지 확인
+    public Boolean checkPetExist(){
+        User user = commonService.getCurrentUser();
+        if (user.getMainPetId() == null) {
+            throw new AccessDeniedException("등록된 펫이 없습니다. 펫 등록 후 사용 가능합니다.");
         }
+        return true; // 여기까지 오면 접근 가능
     }
 }

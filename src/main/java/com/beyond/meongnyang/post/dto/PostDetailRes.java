@@ -24,12 +24,13 @@ public class PostDetailRes {
     private Long userId;
     private String title;
     private String content;
-    private int likeCount;
+    private Long likeCount;
     private List<String> hashTagList;
     private List<String> mediaList;
     private String date;
+    private boolean isLiked;
 
-    public static PostDetailRes fromEntity(Post post, Pet pet, int likeCount){
+    public static PostDetailRes fromEntity(Post post, Pet pet, Long likeCount, boolean isLiked){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일");
 
         return PostDetailRes.builder()
@@ -40,6 +41,7 @@ public class PostDetailRes {
                 .title(post.getTitle())
                 .content(post.getContent())
                 .likeCount(likeCount)
+                .isLiked(isLiked)
                 .hashTagList(
                         post.getHashtags().stream()
                                 .map(ht -> ht.getTag().getName()) // Tag → name

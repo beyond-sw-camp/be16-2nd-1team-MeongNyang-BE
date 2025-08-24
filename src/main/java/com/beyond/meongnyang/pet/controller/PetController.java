@@ -38,17 +38,16 @@ public class PetController {
                 HttpStatus.OK.value(), "애완동물 수정 완료"), HttpStatus.OK);
     }
 
-    // 대표 펫 변경
-    @PutMapping("/{petId}/main")
-    public ResponseEntity<?> setMainPet(@PathVariable Long petId) {
-        petService.changeMainPet(petId);
-        return ResponseEntity.ok(CommonRes.ofSuccess(null, HttpStatus.OK.value(), "대표 펫이 변경되었습니다."));
-    }
-
     // 유저가 등록한 펫 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePet(@PathVariable Long id) {
         String petName = this.petService.deletPet(id);
         return new ResponseEntity<>(CommonRes.ofSuccess("당신의 " + petName +"이 삭제되었습니다.", HttpStatus.OK.value(), "pet 삭제 완료"), HttpStatus.OK);
+    }
+
+    // 펫 등록 여부 확인
+    @GetMapping("/exist")
+    public ResponseEntity<?> checkPetExist() {
+        return new ResponseEntity<>(CommonRes.ofSuccess(petService.checkPetExist(), HttpStatus.OK.value(), "pet 삭제 완료"), HttpStatus.OK);
     }
 }

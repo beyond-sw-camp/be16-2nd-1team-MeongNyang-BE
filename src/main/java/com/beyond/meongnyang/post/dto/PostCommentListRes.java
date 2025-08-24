@@ -1,8 +1,10 @@
 package com.beyond.meongnyang.post.dto;
 
+import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.post.entity.Comment;
 import com.beyond.meongnyang.post.entity.CommentTag;
 import com.beyond.meongnyang.user.entity.User;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,10 +31,12 @@ public class PostCommentListRes {
         String profileImage = "";
         String petName = "";
 
-        if (user.getPets().stream().anyMatch(pet -> pet.getId().equals(user.getMainPetId()))){
-            profileImage = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst().get().getPetProfileUrl();
-            petName = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst().get().getName();
-        }
+        Pet pet = user.getPets().stream()
+                .filter(p -> p.getId().equals(user.getMainPetId()))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("펫을 찾을 수 없습니다."));
+        profileImage = pet.getPetProfileUrl();
+        petName = pet.getName();
         if(petName != null && petName.isEmpty()){
             petName = user.getName();
         }
