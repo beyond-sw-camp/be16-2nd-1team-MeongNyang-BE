@@ -217,11 +217,11 @@ public class ChatRedisService implements MessageListener {
         switch (channel) {
             case "/topic/chat-rooms/*/chat-message" -> {
                 publishChatMessageToStompClient(roomId, message);
-                sendMessageViaSse(roomId, message);
+                sendMessageViaSse(roomId, message, "chat-message");
             }
             case "/topic/chat-rooms/*/chat-participants" -> publishChatParticipantsToStompClient(roomId, message);
             case "/topic/chat-rooms/*/chat-online-participants" -> publishChatOnlineParticipantsToStompClient(roomId, message);
-            case "/topic/chat-rooms/*/new" -> sendMessageViaSse(roomId, message);
+            case "/topic/chat-rooms/*/new" -> sendMessageViaSse(roomId, message, "new-room");
         }
     }
 
@@ -267,14 +267,14 @@ public class ChatRedisService implements MessageListener {
         log.info("end publishChatOnlineParticipantsToStompClient : {}", new String(message.getBody()));
     }
 
-    public void sendMessageViaSse(String roomId, Message message) {
+    public void sendMessageViaSse(String roomId, Message message, String name) {
         Set<String> emails = getOrLoadParticipantMap(Long.valueOf(roomId)).keySet();
         emails.forEach(email -> {
             SseEmitter emitter = sseEmitterRegistry.getEmitter(email);
 
             if (emitter != null) {
                 try {
-                    emitter.send(SseEmitter.event().data(message.getBody()));
+                    emitter.send(SseEmitter.event().name(name).data(message.getBody()));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
