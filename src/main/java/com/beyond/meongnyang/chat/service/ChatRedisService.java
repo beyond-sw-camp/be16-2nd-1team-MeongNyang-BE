@@ -267,14 +267,14 @@ public class ChatRedisService implements MessageListener {
         log.info("end publishChatOnlineParticipantsToStompClient : {}", new String(message.getBody()));
     }
 
-    public void sendMessageViaSse(String roomId, Message message, String name) {
+    public void sendMessageViaSse(String roomId, Message message, String eventName) {
         Set<String> emails = getOrLoadParticipantMap(Long.valueOf(roomId)).keySet();
         emails.forEach(email -> {
             SseEmitter emitter = sseEmitterRegistry.getEmitter(email);
 
             if (emitter != null) {
                 try {
-                    emitter.send(SseEmitter.event().name(name).data(message.getBody()));
+                    emitter.send(SseEmitter.event().name(eventName).data(message.getBody()));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
