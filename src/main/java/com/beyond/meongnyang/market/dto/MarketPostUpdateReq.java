@@ -22,12 +22,16 @@ public class MarketPostUpdateReq {
     private Integer price;
 //    @NotBlank(message = "지역을 입력해주세요.")
 //    private String region;
+//    @NotBlank(message = "지역을 입력해주세요.")
+//    private String regionSido;
+//    @NotBlank(message = "지역을 입력해주세요.")
+//    private String regionSigungu;
+//    @NotBlank(message = "지역을 입력해주세요.")
+//    private String regionDong;
     @NotBlank(message = "지역을 입력해주세요.")
-    private String regionSido;
+    private Double latitude;
     @NotBlank(message = "지역을 입력해주세요.")
-    private String regionSigungu;
-    @NotBlank(message = "지역을 입력해주세요.")
-    private String regionDong;
+    private Double longitude;
     @NotBlank(message = "내용을 입력해주세요.")
     private String description;
 

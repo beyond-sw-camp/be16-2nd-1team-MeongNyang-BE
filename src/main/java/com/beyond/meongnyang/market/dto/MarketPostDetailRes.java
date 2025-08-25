@@ -4,6 +4,7 @@ import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.entity.ProductImage;
 import com.beyond.meongnyang.market.entity.SaleStatus;
 import com.beyond.meongnyang.pet.entity.Pet;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,10 +20,12 @@ import java.util.List;
 public class MarketPostDetailRes {
     private Long id;                         // 거래글 id
     private String title;
-    //    private String region;
-    private String regionSido;
-    private String regionSigungu;
-    private String regionDong;
+//    private String region;
+//    private String regionSido;
+//    private String regionSigungu;
+//    private String regionDong;
+    private Double latitude;
+    private Double longitude;
     private LocalDateTime createdAt;
     private int price;
     private String category;
@@ -58,9 +61,11 @@ public class MarketPostDetailRes {
                 .productImageList(urls)                          // ProductImageList객체에서 가져온 이미지list
                 .thumbnailUrl(post.getThumbnailUrl())
 //                .region(post.getRegion())
-                .regionSido(post.getRegionSido())
-                .regionSigungu(post.getRegionSigungu())
-                .regionDong(post.getRegionDong())
+//                .regionSido(post.getRegionSido())
+//                .regionSigungu(post.getRegionSigungu())
+//                .regionDong(post.getRegionDong())
+                .latitude(post.getLatitude())
+                .longitude(post.getLongitude())
                 .createdAt(post.getCreatedAt())
                 .price(post.getPrice())
                 .category(post.getCategory().name())             // category는 enum타입으로 문자열변환

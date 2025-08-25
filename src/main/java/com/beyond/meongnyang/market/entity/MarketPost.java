@@ -47,14 +47,14 @@ public class MarketPost extends CommonAt {
 //    @Column(length = 100, nullable = false)
 //    private String region;
 
-    @Column(name = "region_sido", length = 50)
-    private String regionSido;
-
-    @Column(name = "region_sigungu", length = 50)
-    private String regionSigungu;
-
-    @Column(name = "region_dong", length = 50)
-    private String regionDong;
+//    @Column(name = "region_sido", length = 50)
+//    private String regionSido;
+//
+//    @Column(name = "region_sigungu", length = 50)
+//    private String regionSigungu;
+//
+//    @Column(name = "region_dong", length = 50)
+//    private String regionDong;
 
     @Column(name = "latitude")
     private Double latitude;
@@ -97,9 +97,11 @@ public class MarketPost extends CommonAt {
         this.category = marketPostUpdateReq.getCategory();
         this.price = marketPostUpdateReq.getPrice();
 //        this.region = marketPostUpdateReq.getRegion();
-        this.regionSido = marketPostUpdateReq.getRegionSido();
-        this.regionSigungu = marketPostUpdateReq.getRegionSigungu();
-        this.regionDong = marketPostUpdateReq.getRegionDong();
+//        this.regionSido = marketPostUpdateReq.getRegionSido();
+//        this.regionSigungu = marketPostUpdateReq.getRegionSigungu();
+//        this.regionDong = marketPostUpdateReq.getRegionDong();
+        this.latitude = marketPostUpdateReq.getLatitude();
+        this.longitude = marketPostUpdateReq.getLongitude();
         this.description = marketPostUpdateReq.getDescription();
     }
     public void deleteMarketPost(String delYn){

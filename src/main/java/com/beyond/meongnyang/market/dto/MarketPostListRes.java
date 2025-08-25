@@ -21,9 +21,11 @@ public class MarketPostListRes {
     private int likeCount;           // 찜 개수
     private boolean isLiked;
     private Category category;
-    private String regionSido;
-    private String regionSigungu;
-    private String regionDong;
+//    private String regionSido;
+//    private String regionSigungu;
+//    private String regionDong;
+    private Double latitude;
+    private Double longitude;
 
     public static MarketPostListRes fromEntity(MarketPost post, int likeCount, boolean isLiked) {
         return MarketPostListRes.builder()
@@ -34,9 +36,11 @@ public class MarketPostListRes {
                 .thumbnailUrl(post.getThumbnailUrl())
                 .likeCount(likeCount)
                 .category(post.getCategory())
-                .regionSido(post.getRegionSido())
-                .regionSigungu(post.getRegionSigungu())
-                .regionDong(post.getRegionDong())
+//                .regionSido(post.getRegionSido())
+//                .regionSigungu(post.getRegionSigungu())
+//                .regionDong(post.getRegionDong())
+                .latitude(post.getLatitude())
+                .longitude(post.getLongitude())
                 .isLiked(isLiked)
                 .build();
     }
