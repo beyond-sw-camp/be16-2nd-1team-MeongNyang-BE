@@ -23,9 +23,6 @@ public class Post extends CommonAt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(name = "title", nullable = false)
-    String title;
-
     @Column(name = "content", nullable = false)
     String content;
 
@@ -56,8 +53,7 @@ public class Post extends CommonAt {
         this.user = user;
     }
 
-    public void updatePost(String title, String content){
-        this.title = title;
+    public void updatePost(String content){
         this.content = content;
     }
 

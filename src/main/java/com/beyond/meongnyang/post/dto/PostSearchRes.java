@@ -23,7 +23,6 @@ public class PostSearchRes {
                 .id(post.getId())
                 .petProfile(pet.getPetProfileUrl())
                 .petName(pet.getName())
-                .title(post.getTitle())
                 .content(post.getContent())
                 .build();
     }

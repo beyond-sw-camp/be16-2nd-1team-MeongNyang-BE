@@ -2,6 +2,7 @@ package com.beyond.meongnyang.user.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.common.security.JwtTokenProvider;
+import com.beyond.meongnyang.post.service.PostService;
 import com.beyond.meongnyang.user.dto.check.*;
 import com.beyond.meongnyang.user.dto.oauth2.*;
 import com.beyond.meongnyang.user.entity.SocialType;
@@ -41,6 +42,7 @@ public class UserRestController {
     private final JwtTokenProvider jwtTokenProvider;
     private final GoogleLoginService googleLoginService;
     private final KakaoLoginService kakaoLoginService;
+    private final PostService postService;
 
     // 헤더로 rt 응답 공통부분
     private ResponseEntity<?> okWithRtHeader(Object body, String refreshToken) {
@@ -321,9 +323,9 @@ public class UserRestController {
     }
     /* ****************마이페이지&설정 관련- (pet) ********************* */
     // 대표동물 설정
-    @PutMapping("/my-page/{id}/main-pet")
-    public ResponseEntity<?> changeMainPet(@PathVariable Long id) {
-        Long mainPetId = this.userService.setMainPet(id);
+    @PutMapping("/pets/main")
+    public ResponseEntity<?> changeMainPet() {
+        Long mainPetId = userService.setMainPet();
         return new ResponseEntity<>(CommonRes.ofSuccess(
                 "mainPetId :" + mainPetId, HttpStatus.OK.value(), "대표동물 설정"
         ), HttpStatus.OK);
@@ -353,6 +355,7 @@ public class UserRestController {
         return new ResponseEntity<>(CommonRes.ofSuccess("언팔로우 완료", HttpStatus.OK.value(), "언팔로우를 성공했습니다."), HttpStatus.OK);
     }
 
+    // 팔로우 상태 조회
     @GetMapping("/follows/{id}/status")
     public ResponseEntity<?> checkFollowStatus(@PathVariable("id") Long followingId) {
         boolean isFollowing = userService.checkFollowStatus(followingId);
@@ -367,7 +370,7 @@ public class UserRestController {
     }
 
     // 팔로워 목록 조회
-    @GetMapping("/follows/followers")
+        @GetMapping("/follows/followers")
     public ResponseEntity<?> getFollowers(
             @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false, value = "userId") Long userId) {
         return new ResponseEntity<>(
@@ -375,7 +378,6 @@ public class UserRestController {
                 HttpStatus.OK
         );
     }
-
 
     // 팔로잉 목록 조회
     @GetMapping("/follows/followings")
@@ -407,5 +409,17 @@ public class UserRestController {
     @GetMapping("/blocks")
     public ResponseEntity<?> blockList(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam("type") String name){
         return new ResponseEntity<>(CommonRes.ofSuccess(userService.blockUsers(name, pageable), HttpStatus.OK.value(), "차단 목록을 조회했습니다."), HttpStatus.OK);
+    }
+
+    // 사용자 일기 목록 조회
+    @GetMapping("/{id}/posts")
+    public ResponseEntity<?> userPostList(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @PathVariable("id") Long id) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.posts(pageable, id),
+                        HttpStatus.OK.value(),
+                        "일기 목록을 불러왔습니다."
+                ), HttpStatus.OK
+        );
     }
 }

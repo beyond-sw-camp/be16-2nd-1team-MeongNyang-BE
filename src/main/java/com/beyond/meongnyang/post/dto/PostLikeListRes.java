@@ -3,6 +3,7 @@ package com.beyond.meongnyang.post.dto;
 import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.post.entity.Post;
 import com.beyond.meongnyang.user.entity.User;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,14 +25,15 @@ public class PostLikeListRes {
     public static PostLikeListRes fromEntity(Post post, User user){
         String profileImage = "";
         String petName = "";
-        Optional<Pet> mainPetOpt = user.getPets().stream()
-                .filter(pet -> pet.getId().equals(user.getMainPetId()))
-                .findFirst();
 
-        if (mainPetOpt.isPresent()) {
-            Pet mainPet = mainPetOpt.get();
-            profileImage = mainPet.getPetProfileUrl();
-            petName = mainPet.getName();
+        Pet pet = user.getPets().stream()
+                .filter(p -> p.getId().equals(user.getMainPetId()))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("펫을 찾을 수 없습니다."));
+        profileImage = pet.getPetProfileUrl();
+        petName = pet.getName();
+        if(petName != null && petName.isEmpty()){
+            petName = user.getName();
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일 hh:mm");
         return PostLikeListRes.builder()

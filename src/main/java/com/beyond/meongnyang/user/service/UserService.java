@@ -221,9 +221,6 @@ public class UserService {
         user.updatePassword(newPassword);
     }
 
-
-
-
     // 계정 삭제
     public void deleteAccount() {
         User user = commonService.getCurrentUser();
@@ -337,25 +334,24 @@ public class UserService {
     }
     /* ****************마이페이지&설정 관련-(pet) ********************* */
     // 대표동물 설정
-    public Long setMainPet(Long petId) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 사용자입니다."));
-        Pet pet = this.petRepository.findById(petId).orElseThrow(() -> new EntityNotFoundException("펫 정보가 없습니다."));
+    public Long setMainPet() {
+        User user = commonService.getCurrentUser();
+        Pet pet = commonService.findPet(user);
         if(!user.getId().equals(pet.getUser().getId())){
             throw new AccessDeniedException("본인 소유의 반려동물만 대표동물로 등록할 수 있습니다.");
         }
-        user.changeMainPet(petId);
-        return petId;
+        user.changeMainPet(pet.getId());
+        return pet.getId();
     }
     public MyPageRes enterMyPage() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 사용자입니다."));
+        User user = commonService.getCurrentUser();
         Pet mainPet = null;
         // 펫을 등록하지 않은 사용자일 수도 있음
         if(user.getMainPetId() != null) {
             mainPet = this.petRepository.findById(user.getMainPetId()).orElse(null);
         }
         return MyPageRes.builder()
+                .userId(user.getId())
                 .nickname(user.getNickname())
                 .email(user.getEmail())
                 .createdAt(user.getCreatedAt())

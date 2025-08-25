@@ -1,11 +1,14 @@
 package com.beyond.meongnyang.user.dto;
 
+import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.entity.UserFollow;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Optional;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,14 +24,13 @@ public class UserFollowRes {
     public static UserFollowRes fromEntity(User user) {
         String profileImage = "";
         String petName = "";
+      
+        Optional<Pet> petOptional = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst();
 
-        if (user.getPets().stream().anyMatch(pet -> pet.getId().equals(user.getMainPetId()))){
-            profileImage = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst().get().getPetProfileUrl();
-            petName = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst().get().getName();
-        }
-
-        if(petName != null && petName.isEmpty()){
-            petName = user.getName();
+        if (petOptional.isPresent()) {
+            Pet pet = petOptional.get();
+            profileImage = pet.getPetProfileUrl();
+            petName = pet.getName();
         }
 
         return UserFollowRes.builder()

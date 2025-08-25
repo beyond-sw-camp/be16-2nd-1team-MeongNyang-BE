@@ -109,8 +109,6 @@ public class User extends CommonAt {
     @Column(name = "main_pet_id", nullable = true)
     private Long mainPetId;
 
-
-
     /* ******************메소드******************* */
     // 계정 삭제
     public void softDelete() {
