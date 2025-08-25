@@ -36,6 +36,7 @@ public class MarketPostDetailRes {
     private String thumbnailUrl;             // 대표 썸네일 이미지 URL
     private boolean isLiked;
     private String sellerProfileUrl;
+    private String sellerEmail;
 
     public static MarketPostDetailRes fromEntity(MarketPost post, boolean isLiked) {
 //        List<ProductImage>에서 각 요소(ProductImage 인스턴스)에 대해 getImageUrl() 메서드를 호출
@@ -74,6 +75,7 @@ public class MarketPostDetailRes {
                 .sellerNickname(post.getSeller().getNickname())  // 판매자의 nickName가져오기
                 .isLiked(isLiked)
                 .sellerProfileUrl(profileUrl)
+                .sellerEmail(post.getSeller().getEmail())
                 .build();
     }
 }
