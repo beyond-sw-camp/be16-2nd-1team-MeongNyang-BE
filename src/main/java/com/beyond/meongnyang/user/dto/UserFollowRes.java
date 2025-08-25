@@ -24,7 +24,7 @@ public class UserFollowRes {
     public static UserFollowRes fromEntity(User user) {
         String profileImage = "";
         String petName = "";
-
+      
         Optional<Pet> petOptional = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst();
 
         if (petOptional.isPresent()) {
