@@ -31,9 +31,9 @@ public class MarketPostCreateReq {
 //    private String regionSigungu;
 //    @NotBlank(message = "지역을 입력해주세요.")
 //    private String regionDong;
-    @NotBlank(message = "지역을 입력해주세요.")
+    @NotNull(message = "지역을 입력해주세요.")
     private Double latitude;
-    @NotBlank(message = "지역을 입력해주세요.")
+    @NotNull(message = "지역을 입력해주세요.")
     private Double longitude;
     @NotBlank(message = "내용을 입력해주세요.")
     private String description;
