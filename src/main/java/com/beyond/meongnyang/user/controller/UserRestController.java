@@ -323,9 +323,9 @@ public class UserRestController {
     }
     /* ****************마이페이지&설정 관련- (pet) ********************* */
     // 대표동물 설정
-    @PutMapping("/my-page/{id}/main-pet")
-    public ResponseEntity<?> changeMainPet(@PathVariable Long id) {
-        Long mainPetId = this.userService.setMainPet(id);
+    @PutMapping("/pets/main")
+    public ResponseEntity<?> changeMainPet() {
+        Long mainPetId = userService.setMainPet();
         return new ResponseEntity<>(CommonRes.ofSuccess(
                 "mainPetId :" + mainPetId, HttpStatus.OK.value(), "대표동물 설정"
         ), HttpStatus.OK);
@@ -370,7 +370,7 @@ public class UserRestController {
     }
 
     // 팔로워 목록 조회
-    @GetMapping("/follows/followers")
+        @GetMapping("/follows/followers")
     public ResponseEntity<?> getFollowers(
             @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false, value = "userId") Long userId) {
         return new ResponseEntity<>(

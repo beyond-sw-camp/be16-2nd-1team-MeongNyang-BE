@@ -1,8 +1,10 @@
 package com.beyond.meongnyang.post.dto;
 
+import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.post.entity.Comment;
 import com.beyond.meongnyang.post.entity.CommentTag;
 import com.beyond.meongnyang.user.entity.User;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +21,7 @@ public class PostCommentListRes {
     private Long commentId;
     private Long userId;
     private String profileImage;
-    private String petName;
+    private String userName;
     private String content;
     private String createdAt;
     private List<PostCommentReplyRes> replies;
@@ -27,20 +29,16 @@ public class PostCommentListRes {
     public static PostCommentListRes fromEntity(Comment comment, List<PostCommentReplyRes> replies) {
         User user = comment.getUser();
         String profileImage = "";
-        String petName = "";
-
-        if (user.getPets().stream().anyMatch(pet -> pet.getId().equals(user.getMainPetId()))){
-            profileImage = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst().get().getPetProfileUrl();
-            petName = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst().get().getName();
-        }
-        if(petName != null && petName.isEmpty()){
-            petName = user.getName();
-        }
+        Pet pet = user.getPets().stream()
+                .filter(p -> p.getId().equals(user.getMainPetId()))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("펫을 찾을 수 없습니다."));
+        profileImage = pet.getPetProfileUrl();
         return PostCommentListRes.builder()
                 .commentId(comment.getId())
                 .userId(user.getId())
                 .profileImage(profileImage)
-                .petName(petName)
+                .userName(user.getName())
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt().toString())
                 .replies(replies)

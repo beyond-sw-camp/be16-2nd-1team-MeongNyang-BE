@@ -15,7 +15,7 @@ public class Media extends CommonAt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "url", nullable = false)
+    @Column(name = "url", nullable = false, columnDefinition = "TEXT")
     private String url;
 
     @ManyToOne
