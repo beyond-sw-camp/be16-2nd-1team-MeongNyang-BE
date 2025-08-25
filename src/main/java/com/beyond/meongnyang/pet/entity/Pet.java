@@ -40,7 +40,7 @@ public class Pet extends CommonAt {
 
     private Boolean firstPet;
 
-    @Column(name = "pet_profile", nullable = true, length = 255)
+    @Column(name = "pet_profile_url", nullable = true, length = 255)
     private String petProfileUrl;
 
     // TODO: 1년 뒤에 떡국 먹게 하기

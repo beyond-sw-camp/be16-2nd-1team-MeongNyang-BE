@@ -83,7 +83,7 @@ public class PetService {
             String newImageUrl = s3UploadService.upload(file);
             req.setUrl(newImageUrl);
         } else if (file == null) {
-            // 🔥 이미지 제거 요청: null로 설정하고 S3에서도 삭제
+            //  이미지 제거 요청: null로 설정하고 S3에서도 삭제
             if (pet.getPetProfileUrl() != null) {
                 s3UploadService.delete(pet.getPetProfileUrl());
             }

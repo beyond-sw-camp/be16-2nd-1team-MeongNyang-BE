@@ -220,13 +220,23 @@ public class UserService {
         user.updatePassword(newPassword);
     }
 
-
-
-
     // 계정 삭제
     public void deleteAccount() {
         User user = commonService.getCurrentUser();
         user.softDelete();
+    }
+
+    // user 프로필 이미지 가져오기
+    public UserProfileImageRes findProfileImage(String email) {
+        String targetEmail = email;
+        User targetUser = userRepository.findByEmail(targetEmail).orElseThrow(
+                () -> new EntityNotFoundException("해당 사용자가 없습니다.")
+        );
+        String targetImageUrl =  petRepository.findPetProfileUrlById(targetUser.getMainPetId()).orElse(null);
+
+        return UserProfileImageRes.builder()
+                .petProfileUrl(targetImageUrl)
+                .build();
     }
   
     // 팔로우
@@ -336,15 +346,15 @@ public class UserService {
     }
     /* ****************마이페이지&설정 관련-(pet) ********************* */
     // 대표동물 설정
-    public Long setMainPet(Long petId) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 사용자입니다."));
-        Pet pet = this.petRepository.findById(petId).orElseThrow(() -> new EntityNotFoundException("펫 정보가 없습니다."));
-        if(!user.getId().equals(pet.getUser().getId())){
-            throw new AccessDeniedException("본인 소유의 반려동물만 대표동물로 등록할 수 있습니다.");
-        }
-        user.changeMainPet(petId);
-        return petId;
+        public Long setMainPet(Long petId) {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 사용자입니다."));
+            Pet pet = this.petRepository.findById(petId).orElseThrow(() -> new EntityNotFoundException("펫 정보가 없습니다."));
+            if(!user.getId().equals(pet.getUser().getId())){
+                throw new AccessDeniedException("본인 소유의 반려동물만 대표동물로 등록할 수 있습니다.");
+            }
+            user.changeMainPet(petId);
+            return petId;
     }
     public MyPageRes enterMyPage() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -396,7 +406,6 @@ public class UserService {
     // 회원 상세조회
     public UserDetailRes findById(Long id) {
         User user = this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 회원입니다."));
-        // TODO: 관리자인데 굳이 필요하나?
         if(user.getDelYn().equals("Y")) {
             throw new EntityNotFoundException("탈퇴한 회원입니다.");
         }
