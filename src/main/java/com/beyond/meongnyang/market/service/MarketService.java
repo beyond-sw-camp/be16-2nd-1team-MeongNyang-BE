@@ -163,9 +163,9 @@ public class MarketService {
         MarketPost marketPost = marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 거래글입니다."));
 
         // 찜여부 확인
-        boolean alreadLiked = wishlistRepository.existsByUserAndMarketPost(user, marketPost);
+        boolean alreadyLiked = wishlistRepository.existsByUserAndMarketPost(user, marketPost);
 
-        return MarketPostDetailRes.fromEntity(marketPost, alreadLiked);
+        return MarketPostDetailRes.fromEntity(marketPost, alreadyLiked);
     }
 
     //    TODO : 결제기능 구현 후에 buyer 세팅 가능

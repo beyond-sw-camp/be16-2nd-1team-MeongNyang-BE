@@ -4,6 +4,7 @@ import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.entity.ProductImage;
 import com.beyond.meongnyang.market.entity.SaleStatus;
 import com.beyond.meongnyang.pet.entity.Pet;
+import com.beyond.meongnyang.user.entity.User;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -45,16 +47,13 @@ public class MarketPostDetailRes {
                 .map(ProductImage::getImageUrl)
                 .toList();
 
-        // 판매자의 대표 펫 프로필 (없으면 null)
-        String profileUrl = post.getSeller().getPets().stream()
-                .filter(pet -> pet.getDelYn().equals("N"))
-                .filter(Pet::isFirstPet)
-                .findFirst()
-                .or(() -> post.getSeller().getPets().stream()
-                        .filter(pet -> pet.getDelYn().equals("N"))
-                        .findFirst())
-                .map(Pet::getPetProfileUrl)
-                .orElse(null);
+        String profileUrl = "";
+        Optional<Pet> petOptional = post.getSeller().getPets().stream().filter(pet -> pet.getId().equals(post.getSeller().getMainPetId())).findFirst();
+
+        if (petOptional.isPresent()) {
+            Pet pet = petOptional.get();
+            profileUrl = pet.getPetProfileUrl();
+        }
 
         return MarketPostDetailRes.builder()
                 .id(post.getId())
