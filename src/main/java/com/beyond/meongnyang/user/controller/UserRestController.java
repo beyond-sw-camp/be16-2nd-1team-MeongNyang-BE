@@ -323,9 +323,9 @@ public class UserRestController {
     }
     /* ****************마이페이지&설정 관련- (pet) ********************* */
     // 대표동물 설정
-    @PutMapping("/{id}/pets/main")
-    public ResponseEntity<?> changeMainPet(@PathVariable Long id) {
-        Long mainPetId = this.userService.setMainPet(id);
+    @PutMapping("/pets/main")
+    public ResponseEntity<?> changeMainPet() {
+        Long mainPetId = userService.setMainPet();
         return new ResponseEntity<>(CommonRes.ofSuccess(
                 "mainPetId :" + mainPetId, HttpStatus.OK.value(), "대표동물 설정"
         ), HttpStatus.OK);

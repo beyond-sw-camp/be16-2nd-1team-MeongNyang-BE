@@ -48,6 +48,6 @@ public class PetController {
     // 펫 등록 여부 확인
     @GetMapping("/exist")
     public ResponseEntity<?> checkPetExist() {
-        return new ResponseEntity<>(CommonRes.ofSuccess(petService.checkPetExist(), HttpStatus.OK.value(), "pet 삭제 완료"), HttpStatus.OK);
+        return new ResponseEntity<>(CommonRes.ofSuccess(petService.checkPetExist(), HttpStatus.OK.value(), "pet이 확인되었습니다."), HttpStatus.OK);
     }
 }

@@ -21,7 +21,7 @@ public class PostCommentListRes {
     private Long commentId;
     private Long userId;
     private String profileImage;
-    private String petName;
+    private String userName;
     private String content;
     private String createdAt;
     private List<PostCommentReplyRes> replies;
@@ -29,22 +29,16 @@ public class PostCommentListRes {
     public static PostCommentListRes fromEntity(Comment comment, List<PostCommentReplyRes> replies) {
         User user = comment.getUser();
         String profileImage = "";
-        String petName = "";
-
         Pet pet = user.getPets().stream()
                 .filter(p -> p.getId().equals(user.getMainPetId()))
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException("펫을 찾을 수 없습니다."));
         profileImage = pet.getPetProfileUrl();
-        petName = pet.getName();
-        if(petName != null && petName.isEmpty()){
-            petName = user.getName();
-        }
         return PostCommentListRes.builder()
                 .commentId(comment.getId())
                 .userId(user.getId())
                 .profileImage(profileImage)
-                .petName(petName)
+                .userName(user.getName())
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt().toString())
                 .replies(replies)

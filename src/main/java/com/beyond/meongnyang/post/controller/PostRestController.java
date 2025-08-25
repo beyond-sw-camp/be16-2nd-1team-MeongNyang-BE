@@ -82,9 +82,21 @@ public class PostRestController {
         );
     }
 
+    // 다른 사용자의 일기 목록 조회
+    @GetMapping("/{id}")
+    public ResponseEntity<?> findPostsByUser(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @PathVariable("id") Long id) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.posts(pageable, id),
+                        HttpStatus.OK.value(),
+                        "다른 사용자의 일기 목록을 불러왔습니다."
+                ), HttpStatus.OK
+        );
+    }
+
     // 내 일기 목록 조회
     @GetMapping("/me")
-    public ResponseEntity<?> myPosts(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<?>findMyPosts(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
                         postService.posts(pageable, null),
@@ -95,7 +107,7 @@ public class PostRestController {
     }
 
     // 일기 상세 조회
-    @GetMapping("/{id}")
+    @GetMapping("/detail/{id}")
     public ResponseEntity<?> postDetail(@PathVariable("id") Long postId) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(

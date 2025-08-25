@@ -91,12 +91,18 @@ public class PostService {
             throw new AccessDeniedException("작성자 또는 관리자만 수정 가능합니다.");
         }
 
-        post.updatePost(postEditReq.getTitle(), postEditReq.getContent());
-        post.getHashtags().clear();
+        post.updatePost(postEditReq.getContent());
+
+        // 해시태그 변경 감지
+        String content = postEditReq.getContent();
+        if (content != null && !content.equals(post.getContent())) {
+            // 콘텐츠가 변경된 경우에만 해시태그 처리
+            post.getHashtags().clear();
+            handleHashtags(post, content);
+        }
         post.getMediaList().clear();
         em.flush();
-        handleHashtags(post, postEditReq.getContent());
-        handleFileUpload(post, files);
+        handleFileUpload(post, files); // 새 파일들만 추가
     }
 
     // 일기 삭제(soft-delete)
@@ -115,17 +121,15 @@ public class PostService {
     // 전체 일기 목록 조회
     public Page<PostDetailRes> allPosts(Pageable pageable) {
         Page<Post> posts = postRepository.findAllByDelYnFalse(pageable);
-        // 현재 사용자 정보 가져오기
-        User currentUser = commonService.getCurrentUser();
         return posts.map(post -> {
             Pet pet = commonService.findPet(post.getUser());
             long likeCount = likeRepository.countByPostId(post.getId());
-            boolean isLiked = checkIsLiked(post, currentUser);
+            boolean isLiked = checkIsLiked(post);
             return PostDetailRes.fromEntity(post, pet, likeCount, isLiked);
         });
     }
 
-    // 내 일기 목록 조회
+    // 내 일기 또는 다른 사용자의 일기 목록 조회
     public Page<PostListReq> posts(Pageable pageable, Long userId) {
         User user;
         if(userId != null){
@@ -141,42 +145,34 @@ public class PostService {
     public PostDetailRes findByPostId(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
         Pet pet = commonService.findPet(post.getUser());
-        long likeCount = getLikeCount(post.getId());
-        boolean isLiked = checkIsLiked(post, post.getUser());
+        long likeCount = countLike(post.getId());
+        boolean isLiked = checkIsLiked(post);
         return PostDetailRes.fromEntity(post, pet, likeCount, isLiked);
     }
 
     // 좋아요 처리
     public Long postLike(Long postId) {
         User user = commonService.getCurrentUser();
-        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
 
         String uk = userKey(postId, user.getId());
-        String ck = countKey(postId);
 
-        // 1) 처음 누르는 경우에만 true
+        // 이미 눌렀으면 예외
         boolean first = Boolean.TRUE.equals(likeRedisTemplate.opsForValue().setIfAbsent(uk, "1"));
         if (!first) {
             throw new EntityExistsException("이미 좋아요를 누른 일기입니다.");
         }
 
         try {
-            // 2) 실제 상태 변화 시에만 +1
-            Long after = likeRedisTemplate.opsForValue().increment(ck);
-            if (after < 0) {
-                likeRedisTemplate.opsForValue().set(ck, "0");
-            }
-
-            // 3) DB에 행 생성(목록/감사용)
+            // DB 행 생성(목록/감사용)
             Like like = Like.builder().post(post).user(user).build();
             return likeRepository.save(like).getId();
 
         } catch (RuntimeException e) {
-            // 실패시 Redis 롤백
+            // 실패 시 Redis 롤백(상태키만 복구)
             likeRedisTemplate.delete(uk);
-            Long after = likeRedisTemplate.opsForValue().decrement(ck);
-            if (after < 0) likeRedisTemplate.opsForValue().set(ck, "0");
-            throw e;
+            throw new RuntimeException("좋아요가 실패했습니다.");
         }
     }
 
@@ -186,30 +182,13 @@ public class PostService {
         User user = commonService.getCurrentUser();
 
         String uk = userKey(postId, user.getId());
-        String ck = countKey(postId);
 
-        // 1) 키가 있을 때만 삭제 → true
+        // 상태키가 있을 때만 삭제(멱등)
         Boolean removed = likeRedisTemplate.delete(uk);
-        if (!Boolean.TRUE.equals(removed)) {
-            // 원래 미좋아요 상태 — 조용히 통과(멱등)
-            return postId;
-        }
+        // DB에서도 삭제(이미 없으면 조용히 통과)
+        likeRepository.deleteByPostIdAndUserId(postId, user.getId());
 
-        try {
-            // 2) 실제 변화 시에만 -1
-            Long after = likeRedisTemplate.opsForValue().decrement(ck);
-            if (after < 0) likeRedisTemplate.opsForValue().set(ck, "0");
-
-            // 3) DB 행 삭제
-            likeRepository.deleteByPostIdAndUserId(postId, user.getId());
-            return postId;
-
-        } catch (RuntimeException e) {
-            // 실패시 Redis 복구
-            likeRedisTemplate.opsForValue().setIfAbsent(uk, "1");
-            likeRedisTemplate.opsForValue().increment(ck);
-            throw e;
-        }
+        return postId;
     }
 
     // 좋아요 목록
@@ -292,9 +271,6 @@ public class PostService {
         Specification<Post> spec = (root, query, cb) -> {
             query.distinct(true); // hashtag 조인 시 중복 제거
             switch (type) {
-                case TITLE -> {
-                    return cb.like(root.get("title"), like);
-                }
                 case CONTENT -> {
                     return cb.like(root.get("content"), like);
                 }
@@ -354,7 +330,7 @@ public class PostService {
         }
     }
 
-    // 일기 생성 및 식제 시 파일 처리
+    // 일기 생성, 수정, 식제 시 파일 처리
     private void handleFileUpload(Post post, List<MultipartFile> files) {
         if (files != null && !files.isEmpty()) {
             List<String> urls = s3UploadService.upload(files);
@@ -370,15 +346,14 @@ public class PostService {
     }
 
     // 좋아요 수 카운트
-    public long getLikeCount(Long postId) {
-        String key = "post:" + postId + ":like:count";
-        String v = likeRedisTemplate.opsForValue().get(key);
-        try { return Math.max(0L, Long.parseLong(v)); }
-        catch (NumberFormatException e) { return 0L; }
+    @Transactional(readOnly = true)
+    public long countLike(Long postId) {
+        return likeRepository.countByPostId(postId);
     }
 
     // 현재 사용자의 좋아요 여부 확인
-    public boolean checkIsLiked(Post post, User user){
+    public boolean checkIsLiked(Post post){
+        User user = commonService.getCurrentUser();
         if(user != null){
             return likeRepository.existsByPostIdAndUserId(post.getId(), user.getId());
         }

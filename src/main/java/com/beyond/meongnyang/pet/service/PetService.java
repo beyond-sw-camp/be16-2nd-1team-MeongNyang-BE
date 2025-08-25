@@ -100,7 +100,8 @@ public class PetService {
         User user = commonService.getCurrentUser();
         if (user.getMainPetId() == null) {
             throw new AccessDeniedException("등록된 펫이 없습니다. 펫 등록 후 사용 가능합니다.");
+        } else {
+            return true;
         }
-        return true; // 여기까지 오면 접근 가능
     }
 }
