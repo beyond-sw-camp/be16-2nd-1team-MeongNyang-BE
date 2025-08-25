@@ -2,6 +2,7 @@ package com.beyond.meongnyang.market.dto;
 
 import com.beyond.meongnyang.market.entity.Category;
 import com.beyond.meongnyang.market.entity.MarketPost;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,12 +25,16 @@ public class MarketPostCreateReq {
     private Integer price;
 //    @NotBlank(message = "지역을 입력해주세요.")
 //    private String region;
-    @NotBlank(message = "지역을 입력해주세요.")
-    private String regionSido;
-    @NotBlank(message = "지역을 입력해주세요.")
-    private String regionSigungu;
-    @NotBlank(message = "지역을 입력해주세요.")
-    private String regionDong;
+//    @NotBlank(message = "지역을 입력해주세요.")
+//    private String regionSido;
+//    @NotBlank(message = "지역을 입력해주세요.")
+//    private String regionSigungu;
+//    @NotBlank(message = "지역을 입력해주세요.")
+//    private String regionDong;
+    @NotNull(message = "지역을 입력해주세요.")
+    private Double latitude;
+    @NotNull(message = "지역을 입력해주세요.")
+    private Double longitude;
     @NotBlank(message = "내용을 입력해주세요.")
     private String description;
 
@@ -40,9 +45,11 @@ public class MarketPostCreateReq {
                 .description(this.description)
                 .price(this.price)
 //                .region(this.region)
-                .regionSido(this.getRegionSido())
-                .regionSigungu(this.getRegionSigungu())
-                .regionDong(this.getRegionDong())
+//                .regionSido(this.getRegionSido())
+//                .regionSigungu(this.getRegionSigungu())
+//                .regionDong(this.getRegionDong())
+                .latitude(this.getLatitude())
+                .longitude(this.getLongitude())
                 .build();
     }
 }
