@@ -89,7 +89,6 @@ public class PetService {
 
     // 등록한 애완동물 삭제
     public String deletPet(Long id) {
-        User user = commonService.getCurrentUser();
         Pet pet = this.petRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("펫 정보가 틀립니다."));
         pet.delPet();
         return pet.getName();

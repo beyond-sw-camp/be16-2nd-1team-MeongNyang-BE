@@ -90,18 +90,17 @@ public class PostService {
         if (!Objects.equals(user.getId(), post.getUser().getId())) {
             throw new AccessDeniedException("작성자 또는 관리자만 수정 가능합니다.");
         }
-
-        post.updatePost(postEditReq.getContent());
-
         // 해시태그 변경 감지
         String content = postEditReq.getContent();
         if (content != null && !content.equals(post.getContent())) {
             // 콘텐츠가 변경된 경우에만 해시태그 처리
             post.getHashtags().clear();
+            em.flush();
             handleHashtags(post, content);
         }
         post.getMediaList().clear();
         em.flush();
+        post.updatePost(postEditReq.getContent());
         handleFileUpload(post, files); // 새 파일들만 추가
     }
 
