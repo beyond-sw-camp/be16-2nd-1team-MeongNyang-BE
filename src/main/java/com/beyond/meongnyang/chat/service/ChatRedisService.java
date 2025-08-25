@@ -2,11 +2,14 @@ package com.beyond.meongnyang.chat.service;
 
 import com.beyond.meongnyang.chat.dto.*;
 import com.beyond.meongnyang.chat.entity.ChatParticipant;
+import com.beyond.meongnyang.chat.entity.ChatRoom;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
+import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
 import com.beyond.meongnyang.common.registry.SseEmitterRegistry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.connection.Message;
@@ -14,6 +17,7 @@ import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -37,6 +41,7 @@ public class ChatRedisService implements MessageListener {
 
     private static final String PARTICIPANTS_KEY_PREFIX = "CHAT_PARTICIPANTS_";
     private static final String ONLINE_KEY_PREFIX = "CHAT_ONLINE_";
+    private final ChatRoomRepository chatRoomRepository;
 
     public ChatRedisService(SseEmitterRegistry sseEmitterRegistry,
                             ChatParticipantRepository chatParticipantRepository,
@@ -44,7 +49,7 @@ public class ChatRedisService implements MessageListener {
                             @Qualifier("chatPubSub") RedisTemplate<String, String> pubsubRedisTemplate,
                             @Qualifier("chatParticipants") RedisTemplate<String, Map<String, String>> chatParticipantsRedisTemplate,
                             @Qualifier("chatOnlineParticipants") RedisTemplate<String, String> chatOnlineParticipantsRedisTemplate,
-                            ObjectMapper objectMapper) {
+                            ObjectMapper objectMapper, ChatRoomRepository chatRoomRepository) {
 
         this.sseEmitterRegistry = sseEmitterRegistry;
 
@@ -55,6 +60,7 @@ public class ChatRedisService implements MessageListener {
         this.chatParticipantsRedisTemplate = chatParticipantsRedisTemplate;
         this.chatOnlineParticipantsRedisTemplate = chatOnlineParticipantsRedisTemplate;
         this.objectMapper = objectMapper;
+        this.chatRoomRepository = chatRoomRepository;
     }
 
     public void publishChatMessageToRedis(Long roomId, ChatMessageRes chatMessageRes) {
@@ -100,6 +106,15 @@ public class ChatRedisService implements MessageListener {
 
         chatParticipantsRedisTemplate.opsForValue().set(PARTICIPANTS_KEY_PREFIX + roomId, redisChatParticipantMap);
         chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/chat-participants", toJson(roomId, redisChatParticipantMap));
+
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+        ChatRoomSummaryRes chatRoomSummaryRes = ChatRoomSummaryRes.fromEntity(chatRoom, chatRoom.getChatMessageList().size());
+        try {
+            String data = objectMapper.writeValueAsString(chatRoomSummaryRes);
+            chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + chatRoomSummaryRes.getId() + "/new", data);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Map<String, String> getOrLoadParticipantMap(Long roomId) {
