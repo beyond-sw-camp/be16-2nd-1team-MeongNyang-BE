@@ -90,7 +90,20 @@ public class PostService {
         post.deletePost("Y");
     }
 
-    // 일기 목록 조회
+    // 전체 일기 목록 조회
+    public Page<PostDetailRes> allPosts(Pageable pageable) {
+        Page<Post> posts = postRepository.findAllByDelYnFalse(pageable);
+
+        return posts.map(post -> {
+            Pet pet = petRepository
+                    .findByUserIdAndFirstPetAndDelYn(post.getUser().getId(), true, "N")
+                    .orElseThrow(() -> new EntityNotFoundException("해당 펫이 존재하지 않습니다."));
+            int likeCount = likeRepository.countByPostId(post.getId());
+            return PostDetailRes.fromEntity(post, pet, likeCount);
+        });
+    }
+
+    // 내 일기 목록 조회
     public Page<PostListReq> posts(Pageable pageable, Long userId) {
         User user;
         if(userId != null){
@@ -99,8 +112,9 @@ public class PostService {
             user = commonService.getCurrentUser();
         }
         Page<Post> postList = postRepository.findAllByUserId(user.getId(), pageable);
-        return postList.map(p -> PostListReq.fromEntity(p));
+        return postList.map(PostListReq::fromEntity);
     }
+
     // 일기 상세 조회
     public PostDetailRes findByPostId(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
