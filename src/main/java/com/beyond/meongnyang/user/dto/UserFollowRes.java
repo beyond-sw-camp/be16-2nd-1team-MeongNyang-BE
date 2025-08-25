@@ -15,6 +15,7 @@ public class UserFollowRes {
     private Long userId;
     private String profileImage;
     private String petName;
+    private String userName;
     private String userEmail;
 
     public static UserFollowRes fromEntity(User user) {
@@ -25,6 +26,7 @@ public class UserFollowRes {
             profileImage = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst().get().getPetProfileUrl();
             petName = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst().get().getName();
         }
+
         if(petName != null && petName.isEmpty()){
             petName = user.getName();
         }
@@ -33,6 +35,7 @@ public class UserFollowRes {
                 .userId(user.getId())
                 .profileImage(profileImage)
                 .petName(petName)
+                .userName(user.getName())
                 .userEmail(user.getEmail())
                 .build();
     }
