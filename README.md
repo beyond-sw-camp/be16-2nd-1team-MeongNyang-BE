@@ -232,3 +232,29 @@ https://github.com/user-attachments/assets/c09dfa1d-54f2-4fe3-9395-09dafe59b952
 https://github.com/user-attachments/assets/70c6eea7-7b0a-4b10-890a-09fd4b34534f
   </details>
 </details>
+
+<details>
+  <summary>알림</summary>
+    
+  <details><summary>알림 삭제</summary>
+
+https://github.com/user-attachments/assets/ccbd22f1-199d-40f9-9a5b-9f4ae1971d0f
+
+
+  </details>
+
+  <details><summary>알림 전체 삭제</summary>
+
+https://github.com/user-attachments/assets/038ffba2-f859-4d4c-b2b7-3f4679839c2b
+
+
+  </details>
+
+  <details><summary>알림 전체 읽음</summary>
+
+https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
+
+
+  </details>
+
+</details>
