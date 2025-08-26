@@ -45,14 +45,20 @@
 ![Spring Security](https://img.shields.io/badge/Spring%20Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)
 ![OAuth2](https://img.shields.io/badge/OAuth2-000000?style=for-the-badge&logo=auth0&logoColor=white)
 ![SSE](https://img.shields.io/badge/SSE(Server--Sent%20Events)-000000?style=for-the-badge)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![JMeter](https://img.shields.io/badge/JMeter-D22128?style=for-the-badge&logo=apachejmeter&logoColor=white)
 ![WebSocket](https://img.shields.io/badge/WebSocket-000000?style=for-the-badge&logo=websocket&logoColor=white)
 ![STOMP](https://img.shields.io/badge/STOMP-000000?style=for-the-badge)
+![SockJS](https://img.shields.io/badge/SockJS-000000?style=for-the-badge)
+![AWS S3](https://img.shields.io/badge/AWS%20S3-569A31?style=for-the-badge&logo=amazons3&logoColor=white)
+![SMTP](https://img.shields.io/badge/SMTP-FF6600?style=for-the-badge&logo=gmail&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![JMeter](https://img.shields.io/badge/JMeter-D22128?style=for-the-badge&logo=apachejmeter&logoColor=white)
+![Gradle](https://img.shields.io/badge/gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white)
+
 
 ### 🎨 Frontend
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 ![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
+![Vue Router](https://img.shields.io/badge/Vue%20Router-4FC08D?style=for-the-badge)
 ![Vuetify](https://img.shields.io/badge/Vuetify-1867C0?style=for-the-badge&logo=vuetify&logoColor=white)
 ![Pinia](https://img.shields.io/badge/Pinia-FFD859?style=for-the-badge&logo=vue.js&logoColor=black)
 ![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)
@@ -62,7 +68,6 @@
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 ![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
-
 
 ## 화면 설계서
 <div style="font-size: 1.5em; font-weight: bold; margin-top: 20px;">
@@ -109,7 +114,8 @@
 - 🛡️ **관리자**: 관리자 전용 기능
 
 ## 팀원별 주요 사용 기술 소개
-<details><summary>🔐 SSE를 이용한 사용자 서비스 접근 차단/차단해제</summary>
+<details><summary>🚫 SSE를 이용한 사용자 서비스 접근 차단/차단해제</summary>
+    
 ### 개요
 관리자가 서버에 **차단 요청**을 보내면, 서버는 **DB에서 대상 사용자 ID를 조회**한 뒤, **Enum 상태값**을 변경하여 차단 상태로 전환합니다.  
 이후 이벤트를 **Redis Pub/Sub**과 **SSE(Server-Sent Events)** 를 통해 실시간으로 프론트엔드에 전달합니다.  
@@ -241,7 +247,8 @@
 3. **백엔드**: 거래글과 함께 DB에 위치 정보 저장  
 4. **프론트엔드 상세 페이지**: 저장된 좌표를 지도 위에 표시하여 직관적으로 제공  
 </details> 
-<details>   
+<details><summary>🔐 JWT, CORS, STOMP를 이용한인증/권한 및 네트워크 보안 설계</summary>
+    
 ## 담당 범위 요약 (Auth & Pet)
 
 - 로그인: 인증 성공 시 JWT Access/Refresh 발급
@@ -281,6 +288,8 @@
 
 ### STOMP(WebSocket) 전략
 - 순수 WebSocket은 CORS 비대상, SockJS 폴백(XHR)은 CORS 적용
+</details>
+<details><summary>✉️ SMTP를 이용한 이메일 인증 · 계정 복구</summary>
 
 ### SMTP/Email (인증코드)
 
@@ -306,7 +315,6 @@
 - **전송**: SMTP로 발급 메일 송신(만료 시각 안내 포함)
 - **로그인 정책**: 임시 비밀번호로 로그인 시 **즉시 비밀번호 변경 강제**
 - **보호 장치**: **재발급 쿨다운**, **최대 시도 횟수** 제한, 실패 누적 시 **일시 잠금**
-
 ---
 
 ## 보안·운영 하이라이트
@@ -314,7 +322,6 @@
 ### 현재 적용(담당)
 - JWT 분리: AT(단기) / RT(중장기), **민감정보 토큰 미포함**
 - RT **Redis 저장·검증**, 로그아웃 시 해당 RT 무효화
-
 </details>   
 
 ## 테스트 결과서
