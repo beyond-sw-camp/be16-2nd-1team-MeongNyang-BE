@@ -170,12 +170,9 @@ public class PostService {
         try {
             // DB 행 생성(목록/감사용)
             Like like = Like.builder().post(post).user(user).build();
-            System.out.println(like);
-            Long targetId = post.getId();
-            System.out.println(targetId);
+            Long targetId = likeRepository.save(like).getId();
             String content = user.getName()+"님이 회원님의 게시글을 좋아합니다.";
-            System.out.println(content);
-            notificationService.create(targetId, post.getUser(), content, NotificationType.POST_LIKE);
+            notificationService.create(post.getId(), post.getUser(), content, NotificationType.POST_LIKE);
             return like.getId();
 
         } catch (RuntimeException e) {
