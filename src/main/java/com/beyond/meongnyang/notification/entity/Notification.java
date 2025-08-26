@@ -28,7 +28,7 @@ public class Notification extends CommonAt {
     @Column(name = "content")
     private String content;
     @Enumerated(EnumType.STRING)
-    @Column(name = "alarm_type")
+    @Column(name = "notification_type")
     private NotificationType notificationType;
     @Column(name = "target_id")
     private Long targetId;
