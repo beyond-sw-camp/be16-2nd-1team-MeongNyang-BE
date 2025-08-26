@@ -252,6 +252,52 @@
 </details> 
 <details>
     <summary>이우영</summary>
+    
+### 인증/토큰
+- JWT: AT(단기) / RT(중장기) 분리, RT는 Redis 보관·검증
+- 재발급: 클라이언트는 RT를 헤더로 전달, 서버는 Redis와 대조 후 새 AT 발급
+- 확장 옵션: RT 회전(Rotation)·재사용 탐지(Reuse Detection) 적용 가능
+
+### CORS 정책
+- 개발 오리진 화이트리스트(예: localhost 3000/5173), 필요한 메서드·헤더만 허용
+- allowCredentials(true): STOMP를 SockJS 폴백(XHR)로 사용할 때 브라우저가 자격증명 응답을 요구하기 때문
+- 운영 권고: 프런트 프록시로 동일 오리진화(개발 편의), 운영은 명시적 도메인 화이트리스트
+
+### Preflight / Credentials 메모
+- Preflight: 커스텀 헤더·비단순 메서드·특정 Content-Type 사용 시 브라우저가 본요청 전 OPTIONS로 허용 여부를 확인
+- Credentials 모드: 교차 출처에서 쿠키/HTTP 인증 등을 보낼 수 있게 한 모드  
+  - 이 경우 서버 응답은 **정확한 Origin**과 **Access-Control-Allow-Credentials: true**가 반드시 포함되어야 함  
+  - 조건 미충족 시 브라우저가 응답을 폐기(서버까지는 도달해도 화면에 노출되지 않음)
+
+### 헤더 기반 인증 시 CORS가 더 엄격하게 보이는 이유
+- 커스텀 헤더 사용은 Preflight를 유발하며, 서버가 명시적으로 메서드/헤더/오리진을 허용해야 본요청이 진행됨
+- SockJS 폴백은 XHR이므로 CORS 규칙이 적용되고, 경우에 따라 credentials 모드가 활성화됨
+- 동일 오리진(프록시) 환경에서는 CORS가 발생하지 않아 체감이 덜하지만, 교차 오리진에서는 규칙이 그대로 적용됨
+
+### OAuth(소셜) 흐름 요약
+- 공급자 인증 → 코드 교환 → 프로필 조회
+- 계정 연결: 동일 이메일은 연동, 없으면 추가정보 입력 후 가입 완료
+- 보안 포인트: redirect URI 화이트리스트, state/nonce 검증, 짧은 AT·긴 RT, 실패/중복 응답 표준화
+
+### STOMP(WebSocket) 전략
+- 순수 WebSocket은 CORS 비대상이나, SockJS 폴백(XHR)은 CORS 적용
+- 권장: 개발에서는 프록시로 동일 오리진화 또는 SockJS에서 `transports: ['websocket']`로 폴백 최소화
+- 토큰 전달은 HTTP 핸드셰이크 헤더 주입보다 STOMP CONNECT 프레임 헤더로 전달하고, 구독/발행 시 서버에서 토큰 클레임 기반 ACL 검증
+
+### 토큰 전달 전략(현재 → 전환)
+- 현재: 헤더 기반(멀티 클라이언트·도구 테스트 용이)
+- 전환 권장: AT=헤더, RT=HttpOnly 쿠키(SameSite/Secure/HttpOnly) + RT 회전·재사용 탐지
+- 이행: 일정 기간 헤더·쿠키 병행 지원 후 점진 이관
+
+---
+
+## 보안·운영 하이라이트
+
+### 현재 적용(내 담당)
+- JWT 분리: AT(단기) / RT(중장기), **민감정보 토큰 미포함**
+- RT **Redis 저장·검증**, 로그아웃 시 해당 RT 무효화
+- 공통 응답 모델(`CommonRes`)로 오류 코드/메시지 일관화
+- (개발) CORS 정책 적용: 개발 오리진 화이트리스트, 커스텀 헤더 허용, `allowCredentials(true)`
 </details>   
 
 ## 테스트 결과서
