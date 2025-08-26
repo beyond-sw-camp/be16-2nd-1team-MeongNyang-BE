@@ -109,10 +109,7 @@
 - 🛡️ **관리자**: 관리자 전용 기능
 
 ## 팀원별 주요 사용 기술 소개
-<details>
-    <summary>윤수오</summary>
-    <details><summary>🔐 SSE를 이용한 사용자 서비스 접근 차단/차단해제</summary>
-        
+<details><summary>🔐 SSE를 이용한 사용자 서비스 접근 차단/차단해제</summary>
 ### 개요
 관리자가 서버에 **차단 요청**을 보내면, 서버는 **DB에서 대상 사용자 ID를 조회**한 뒤, **Enum 상태값**을 변경하여 차단 상태로 전환합니다.  
 이후 이벤트를 **Redis Pub/Sub**과 **SSE(Server-Sent Events)** 를 통해 실시간으로 프론트엔드에 전달합니다.  
@@ -137,9 +134,9 @@
 - **무상태 인증 구조**: Refresh Token을 통한 Access Token 재발급으로 세션 의존성 제거  
 - **보안 강화**: 차단 즉시 새로운 토큰을 발급받아 권한이 반영되므로, 이전 토큰으로는 서비스 접근 불가  
 - **트래픽 효율성**: 클라이언트-서버 간 불필요한 재연결이나 반복 요청 없이 효율적으로 이벤트 전송
-    </details>
-    <details><summary>👍 동시성 이슈를 해결한 좋아요 기능 (with Redis)</summary>
-
+</details>
+<details><summary>👍 동시성 이슈를 해결한 좋아요 기능 (with Redis)</summary>
+    
 ### 개요
 사용자가 **좋아요 요청**을 하면, 서비스는 **DB와 Redis**를 먼저 조회하여 중복 여부를 확인합니다.  
 - 좋아요가 없는 경우: **Redis(Key-Value 쌍)** 에 먼저 저장 후, DB에도 반영  
@@ -164,7 +161,6 @@
 - **고성능 조회**: 좋아요 수를 DB 대신 In-Memory(Redis)에서 조회  
 - **데이터 일관성 보장**: Redis ↔ DB 동기화 구조  
 - **서비스 안정성**: 트래픽 급증 상황에서도 지연 없는 사용자 경험 제공  
-    </details>
 </details>
 <details>
     <summary>💬 WebSocket(STOMP), SSE, Redis Pub/Sub을 활용한 확장형 실시간 채팅 시스템 아키텍처</summary>
@@ -205,9 +201,7 @@
   - 클라이언트는 실시간으로 **읽음 여부 확인** 가능
     </detail>
 </details>    
-<details>
-    <summary>김지현</summary>
-        <details><summary>📍 실시간 지도 기반 거래 위치 지정</summary>
+<details><summary>📍 실시간 지도 기반 거래 위치 지정</summary>
 
 ###  서비스 개요
 사용자는 거래글 작성 시 **카카오맵 지도 API**를 활용하여 지도 위에 핀을 찍어 거래 장소를 지정합니다.  
@@ -246,13 +240,8 @@
 2. **프론트엔드**: 선택한 위·경도와 주소를 백엔드로 전송  
 3. **백엔드**: 거래글과 함께 DB에 위치 정보 저장  
 4. **프론트엔드 상세 페이지**: 저장된 좌표를 지도 위에 표시하여 직관적으로 제공  
-
-
-    </details>
 </details> 
-<details>
-    <summary>이우영</summary>
-    
+<details>   
 ## 담당 범위 요약 (Auth & Pet)
 
 - 로그인: 인증 성공 시 JWT Access/Refresh 발급
