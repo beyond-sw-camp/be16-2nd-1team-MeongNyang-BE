@@ -2,11 +2,11 @@ package com.beyond.meongnyang.user.service;
 
 import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.SseService;
+import com.beyond.meongnyang.user.dto.ProfileUpdateRes;
 import com.beyond.meongnyang.user.entity.*;
 import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.dto.check.UserCheckEmailReq;
 import com.beyond.meongnyang.user.dto.check.UserCheckNicknameReq;
-import com.beyond.meongnyang.user.dto.check.UserCheckPasswordReq;
 import com.beyond.meongnyang.user.repository.FollowRepository;
 import com.beyond.meongnyang.user.repository.UserBlockRepository;
 import com.beyond.meongnyang.pet.entity.Pet;
@@ -15,7 +15,6 @@ import com.beyond.meongnyang.user.dto.check.*;
 import com.beyond.meongnyang.user.dto.oauth2.InitalSetReq;
 import com.beyond.meongnyang.user.entity.SocialType;
 import com.beyond.meongnyang.user.entity.User;
-import com.beyond.meongnyang.user.dto.*;
 import com.beyond.meongnyang.user.entity.UserStatus;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
@@ -202,10 +201,7 @@ public class UserService {
 
     // 비밀번호 변경
     public void changePassword (UserChangePasswordReq req) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = this.userRepository.findByEmail(email).orElseThrow(
-                () -> new EntityNotFoundException("등록된 회원정보가 없습니다.")
-        );
+        User user = commonService.getCurrentUser();
         if (user.getPassword() == null || user.getSocialType() != SocialType.COMMON) {
             throw new EntityExistsException("소셜 계정은 비밀번호 변경이 불가합니다.");
         }
@@ -225,6 +221,19 @@ public class UserService {
     public void deleteAccount() {
         User user = commonService.getCurrentUser();
         user.softDelete();
+    }
+
+    // user 프로필 이미지 가져오기
+    public UserProfileImageRes findProfileImage(String email) {
+        String targetEmail = email;
+        User targetUser = userRepository.findByEmail(targetEmail).orElseThrow(
+                () -> new EntityNotFoundException("해당 사용자가 없습니다.")
+        );
+        String targetImageUrl =  petRepository.findPetProfileUrlById(targetUser.getMainPetId()).orElse(null);
+
+        return UserProfileImageRes.builder()
+                .petProfileUrl(targetImageUrl)
+                .build();
     }
   
     // 팔로우
@@ -351,6 +360,7 @@ public class UserService {
             mainPet = this.petRepository.findById(user.getMainPetId()).orElse(null);
         }
         return MyPageRes.builder()
+                .name(user.getName())
                 .userId(user.getId())
                 .nickname(user.getNickname())
                 .email(user.getEmail())
@@ -358,6 +368,18 @@ public class UserService {
                 .mainPetId(mainPet != null ? mainPet.getId() : null)
                 .mainPetImage(mainPet != null ? mainPet.getPetProfileUrl() : null)
                 .socialType(user.getSocialType())
+                .userStatus(user.getUserStatus())
+                .build();
+    }
+
+    public ProfileUpdateRes updateProfile(ProfileUpdateReq request) {
+        User user = commonService.getCurrentUser();
+        // 이름과 닉네임 업데이트
+        user.updateProfile(request);
+
+        return ProfileUpdateRes.builder()
+                .name(request.getName())
+                .nickname(request.getNickname())
                 .build();
     }
 
@@ -377,7 +399,6 @@ public class UserService {
     // 회원 상세조회
     public UserDetailRes findById(Long id) {
         User user = this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 회원입니다."));
-        // TODO: 관리자인데 굳이 필요하나?
         if(user.getDelYn().equals("Y")) {
             throw new EntityNotFoundException("탈퇴한 회원입니다.");
         }

@@ -16,8 +16,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.apache.coyote.Response;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -26,7 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -97,6 +94,23 @@ public class UserRestController {
         return okWithRtHeader(CommonRes.ofSuccess(body, HttpStatus.OK.value(), "로그인되었습니다."), refreshToken);
     }
 
+
+//    public User accessLogin(UserLoginReq request) {
+//        User user = userRepository.findByEmail(request.getEmail())
+//                .orElseThrow(() -> new IllegalArgumentException("이메일 혹은 비밀번호가 다릅니다."));
+//
+//        if ("Y".equals(user.getDelYn())) {
+//            throw new IllegalArgumentException("사용하지 않는 계정입니다.");
+//        }
+//        if ("Y".equals(user.getIsLocked())) {
+//            throw new IllegalArgumentException("잠긴 계정입니다.");
+//        }
+//
+
+    private boolean isYes(String yn) {
+        return yn != null && yn.trim().equalsIgnoreCase("Y");
+    }
+
     // 구글 로그인
     @PostMapping("/login/google")
     public ResponseEntity<?> googleLogin(@Valid @RequestBody RedirectReq redirectReq) {
@@ -110,6 +124,8 @@ public class UserRestController {
         Optional<User> optionalSocial = userService.getUserBySocailId(socialId);
         if (optionalSocial.isPresent()) {
             User user = optionalSocial.get();
+            if (isYes(user.getDelYn()))     throw new IllegalArgumentException("사용하지 않는 계정입니다.");
+            if (isYes(user.getIsLocked()))  throw new IllegalArgumentException("잠긴 계정입니다.");
 
             if (user.getSocialType() != SocialType.GOOGLE) {
                 throw new EntityExistsException("이미 다른 방식으로 연동된 계정입니다.");
@@ -125,7 +141,8 @@ public class UserRestController {
         Optional<User> optionalEmail = userService.getUserByEmail(email);
         if (optionalEmail.isPresent()) {
             User user = optionalEmail.get();
-
+            if (isYes(user.getDelYn()))     throw new IllegalArgumentException("사용하지 않는 계정입니다.");
+            if (isYes(user.getIsLocked()))  throw new IllegalArgumentException("잠긴 계정입니다.");
             if (user.getSocialType() != SocialType.COMMON) {
                 throw new EntityExistsException("이미 소셜 연동된 계정입니다.");
             }
@@ -163,6 +180,8 @@ public class UserRestController {
         Optional<User> optionalSocial = userService.getUserBySocailId(socialId);
         if (optionalSocial.isPresent()) {
             User user = optionalSocial.get();
+            if (isYes(user.getDelYn()))     throw new IllegalArgumentException("사용하지 않는 계정입니다.");
+            if (isYes(user.getIsLocked()))  throw new IllegalArgumentException("잠긴 계정입니다.");
 
             if (user.getSocialType() != SocialType.KAKAO) {
                 throw new EntityExistsException("이미 다른 방식으로 연동된 계정입니다.");
@@ -179,6 +198,8 @@ public class UserRestController {
         if (optionalEmail.isPresent()) {
             User user = optionalEmail.get();
 
+            if (isYes(user.getDelYn()))     throw new IllegalArgumentException("사용하지 않는 계정입니다.");
+            if (isYes(user.getIsLocked()))  throw new IllegalArgumentException("잠긴 계정입니다.");
             if (user.getSocialType() != SocialType.COMMON) {
                 throw new EntityExistsException("이미 소셜 연동된 계정입니다.");
             }
@@ -321,6 +342,14 @@ public class UserRestController {
                 CommonRes.ofSuccess("회원 탈퇴되었습니다.", HttpStatus.OK.value(), "회원탈퇴 완료")
         );
     }
+
+    @GetMapping("/profileImage")
+    public ResponseEntity<?> getUserProfileImage(@RequestBody EmailReq req) {
+        UserProfileImageRes profileImageRes = userService.findProfileImage(req.getEmail());
+        return new ResponseEntity<>(CommonRes.ofSuccess(
+                profileImageRes, HttpStatus.OK.value(), "프로필 조회가 완료되었습니다."
+        ), HttpStatus.OK);
+    }
     /* ****************마이페이지&설정 관련- (pet) ********************* */
     // 대표동물 설정
     @PutMapping("/pets/main")
@@ -338,6 +367,16 @@ public class UserRestController {
                 myPageRes, HttpStatus.OK.value(), "마이페이지-기본"
         ), HttpStatus.OK);
     }
+
+    // UserRestController.java에 추가
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody ProfileUpdateReq request) {
+        ProfileUpdateRes response = this.userService.updateProfile(request);
+        return new ResponseEntity<>(CommonRes.ofSuccess(
+                response, HttpStatus.OK.value(), "프로필 수정 완료"
+        ), HttpStatus.OK);
+    }
+
 
     // 팔로우
     @PostMapping("/follows/{id}")

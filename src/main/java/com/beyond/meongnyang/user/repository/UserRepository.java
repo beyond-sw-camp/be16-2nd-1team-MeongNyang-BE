@@ -33,7 +33,7 @@ public interface UserRepository  extends JpaRepository<User, Long> {
     Optional<User> findByIdAndDelYn(Long userId, String delYn);
 
     Optional<User> findBySocialId(String socialId);
-  
+
     @Query("SELECT u " +
             "FROM User u " +
             "WHERE u.role = :role " +
