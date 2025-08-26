@@ -7,7 +7,7 @@
 <table>
     <tr>
     <td align="center"> 윤수오(팀장)</td>
-    <td align="center"> 정지완(팀원)</td>
+    <td align="center"> 정지완(리뷰어)</td>
     <td align="center"> 김지현(팀원)</td>
     <td align="center"> 이우영(팀원)</td>
   </tr>
@@ -55,13 +55,6 @@
   </a>
 </div>
 
-## ERD
-<div style="font-size: 1.5em; font-weight: bold; margin-top: 20px;">
-  <a href='https://www.erdcloud.com/d/fRviLvokK3rgCy2iS' style="text-decoration: none; color: inherit;">
-    ERD
-  </a>
-</div>
-
 ## 테스트 결과서
 <details>
   <summary>일기</summary>
@@ -78,24 +71,23 @@
   </details>
 
   <details><summary>내 일기 작성</summary>
-    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/ed698147-87d0-42ee-90d6-2463fe54f47a" />
+    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/0a1fc5e4-8cc3-4723-8526-0cf1e89e35b7" />
   </details>
-  <details><summary>내 일기 </summary>
-    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+  <details><summary>내 일기 수정</summary>
+      <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/619c5a8a-1d2a-4f16-813f-051ca5b5e2f6" />
   </details>
-  <details><summary>회원 탈퇴</summary>
-    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+  <details><summary>일기 상세 조회</summary>
+    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/aa59ea25-0d0a-43fd-baf8-88c37ac20f85" />
   </details>
-  <details><summary>회원 탈퇴</summary>
-    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+  <details><summary>댓글 조회</summary>
+    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/cfd549d0-3e65-4431-b51b-1eb5af8da0f3" />
+
   </details>
-  <details><summary>회원 탈퇴</summary>
-    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+  <details><summary>좋아요 조회</summary>
+    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/8a47c9ab-1086-423b-a6df-8fbd1906799d" />
   </details>
-  <details><summary>회원 탈퇴</summary>
-    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
-  </details>
-  <details><summary>회원 탈퇴</summary>
-    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+  <details><summary>검색 결과</summary>
+    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/ff76f2d1-acce-4932-940c-78a09bb27ed4" />
   </details>
 </details>
