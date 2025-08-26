@@ -409,9 +409,9 @@ public class UserRestController {
     }
 
     // 팔로워 목록 조회
-        @GetMapping("/follows/followers")
+        @GetMapping("/{id}/follows/followers")
     public ResponseEntity<?> getFollowers(
-            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false, value = "userId") Long userId) {
+            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @PathVariable("id") Long userId) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(userService.getFollowers(pageable, userId), HttpStatus.OK.value(), "팔로워 목록 조회 완료"),
                 HttpStatus.OK
@@ -419,9 +419,9 @@ public class UserRestController {
     }
 
     // 팔로잉 목록 조회
-    @GetMapping("/follows/followings")
+    @GetMapping("/{id}/follows/followings")
     public ResponseEntity<?> getFollowings(
-            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false, value = "userId") Long userId) {
+            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @PathVariable("id") Long userId) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(userService.getFollowings(pageable, userId), HttpStatus.OK.value(), "팔로잉 목록 조회 완료"),
                 HttpStatus.OK
