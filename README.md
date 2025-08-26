@@ -300,7 +300,7 @@
      <img width="1917" height="866" alt="Image" src="https://github.com/user-attachments/assets/c839646a-00cd-4a69-9bcc-ecc4256e349a" />
   </details>
 
-  <details><summary>거래글 수정</summary>
+  <details><summary>거래글 수정/삭제</summary>
     <img width="1919" height="870" alt="Image" src="https://github.com/user-attachments/assets/4b6476b5-c4af-4454-ab41-5a6935d2b585" />
   </details>
 
