@@ -69,19 +69,7 @@ public class SseService implements MessageListener {
         }
     }
 
-    public void publishMessage(String event, String receiver, String message) {
-        SseMessageRes sseMessageRes = SseMessageRes.builder()
-                .receiver(receiver)
-                .event(event)
-                .message(message)
-                .build();
-        String data;
-        try {
-            data = objectMapper.writeValueAsString(sseMessageRes);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
+    public void publishMessage(String event, String receiver, Object data) {
 //        emmiter객체를 통해 메시지 전송
         SseEmitter sseEmitter = sseEmitterRegistry.getEmitter(receiver);
 //        emitter객체가 현재 서버에 있으면, 직접 알림 발송. 그렇지 않으면, redis에 publish
