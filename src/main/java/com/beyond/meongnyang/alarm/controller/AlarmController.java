@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.alarm.controller;
 
+import com.beyond.meongnyang.alarm.entity.Alarm;
 import com.beyond.meongnyang.alarm.service.AlarmService;
 import com.beyond.meongnyang.common.dto.CommonRes;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,17 @@ public class AlarmController {
     public ResponseEntity<?> deleteMyAlarms() {
         alarmService.deleteMyAlarms();
         return ResponseEntity.ok(CommonRes.ofSuccess(null, HttpStatus.OK.value(), "alarms deleted"));
+    }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> readById(@PathVariable Long id) {
+        alarmService.readById(id);
+        return ResponseEntity.ok(CommonRes.ofSuccess(null, HttpStatus.OK.value(), "alarm read"));
+    }
+
+    @PatchMapping("")
+    public ResponseEntity<?> readMyAlarms() {
+        alarmService.readMyAlarms();
+        return ResponseEntity.ok(CommonRes.ofSuccess(null, HttpStatus.OK.value(), "alarms read"));
     }
 }
