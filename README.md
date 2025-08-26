@@ -261,7 +261,6 @@
 ### CORS 정책
 - 개발 오리진 화이트리스트(예: localhost 3000/5173), 필요한 메서드·헤더만 허용
 - allowCredentials(true): STOMP를 SockJS 폴백(XHR)로 사용할 때 브라우저가 자격증명 응답을 요구하기 때문
-- 운영 권고: 프런트 프록시로 동일 오리진화(개발 편의), 운영은 명시적 도메인 화이트리스트
 
 ### Preflight / Credentials 메모
 - Preflight: 커스텀 헤더·비단순 메서드·특정 Content-Type 사용 시 브라우저가 본요청 전 OPTIONS로 허용 여부를 확인
