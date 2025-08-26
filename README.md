@@ -167,7 +167,7 @@
     </details>
 </details>
 <details>
-    <summary>정지완</summary>
+    <summary>💬 WebSocket(STOMP), SSE, Redis Pub/Sub을 활용한 확장형 실시간 채팅 시스템 아키텍처</summary>
     <detail>
         
 ## 1. STOMP (WebSocket 기반)
