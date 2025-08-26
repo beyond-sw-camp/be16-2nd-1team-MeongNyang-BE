@@ -171,6 +171,8 @@
 </details>   
 
 ## 테스트 결과서
+<details><summary>전체 시연 영상</summary>
+</details>
 <details>
   <summary>일기</summary>
   <details><summary>홈 화면(전체 일기 목록)</summary>
