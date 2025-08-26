@@ -46,6 +46,7 @@
 ![OAuth2](https://img.shields.io/badge/OAuth2-000000?style=for-the-badge&logo=auth0&logoColor=white)
 ![SSE](https://img.shields.io/badge/SSE(Server--Sent%20Events)-000000?style=for-the-badge)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![JMeter](https://img.shields.io/badge/JMeter-D22128?style=for-the-badge&logo=apachejmeter&logoColor=white)
 ![WebSocket](https://img.shields.io/badge/WebSocket-000000?style=for-the-badge&logo=websocket&logoColor=white)
 ![STOMP](https://img.shields.io/badge/STOMP-000000?style=for-the-badge)
 
@@ -61,6 +62,7 @@
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 ![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
+
 
 ## 화면 설계서
 <div style="font-size: 1.5em; font-weight: bold; margin-top: 20px;">
