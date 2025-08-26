@@ -404,7 +404,10 @@ https://github.com/user-attachments/assets/54976259-5eef-4a44-88d0-03bf5cc2bf19
   </details>
   
   <details><summary>파일 전송</summary> 
+      
 https://github.com/user-attachments/assets/cf7a55a0-cf0d-425c-a430-27c2d727b9e1
+
+
   </details>
   
   <details><summary>이미지 뷰어</summary> 
@@ -422,7 +425,7 @@ https://github.com/user-attachments/assets/15dcd759-1349-4265-912f-358d0307401c
   </details>
   
   <details><summary>참여자 목록 조회</summary> 
-        <img width="1728" height="1117" alt="스크린샷 2025-08-26 오후 2 17 38" src="https://github.com/user-attachments/assets/2ec6332b-6b57-41dd-af24-4aa314f2f78c" />
+      <img width="1728" height="1117" alt="스크린샷 2025-08-26 오후 2 15 10" src="https://github.com/user-attachments/assets/6455d238-1a62-4307-b927-47a21ffca110" />
   </details>
   
   <details><summary>채팅방 초대</summary> 
