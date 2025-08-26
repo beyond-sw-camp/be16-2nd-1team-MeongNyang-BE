@@ -281,13 +281,9 @@
 
 ### STOMP(WebSocket) 전략
 - 순수 WebSocket은 CORS 비대상이나, SockJS 폴백(XHR)은 CORS 적용
-- 권장: 개발에서는 프록시로 동일 오리진화 또는 SockJS에서 `transports: ['websocket']`로 폴백 최소화
-- 토큰 전달은 HTTP 핸드셰이크 헤더 주입보다 STOMP CONNECT 프레임 헤더로 전달하고, 구독/발행 시 서버에서 토큰 클레임 기반 ACL 검증
 
 ### 토큰 전달 전략(현재 → 전환)
 - 현재: 헤더 기반(멀티 클라이언트·도구 테스트 용이)
-- 전환 권장: AT=헤더, RT=HttpOnly 쿠키(SameSite/Secure/HttpOnly) + RT 회전·재사용 탐지
-- 이행: 일정 기간 헤더·쿠키 병행 지원 후 점진 이관
 
 ---
 
