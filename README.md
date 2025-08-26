@@ -123,3 +123,55 @@
     <img width="1916" height="868" alt="Image" src="https://github.com/user-attachments/assets/21db1744-c24f-4595-b2eb-ba743969d48e" />
   </details>
 </details>
+
+<details>
+  <summary>채팅</summary>
+    
+  <details><summary>채팅방 목록 조회</summary>
+      <img width="1728" height="1117" alt="스크린샷 2025-08-26 오후 2 01 50" src="https://github.com/user-attachments/assets/890c71ab-274f-434a-9a56-13decf8a3828" />
+  </details>
+
+  <details><summary>채팅방 생성</summary>
+https://github.com/user-attachments/assets/86f6cb9a-825c-4519-b866-6a8543fa6d6c
+  </details>
+
+  <details><summary>퀵 메세지</summary>
+https://github.com/user-attachments/assets/f2c1b6a4-29ed-4e90-b58e-ffdd8eea2f7f
+  </details>
+
+  <details><summary>SSE 채팅방 목록 갱신</summary>
+https://github.com/user-attachments/assets/fac8e7d8-8fab-425f-9341-ddfb83e8b021
+  </details>
+  
+  <details><summary>메세지 전송</summary>
+https://github.com/user-attachments/assets/dfe16ea2-be8c-47a1-b7b4-3bc30ce8a72c
+  </details>
+  
+  <details><summary>파일 드래그 앤 드롭</summary>
+https://github.com/user-attachments/assets/54976259-5eef-4a44-88d0-03bf5cc2bf19
+  </details>
+  
+  <details><summary>파일 전송</summary> 
+https://github.com/user-attachments/assets/cf7a55a0-cf0d-425c-a430-27c2d727b9e1
+  </details>
+  
+  <details><summary>이미지 뷰어</summary> 
+https://github.com/user-attachments/assets/1a796fe7-c6e6-456c-9354-c7897ca5c88c
+  </details>
+  
+  <details><summary>최하단 이동</summary> 
+https://github.com/user-attachments/assets/15dcd759-1349-4265-912f-358d0307401c
+  </details>
+  
+  <details><summary>참여자 목록 조회</summary> 
+        <img width="1728" height="1117" alt="스크린샷 2025-08-26 오후 2 17 38" src="https://github.com/user-attachments/assets/2ec6332b-6b57-41dd-af24-4aa314f2f78c" />
+  </details>
+  
+  <details><summary>채팅방 초대</summary> 
+https://github.com/user-attachments/assets/c09dfa1d-54f2-4fe3-9395-09dafe59b952
+  </details>
+  
+  <details><summary>채팅방 나가기</summary> 
+https://github.com/user-attachments/assets/70c6eea7-7b0a-4b10-890a-09fd4b34534f
+  </details>
+</details>
