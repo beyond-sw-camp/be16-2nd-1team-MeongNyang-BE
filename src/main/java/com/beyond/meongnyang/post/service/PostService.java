@@ -2,6 +2,8 @@ package com.beyond.meongnyang.post.service;
 
 import com.beyond.meongnyang.admin.repository.ReportRepository;
 import com.beyond.meongnyang.common.service.CommonService;
+import com.beyond.meongnyang.notification.entity.NotificationType;
+import com.beyond.meongnyang.notification.service.NotificationService;
 import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.post.dto.*;
@@ -46,11 +48,12 @@ public class PostService {
 
     @Qualifier("likeInventory")
     private final RedisTemplate<String, String> likeRedisTemplate;
+    private final NotificationService notificationService;
 
     private String userKey(Long postId, Long userId) { return "post:" + postId + ":like:user:" + userId; }
     private String countKey(Long postId)             { return "post:" + postId + ":like:count"; }
 
-    public PostService(PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository, PetRepository petRepository, LikeRepository likeRepository, CommentRepository commentRepository, CommentTagRepository commentTagRepository, ReportRepository reportRepository, S3UploadService s3UploadService, CommonService commonService, EntityManager em, RedisTemplate<String, String> likeRedisTemplate) {
+    public PostService(PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository, PetRepository petRepository, LikeRepository likeRepository, CommentRepository commentRepository, CommentTagRepository commentTagRepository, ReportRepository reportRepository, S3UploadService s3UploadService, CommonService commonService, EntityManager em, RedisTemplate<String, String> likeRedisTemplate, NotificationService notificationService) {
         this.postRepository = postRepository;
         this.tagRepository = tagRepository;
         this.userRepository = userRepository;
@@ -63,6 +66,7 @@ public class PostService {
         this.commonService = commonService;
         this.em = em;
         this.likeRedisTemplate = likeRedisTemplate;
+        this.notificationService = notificationService;
     }
 
     // 일기 작성
@@ -166,7 +170,10 @@ public class PostService {
         try {
             // DB 행 생성(목록/감사용)
             Like like = Like.builder().post(post).user(user).build();
-            return likeRepository.save(like).getId();
+            Long targetId = likeRepository.save(like).getId();
+            String content = user.getName()+"님이 회원님의 게시글을 좋아합니다.";
+            notificationService.create(post.getId(), post.getUser(), content, NotificationType.POST_LIKE);
+            return like.getId();
 
         } catch (RuntimeException e) {
             // 실패 시 Redis 롤백(상태키만 복구)

@@ -36,8 +36,9 @@ public class NotificationService {
                 .notificationType(type)
                 .build();
         notificationRepository.save(notification);
+        NotificationRes notificationRes = NotificationRes.fromEntity(notification);
         try {
-            sseService.publishMessage("notification", receiver.getEmail(), objectMapper.writeValueAsString(notification));
+            sseService.publishMessage("notification", receiver.getEmail(), objectMapper.writeValueAsString(notificationRes));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.notification.entity;
 
 public enum NotificationType {
+    POST_LIKE,
     COMMENT, // 댓글
     LIKE, // 좋아요
     ADD_FOLLOW, // 친구 관련
