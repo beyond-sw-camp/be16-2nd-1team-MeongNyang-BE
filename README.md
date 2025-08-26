@@ -94,3 +94,22 @@
     <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/5f3e4e26-27cf-43a6-b921-5d3f99010477" />
   </details>
 </details>
+
+<details>
+  <summary>마켓</summary>
+  <details><summary>홈 화면(전체 거래글 목록)</summary>
+     <img width="1919" height="867" alt="Image" src="https://github.com/user-attachments/assets/bd58c40e-df87-420a-9277-814a5c17ebbd" />
+  </details>
+
+  <details><summary>거래글 작성</summary>
+     <img width="1917" height="866" alt="Image" src="https://github.com/user-attachments/assets/c839646a-00cd-4a69-9bcc-ecc4256e349a" />
+  </details>
+
+  <details><summary>거래글 수정</summary>
+    <img width="1919" height="870" alt="Image" src="https://github.com/user-attachments/assets/4b6476b5-c4af-4454-ab41-5a6935d2b585" />
+  </details>
+
+  <details><summary>거래글 상세</summary>
+    <img width="1916" height="868" alt="Image" src="https://github.com/user-attachments/assets/21db1744-c24f-4595-b2eb-ba743969d48e" />
+  </details>
+</details>
