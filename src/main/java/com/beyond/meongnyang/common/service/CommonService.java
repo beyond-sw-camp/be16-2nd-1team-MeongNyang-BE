@@ -1,6 +1,8 @@
 package com.beyond.meongnyang.common.service;
 
 import com.beyond.meongnyang.common.domain.Bool;
+import com.beyond.meongnyang.pet.entity.Pet;
+import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.entity.UserBlock;
 import com.beyond.meongnyang.user.repository.UserBlockRepository;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CommonService {
     private final UserRepository userRepository;
+    private final PetRepository petRepository;
 
 //    사용자 정보 가져오기
     public User getCurrentUser() {
@@ -22,5 +25,10 @@ public class CommonService {
         String email = authentication.getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("없는 사용자입니다."));
+    }
+
+//    펫 정보 가져오기
+    public Pet findPet(User user){
+        return petRepository.findById(user.getMainPetId()).orElseThrow(() -> new EntityNotFoundException("해당 펫이 존재하지 않습니다."));
     }
 }

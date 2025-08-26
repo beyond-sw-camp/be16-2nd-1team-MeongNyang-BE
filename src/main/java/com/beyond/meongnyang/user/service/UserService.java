@@ -343,14 +343,14 @@ public class UserService {
     }
     /* ****************마이페이지&설정 관련-(pet) ********************* */
     // 대표동물 설정
-        public Long setMainPet(Long petId) {
-            User user = commonService.getCurrentUser();
-            Pet pet = this.petRepository.findById(petId).orElseThrow(() -> new EntityNotFoundException("펫 정보가 없습니다."));
-            if(!user.getId().equals(pet.getUser().getId())){
-                throw new AccessDeniedException("본인 소유의 반려동물만 대표동물로 등록할 수 있습니다.");
-            }
-            user.changeMainPet(petId);
-            return petId;
+    public Long setMainPet() {
+        User user = commonService.getCurrentUser();
+        Pet pet = commonService.findPet(user);
+        if(!user.getId().equals(pet.getUser().getId())){
+            throw new AccessDeniedException("본인 소유의 반려동물만 대표동물로 등록할 수 있습니다.");
+        }
+        user.changeMainPet(pet.getId());
+        return pet.getId();
     }
     public MyPageRes enterMyPage() {
         User user = commonService.getCurrentUser();
@@ -361,6 +361,7 @@ public class UserService {
         }
         return MyPageRes.builder()
                 .name(user.getName())
+                .userId(user.getId())
                 .nickname(user.getNickname())
                 .email(user.getEmail())
                 .createdAt(user.getCreatedAt())

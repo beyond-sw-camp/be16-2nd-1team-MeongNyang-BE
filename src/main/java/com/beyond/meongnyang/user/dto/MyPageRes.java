@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 public class MyPageRes {
     public String name;
+    private Long userId;
     private String nickname;
     private String email;
     private LocalDateTime createdAt;

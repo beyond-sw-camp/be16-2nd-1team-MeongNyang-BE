@@ -50,37 +50,22 @@ public class SseService implements MessageListener {
     //
     @Override
     public void onMessage(Message message, byte[] pattern) {
-        String event = "";
-        try {
-            SseMessageRes sseMessageRes = objectMapper.readValue(message.getBody(), SseMessageRes.class);
-            log.info("메시지 : " + sseMessageRes);
-            SseEmitter sseEmitter = sseEmitterRegistry.getEmitter(sseMessageRes.getReceiver());
-            if (sseEmitter != null) {
-                try {
-                    sseEmitter.send(sseEmitter.event().name(event).data(sseMessageRes));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
+        String channel = new String(message.getChannel());
+        String receiver = channel.split("_")[1];
+        String eventName = channel.split("_")[0];
 
+        SseEmitter sseEmitter = sseEmitterRegistry.getEmitter(receiver);
+        if (sseEmitter != null) {
+            try {
+                sseEmitter.send(SseEmitter.event().name(eventName).data(message.getBody()));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
-    public void publishMessage(String event, String receiver, String message) {
-        SseMessageRes sseMessageRes = SseMessageRes.builder()
-                .receiver(receiver)
-                .event(event)
-                .message(message)
-                .build();
-        String data;
-        try {
-            data = objectMapper.writeValueAsString(sseMessageRes);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    public void publishMessage(String event, String receiver, String data) {
+//        ssePubSubTemplate.convertAndSend(event + "_" + receiver, data);
 
 //        emmiter객체를 통해 메시지 전송
         SseEmitter sseEmitter = sseEmitterRegistry.getEmitter(receiver);
@@ -88,11 +73,12 @@ public class SseService implements MessageListener {
         if (sseEmitter != null) {
             try {
                 sseEmitter.send(SseEmitter.event().name(event).data(data));
+                log.info("sse emitter publish success.");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
-            ssePubSubTemplate.convertAndSend(event, data);
+            ssePubSubTemplate.convertAndSend(event + "_" + receiver, data);
         }
     }
 }

@@ -37,9 +37,7 @@ public class Pet extends CommonAt {
 
     @Column(name = "weight", nullable = false, precision = 5, scale = 2)
     private BigDecimal weight;
-
-    private Boolean firstPet;
-
+  
     @Column(name = "pet_profile_url", nullable = true)
     private String petProfileUrl;
 
@@ -55,8 +53,6 @@ public class Pet extends CommonAt {
     @Builder.Default
     private String delYn = "N";
 
-
-    /* ******************** 연관관계 ******************* */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
@@ -77,8 +73,6 @@ public class Pet extends CommonAt {
         this.petProfileUrl = req.getUrl();
         this.species = species;
     }
-
-    public void changeMainPet(boolean status){ this.firstPet = status;}
 
     public void delPet() {
         this.delYn = "Y";

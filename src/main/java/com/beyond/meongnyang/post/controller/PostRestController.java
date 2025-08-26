@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.post.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
+import com.beyond.meongnyang.pet.service.PetService;
 import com.beyond.meongnyang.post.dto.*;
 import com.beyond.meongnyang.post.entity.SearchType;
 import com.beyond.meongnyang.post.service.PostService;
@@ -27,7 +28,6 @@ import java.util.List;
 @RequestMapping("/posts")
 public class PostRestController {
     private final PostService postService;
-
     // 일기 작성
     @PostMapping
     @PreAuthorize("@securityCheck.checkUserAccess()")
@@ -70,19 +70,44 @@ public class PostRestController {
         );
     }
 
-    // 일기 목록 조회
+    // 전체 일기 목록 조회
     @GetMapping
-    public ResponseEntity<?> posts(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false, value = "userId") Long userId) {
+    public ResponseEntity<?> posts(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        postService.posts(pageable, userId),
+                        postService.allPosts(pageable),
+                        HttpStatus.OK.value(),
+                        "일기 목록을 불러왔습니다."
+                ), HttpStatus.OK
+        );
+    }
+
+    // 다른 사용자의 일기 목록 조회
+    @GetMapping("/{id}")
+    public ResponseEntity<?> findPostsByUser(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @PathVariable("id") Long id) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.posts(pageable, id),
+                        HttpStatus.OK.value(),
+                        "다른 사용자의 일기 목록을 불러왔습니다."
+                ), HttpStatus.OK
+        );
+    }
+
+    // 내 일기 목록 조회
+    @GetMapping("/me")
+    public ResponseEntity<?>findMyPosts(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.posts(pageable, null),
                         HttpStatus.OK.value(),
                         "내 일기 목록을 불러왔습니다."
                 ), HttpStatus.OK
         );
     }
+
     // 일기 상세 조회
-    @GetMapping("/{id}")
+    @GetMapping("/detail/{id}")
     public ResponseEntity<?> postDetail(@PathVariable("id") Long postId) {
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
@@ -189,8 +214,7 @@ public class PostRestController {
 
     // 댓글 목록 조회
     @GetMapping("/{id}/comments")
-    public ResponseEntity<?> postComments(@PathVariable("id") Long id,
-                                          @PageableDefault(value = 10, sort = "id", direction = Sort.Direction.ASC) Pageable commentPageable){
+    public ResponseEntity<?> postComments(@PathVariable("id") Long id, @PageableDefault(value = 10, sort = "id", direction = Sort.Direction.ASC) Pageable commentPageable){
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
                         postService.commentList(id, commentPageable),
@@ -199,8 +223,6 @@ public class PostRestController {
                 ), HttpStatus.OK
         );
     }
-
-    // 친구 추천
 
     // 검색
     @GetMapping("/search")

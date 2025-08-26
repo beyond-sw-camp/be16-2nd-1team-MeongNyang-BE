@@ -2,6 +2,8 @@ package com.beyond.meongnyang.post.service;
 
 import com.beyond.meongnyang.admin.repository.ReportRepository;
 import com.beyond.meongnyang.common.service.CommonService;
+import com.beyond.meongnyang.notification.entity.NotificationType;
+import com.beyond.meongnyang.notification.service.NotificationService;
 import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.pet.repository.PetRepository;
 import com.beyond.meongnyang.post.dto.*;
@@ -15,10 +17,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,7 +31,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+
 @Transactional
 public class PostService {
     private final PostRepository postRepository;
@@ -42,6 +45,29 @@ public class PostService {
     private final S3UploadService s3UploadService;
     private final CommonService commonService;
     private final EntityManager em;
+
+    @Qualifier("likeInventory")
+    private final RedisTemplate<String, String> likeRedisTemplate;
+    private final NotificationService notificationService;
+
+    private String userKey(Long postId, Long userId) { return "post:" + postId + ":like:user:" + userId; }
+    private String countKey(Long postId)             { return "post:" + postId + ":like:count"; }
+
+    public PostService(PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository, PetRepository petRepository, LikeRepository likeRepository, CommentRepository commentRepository, CommentTagRepository commentTagRepository, ReportRepository reportRepository, S3UploadService s3UploadService, CommonService commonService, EntityManager em, RedisTemplate<String, String> likeRedisTemplate, NotificationService notificationService) {
+        this.postRepository = postRepository;
+        this.tagRepository = tagRepository;
+        this.userRepository = userRepository;
+        this.petRepository = petRepository;
+        this.likeRepository = likeRepository;
+        this.commentRepository = commentRepository;
+        this.commentTagRepository = commentTagRepository;
+        this.reportRepository = reportRepository;
+        this.s3UploadService = s3UploadService;
+        this.commonService = commonService;
+        this.em = em;
+        this.likeRedisTemplate = likeRedisTemplate;
+        this.notificationService = notificationService;
+    }
 
     // 일기 작성
     public Long save(PostCreateReq postCreateRequest, List<MultipartFile> files) {
@@ -68,13 +94,18 @@ public class PostService {
         if (!Objects.equals(user.getId(), post.getUser().getId())) {
             throw new AccessDeniedException("작성자 또는 관리자만 수정 가능합니다.");
         }
-
-        post.updatePost(postEditReq.getTitle(), postEditReq.getContent());
-        post.getHashtags().clear();
+        // 해시태그 변경 감지
+        String content = postEditReq.getContent();
+        if (content != null && !content.equals(post.getContent())) {
+            // 콘텐츠가 변경된 경우에만 해시태그 처리
+            post.getHashtags().clear();
+            em.flush();
+            handleHashtags(post, content);
+        }
         post.getMediaList().clear();
         em.flush();
-        handleHashtags(post, postEditReq.getContent());
-        handleFileUpload(post, files);
+        post.updatePost(postEditReq.getContent());
+        handleFileUpload(post, files); // 새 파일들만 추가
     }
 
     // 일기 삭제(soft-delete)
@@ -90,7 +121,18 @@ public class PostService {
         post.deletePost("Y");
     }
 
-    // 일기 목록 조회
+    // 전체 일기 목록 조회
+    public Page<PostDetailRes> allPosts(Pageable pageable) {
+        Page<Post> posts = postRepository.findAllByDelYnFalse(pageable);
+        return posts.map(post -> {
+            Pet pet = commonService.findPet(post.getUser());
+            long likeCount = likeRepository.countByPostId(post.getId());
+            boolean isLiked = checkIsLiked(post);
+            return PostDetailRes.fromEntity(post, pet, likeCount, isLiked);
+        });
+    }
+
+    // 내 일기 또는 다른 사용자의 일기 목록 조회
     public Page<PostListReq> posts(Pageable pageable, Long userId) {
         User user;
         if(userId != null){
@@ -99,36 +141,59 @@ public class PostService {
             user = commonService.getCurrentUser();
         }
         Page<Post> postList = postRepository.findAllByUserId(user.getId(), pageable);
-        return postList.map(p -> PostListReq.fromEntity(p));
+        return postList.map(PostListReq::fromEntity);
     }
+
     // 일기 상세 조회
     public PostDetailRes findByPostId(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
-        Pet pet = petRepository.findByUserIdAndFirstPetAndDelYn(post.getUser().getId(), true, "N").orElseThrow(() -> new EntityNotFoundException("해당 펫이 존재하지 않습니다"));
-        int likeCount = likeRepository.countByPostId(postId);
-        return PostDetailRes.fromEntity(post, pet, likeCount);
+        Pet pet = commonService.findPet(post.getUser());
+        long likeCount = countLike(post.getId());
+        boolean isLiked = checkIsLiked(post);
+        return PostDetailRes.fromEntity(post, pet, likeCount, isLiked);
     }
 
     // 좋아요 처리
     public Long postLike(Long postId) {
         User user = commonService.getCurrentUser();
-        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
-        boolean isLike = likeRepository.existsByUserIdAndPostId(user.getId(), post.getId());
-        if (isLike) {
-            throw new EntityExistsException("이미 좋아요를 누른 포스트입니다.");
-        } else {
-            Like like = Like.builder()
-                    .post(post)
-                    .user(user)
-                    .build();
-            return likeRepository.save(like).getId();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
+
+        String uk = userKey(postId, user.getId());
+
+        // 이미 눌렀으면 예외
+        boolean first = Boolean.TRUE.equals(likeRedisTemplate.opsForValue().setIfAbsent(uk, "1"));
+        if (!first) {
+            throw new EntityExistsException("이미 좋아요를 누른 일기입니다.");
+        }
+
+        try {
+            // DB 행 생성(목록/감사용)
+            Like like = Like.builder().post(post).user(user).build();
+            Long targetId = likeRepository.save(like).getId();
+            String content = user.getName()+"님이 회원님의 게시글을 좋아합니다.";
+            notificationService.create(post.getId(), post.getUser(), content, NotificationType.POST_LIKE);
+            return like.getId();
+
+        } catch (RuntimeException e) {
+            // 실패 시 Redis 롤백(상태키만 복구)
+            likeRedisTemplate.delete(uk);
+            throw new RuntimeException("좋아요가 실패했습니다.");
         }
     }
 
-    // 좋아요 취소
+    // 좋아요 취소 (멱등)
+    @Transactional
     public Long postLikeCancel(Long postId) {
         User user = commonService.getCurrentUser();
+
+        String uk = userKey(postId, user.getId());
+
+        // 상태키가 있을 때만 삭제(멱등)
+        Boolean removed = likeRedisTemplate.delete(uk);
+        // DB에서도 삭제(이미 없으면 조용히 통과)
         likeRepository.deleteByPostIdAndUserId(postId, user.getId());
+
         return postId;
     }
 
@@ -212,9 +277,6 @@ public class PostService {
         Specification<Post> spec = (root, query, cb) -> {
             query.distinct(true); // hashtag 조인 시 중복 제거
             switch (type) {
-                case TITLE -> {
-                    return cb.like(root.get("title"), like);
-                }
                 case CONTENT -> {
                     return cb.like(root.get("content"), like);
                 }
@@ -236,8 +298,8 @@ public class PostService {
         };
         return postRepository.findAll(spec, pageable)
                 .map(post -> {
-                    Pet pet = petRepository.findByUserIdAndFirstPetAndDelYn(
-                            post.getUser().getId(), true, "N"
+                    Pet pet = petRepository.findById(
+                            post.getUser().getMainPetId()
                     ).orElseThrow(() -> new EntityNotFoundException("해당 펫이 존재하지 않습니다"));
                     return PostSearchRes.fromEntity(post, pet);
                 });
@@ -274,7 +336,7 @@ public class PostService {
         }
     }
 
-    // 일기 생성 및 식제 시 파일 처리
+    // 일기 생성, 수정, 식제 시 파일 처리
     private void handleFileUpload(Post post, List<MultipartFile> files) {
         if (files != null && !files.isEmpty()) {
             List<String> urls = s3UploadService.upload(files);
@@ -287,5 +349,20 @@ public class PostService {
                 post.addMedia(media);
             }
         }
+    }
+
+    // 좋아요 수 카운트
+    @Transactional(readOnly = true)
+    public long countLike(Long postId) {
+        return likeRepository.countByPostId(postId);
+    }
+
+    // 현재 사용자의 좋아요 여부 확인
+    public boolean checkIsLiked(Post post){
+        User user = commonService.getCurrentUser();
+        if(user != null){
+            return likeRepository.existsByPostIdAndUserId(post.getId(), user.getId());
+        }
+        return false;
     }
 }

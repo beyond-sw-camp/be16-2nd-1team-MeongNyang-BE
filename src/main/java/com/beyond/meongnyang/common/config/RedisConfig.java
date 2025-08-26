@@ -80,6 +80,16 @@ public class RedisConfig {
     }
 
     @Bean
+    @Qualifier("likeInventory")
+    public RedisConnectionFactory likeInventory() {
+        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
+        configuration.setHostName(host);
+        configuration.setPort(port);
+        configuration.setDatabase(4);
+        return new LettuceConnectionFactory(configuration);
+    }
+
+    @Bean
     @Qualifier("chatPubSub")
     public RedisTemplate<String, String> chatPubSubRedisTemplate(@Qualifier("chatFactory") RedisConnectionFactory chatRedisConnectionFactory) {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
@@ -128,6 +138,25 @@ public class RedisConfig {
         return redisTemplate;
     }
 
+    @Bean
+    @Qualifier("emailCodeInventory")
+    public RedisTemplate<String, String> emailCodeRedisTemplate(@Qualifier("emailCodeInventory") RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        return redisTemplate;
+    }
+
+    @Bean
+    @Qualifier("likeInventory")
+    public RedisTemplate<String, String> likeRedisTemplate(@Qualifier("likeInventory") RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        return redisTemplate;
+    }
     // redis pub/sub 리스너 객체
     @Bean
     @Qualifier("ssePubSub")
@@ -135,8 +164,8 @@ public class RedisConfig {
                                                                      @Qualifier("sseListenerAdapter") MessageListenerAdapter listenerAdapter) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        container.addMessageListener(listenerAdapter, new PatternTopic("ordering"));
-        container.addMessageListener(listenerAdapter, new PatternTopic("block"));
+        container.addMessageListener(listenerAdapter, new PatternTopic("notification_*"));
+        container.addMessageListener(listenerAdapter, new PatternTopic("block_*"));
         return container;
     }
 
@@ -165,15 +194,5 @@ public class RedisConfig {
     public MessageListenerAdapter sseListenerAdapter(SseService sseService) {
         // 채널로 부터 수신되는 message 처리를 SseService 객체로 던져주고, SseAlarmService의 onMessage 메서드에서 처리한다.
         return new MessageListenerAdapter(sseService, "onMessage");
-    }
-
-    @Bean  
-    @Qualifier("emailCodeInventory")
-    public RedisTemplate<String, String> emailCodeRedisTemplate(@Qualifier("emailCodeInventory") RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        return redisTemplate;
     }
 }

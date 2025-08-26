@@ -13,8 +13,6 @@ import java.util.Optional;
 @Repository
 public interface PetRepository extends JpaRepository<Pet, Long> {
     List<Pet> findAllByUserAndDelYn(User user, String delYn);
-    Optional<Pet> findByUserIdAndFirstPetAndDelYn(Long userId, Boolean firstPet, String delYn);
-    List<Pet> findAllByUserAndFirstPetTrue(User user);
     @Query("select p.petProfileUrl from Pet p where p.id = :id")
     Optional<String> findPetProfileUrlById(@Param("id") Long id);
 }
