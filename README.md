@@ -24,6 +24,31 @@
 </table>
 <br>
 
+## 기술 스택
+### 🗄️ Database
+![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+
+### 💻 Backend
+![Java 17](https://img.shields.io/badge/Java%2017-007396?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
+![Spring Data JPA](https://img.shields.io/badge/Spring%20Data%20JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![WebSocket](https://img.shields.io/badge/WebSocket-000000?style=for-the-badge&logo=websocket&logoColor=white)
+![STOMP](https://img.shields.io/badge/STOMP-000000?style=for-the-badge)
+
+### 🎨 Frontend
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
+![Vuetify](https://img.shields.io/badge/Vuetify-1867C0?style=for-the-badge&logo=vuetify&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)
+
+### 🧑‍💻 Tools
+![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white)
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
+
 ## 주요 기능
 - 🏠 **홈**: 커뮤니티 소개 및 메인 페이지
 - 🐕 **반려동물 관리**: 반려동물 등록, 수정, 조회
@@ -34,7 +59,39 @@
 - 🛡️ **관리자**: 관리자 전용 기능
 
 
-## 주요 사용 기술 소개
+## 팀원별 주요 사용 기술 소개
+<details>
+    <summary>윤수오</summary>
+    <details><summary>🔐 SSE를 이용한 사용자 차단/차단해제</summary>
+        
+### 서비스 개요
+사용자로부터 차단 요청이 들어오면, 서버는 DB에서 대상 사용자 ID를 조회한 뒤 **enum 상태값**을 변경하여 차단 상태로 전환합니다.  
+이후 차단/차단해제 이벤트를 **Redis Pub/Sub**과 **SSE(Server-Sent Events)**를 통해 프론트엔드로 전송합니다.  
+프론트엔드는 메시지를 수신하면 즉시 **Access Token을 재발급**받아 갱신된 권한을 반영하고, 차단된 사용자는 서비스 접근이 제한됩니다.
+
+### 주요 기술 스택
+- **Spring Boot**: REST API 및 서비스 로직 구현
+- **JPA & Enum**: 사용자 상태 관리 (`기간차단`, `영구차단` 등)
+- **SSE (Server-Sent Events), Redis Pub/Sub**: 실시간 권한 변경 알림 전송
+- **JWT**: Access Token & Refresh Token 기반 인증 관리
+
+### 특징
+- **실시간 반영**: SSE를 통한 지연 없는 권한 동기화
+- **무상태 인증 구조**: 서버에 세션을 저장하지 않고, Refresh Token으로 Access Token 재발급
+- **확장성**: 다수의 프론트엔드 클라이언트에 안정적인 이벤트 전송 가능
+- **보안성**: 차단 즉시 토큰 갱신을 강제하여 이전 권한으로 서비스 접근 불가
+    </details>
+</details>
+<details>
+    <summary>정지완</summary>
+</details>    
+<details>
+    <summary>김지현</summary>
+</details> 
+<details>
+    <summary>이우영</summary>
+</details>   
+
 
 ## 화면 설계서
 <div style="font-size: 1.5em; font-weight: bold; margin-top: 20px;">
