@@ -90,4 +90,7 @@
   <details><summary>검색 결과</summary>
     <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/ff76f2d1-acce-4932-940c-78a09bb27ed4" />
   </details>
+  <details><summary>팔로우 조회</summary>
+    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/5f3e4e26-27cf-43a6-b921-5d3f99010477" />
+  </details>
 </details>
