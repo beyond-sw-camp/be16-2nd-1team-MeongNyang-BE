@@ -85,6 +85,12 @@
   </a>
 </div>
 
+## API 명세서
+<div style="font-size: 1.5em; font-weight: bold; margin-top: 20px;">
+  <a href='https://docs.google.com/spreadsheets/d/1_HHbkM-qIh_VRlckDM2gnEV2z01KgckhMvfeGRZ-UAQ/edit?gid=382613662#gid=382613662' style="text-decoration: none; color: inherit;">
+    API 명세서
+  </a>
+</div>
 
 ## ERD
 <div style="font-size: 1.5em; font-weight: bold; margin-top: 20px;">
