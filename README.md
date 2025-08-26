@@ -52,50 +52,6 @@
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 ![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
 
-## 주요 기능
-- 🏠 **홈**: 커뮤니티 소개 및 메인 페이지
-- 🐕 **반려동물 관리**: 반려동물 등록, 수정, 조회
-- 📖 **다이어리**: 반려동물과의 일상 기록
-- 🛒 **마켓**: 반려동물 관련 상품 거래
-- 💬 **채팅**: 실시간 채팅방 기능
-- 👤 **사용자 관리**: 회원가입, 로그인, 프로필 관리
-- 🛡️ **관리자**: 관리자 전용 기능
-
-
-## 팀원별 주요 사용 기술 소개
-<details>
-    <summary>윤수오</summary>
-    <details><summary>🔐 SSE를 이용한 사용자 차단/차단해제</summary>
-        
-### 서비스 개요
-사용자로부터 차단 요청이 들어오면, 서버는 DB에서 대상 사용자 ID를 조회한 뒤 **enum 상태값**을 변경하여 차단 상태로 전환합니다.  
-이후 차단/차단해제 이벤트를 **Redis Pub/Sub**과 **SSE(Server-Sent Events)**를 통해 프론트엔드로 전송합니다.  
-프론트엔드는 메시지를 수신하면 즉시 **Access Token을 재발급**받아 갱신된 권한을 반영하고, 차단된 사용자는 서비스 접근이 제한됩니다.
-
-### 주요 기술 스택
-- **Spring Boot**: REST API 및 서비스 로직 구현
-- **JPA & Enum**: 사용자 상태 관리 (`기간차단`, `영구차단` 등)
-- **SSE (Server-Sent Events), Redis Pub/Sub**: 실시간 권한 변경 알림 전송
-- **JWT**: Access Token & Refresh Token 기반 인증 관리
-
-### 특징
-- **실시간 반영**: SSE를 통한 지연 없는 권한 동기화
-- **무상태 인증 구조**: 서버에 세션을 저장하지 않고, Refresh Token으로 Access Token 재발급
-- **확장성**: 다수의 프론트엔드 클라이언트에 안정적인 이벤트 전송 가능
-- **보안성**: 차단 즉시 토큰 갱신을 강제하여 이전 권한으로 서비스 접근 불가
-    </details>
-</details>
-<details>
-    <summary>정지완</summary>
-</details>    
-<details>
-    <summary>김지현</summary>
-</details> 
-<details>
-    <summary>이우영</summary>
-</details>   
-
-
 ## 화면 설계서
 <div style="font-size: 1.5em; font-weight: bold; margin-top: 20px;">
   <a href='https://www.figma.com/design/9EuV7bZ8gteSS0VeWFtBZj/%EB%A9%94%EC%9D%B8-%ED%8E%98%EC%9D%B4%EC%A7%80?node-id=274-579&t=P1AzF8eUgYE37t51-0' style="text-decoration: none; color: inherit;">
@@ -124,6 +80,48 @@
     ERD
   </a>
 </div>
+
+## 주요 기능
+- 🏠 **홈**: 커뮤니티 소개 및 메인 페이지
+- 🐕 **반려동물 관리**: 반려동물 등록, 수정, 조회
+- 📖 **다이어리**: 반려동물과의 일상 기록
+- 🛒 **마켓**: 반려동물 관련 상품 거래
+- 💬 **채팅**: 실시간 채팅방 기능
+- 👤 **사용자 관리**: 회원가입, 로그인, 프로필 관리
+- 🛡️ **관리자**: 관리자 전용 기능
+
+## 팀원별 주요 사용 기술 소개
+<details>
+    <summary>윤수오</summary>
+    <details><summary>🔐 SSE를 이용한 사용자 차단/차단해제</summary>
+        
+### 서비스 개요
+사용자로부터 차단 요청이 들어오면, 서버는 DB에서 대상 사용자 ID를 조회한 뒤 **enum 상태값**을 변경하여 차단 상태로 전환합니다.  
+이후 차단/차단해제 이벤트를 **Redis Pub/Sub**과 **SSE(Server-Sent Events)** 를 통해 프론트엔드로 전송합니다.  
+프론트엔드는 메시지를 수신하면 즉시 **Access Token을 재발급**받아 갱신된 권한을 반영하고, 차단된 사용자는 서비스 접근이 제한됩니다.
+
+### 주요 기술 스택
+- **Spring Boot**: REST API 및 서비스 로직 구현
+- **JPA & Enum**: 사용자 상태 관리 (`기간차단`, `영구차단` 등)
+- **SSE (Server-Sent Events), Redis Pub/Sub**: 실시간 권한 변경 알림 전송
+- **JWT**: Access Token & Refresh Token 기반 인증 관리
+
+### 특징
+- **실시간 반영**: SSE를 통한 지연 없는 권한 동기화
+- **무상태 인증 구조**: 서버에 세션을 저장하지 않고, Refresh Token으로 Access Token 재발급
+- **확장성**: 다수의 프론트엔드 클라이언트에 안정적인 이벤트 전송 가능
+- **보안성**: 차단 즉시 토큰 갱신을 강제하여 이전 권한으로 서비스 접근 불가
+    </details>
+</details>
+<details>
+    <summary>정지완</summary>
+</details>    
+<details>
+    <summary>김지현</summary>
+</details> 
+<details>
+    <summary>이우영</summary>
+</details>   
 
 ## 테스트 결과서
 <details>
