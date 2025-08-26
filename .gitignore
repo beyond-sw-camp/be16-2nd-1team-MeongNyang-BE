@@ -1,3 +1,200 @@
+윤수오
+publicguard_
+온라인
+
+윤수오 — 2025. 8. 11. 오후 6:44
+내일 수업 시작 전까지 의견받고 없으면 분리 진행하겠습니다 
+그리고 be 기능 담당하는거 우영이가 담당하는 기능이 너무 많다고 판단되기 때문에 내일 오전 수업 전까지 해서 다시 분배할게여
+윤수오 — 2025. 8. 11. 오후 7:18
+https://docs.google.com/spreadsheets/d/1_HHbkM-qIh_VRlckDM2gnEV2z01KgckhMvfeGRZ-UAQ/edit?gid=382613662#gid=382613662
+Google Docs
+멍멍냥냥
+이미지
+조정된 역할 분담입니다. 내일 아침까지 의견 바랍니다.
+윤수오 — 2025. 8. 12. 오후 4:58
+각 제재 설명
+—
+계정정지 -> Role을 ALL_BLOCK으로 변경, user와 관련된 서비스((/users/) 외 모든 서비스 접근 불가
+포스트 삭제 -> 관리자가 해당 포스트를 강제로 삭제(비활성화)
+포스트 제한 -> Role을 POST_BLOCK으로 변경, post와 관련된 모든 서비스 접근 불가((/posts/)접근 차단) + 해당 피드 비활성화
+거래 제한 -> Role을 MARKET_BLOCK으로 변경, market과 관련된 모든 서비스 접근 불가((/markets/**) 접근 차단) + 해당 거래 피드 비활성화
+채팅 제한 -> Role을 CHAT_BLOCK으로 변경, 제재와 관련해서 생각 필요.... 
+윤수오 — 2025. 8. 12. 오후 8:02
+postman 관리자 컬렉션 생성 및 기존 관리자 기능 모두 거기로 옮겨놨습니다~~
+윤수오 — 2025. 8. 13. 오전 9:48
+뭔 개소리야 진짜...
+하나도 모르것네
+윤수오 — 2025. 8. 14. 오전 12:11
+이미지
+차단 및 해제 구현 성공 
+윤수오 — 2025. 8. 17. 오전 10:46
+@everyone 지금까지 작업 진행 상황 알려주세요
+윤수오 — 2025. 8. 17. 오후 12:56
+@everyone 가능하면 내일까지 WBS 프론트엔드 부분 아래 사진 참고해서 작성 요망 
+이미지
+SWCAMP 16기_김지현A — 2025. 8. 17. 오후 1:30
+회원가입통계하고 있습니다~
+윤수오 — 2025. 8. 21. 오후 1:33
+@here 내일 오전에 전체 작업 진행상황(BE, FE, 문서화) 확인하겠습니다. 
+윤수오 — 2025. 8. 21. 오후 2:21
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { userAPI } from '@/services/api'
+import { 
+  getToken, 
+  saveTokens, 
+확장
+message.txt
+7KB
+정지완 — 2025. 8. 22. 오전 10:48
+2시까지 pr 올리고 강사님 순찰이 3시에 시작이니까 1시간 동안 머지하고 할까요?
+우영 — 2025. 8. 22. 오전 10:49
+네
+윤수오 — 2025. 8. 22. 오전 10:49
+화긴
+우영 — 2025. 8. 22. 오후 4:03
+@Bean
+public CorsConfigurationSource corsConfiguration() {
+    CorsConfiguration c = new CorsConfiguration();
+    c.setAllowCredentials(false); // JWT만 쓰면 false OK
+    c.setAllowedOriginPatterns(List.of("http://localhost:3000","http://localhost:5173","https://*.mydomain.com"));
+    c.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+확장
+message.txt
+1KB
+정지완 — 2025. 8. 22. 오후 5:44
+이미지
+윤수오 — 2025. 8. 23. 오후 10:16
+@everyone 월요일에 산출물 업로드 해야되서 각자 맡은 부분 요구사항 명세서, WBS(백엔드, 프론트엔드), API명세서 월요일 점심 이전까지 완료 바랍니다. 
+꼭이요.
+우영 — 2025. 8. 23. 오후 10:19
+옙
+윤수오 — 2025. 8. 24. 오후 10:13
+채팅
+잘됨?
+현재 develop에서
+@정지완
+정지완 — 2025. 8. 24. 오후 10:13
+어떻게 안되는데?
+윤수오 — 2025. 8. 24. 오후 10:14
+이미지
+cors 오류 뜨네...
+정지완 — 2025. 8. 24. 오후 10:15
+develop 최신화 함?
+윤수오 — 2025. 8. 24. 오후 10:15
+ㄴㄴ 아직 안함
+그래서
+물어본겨
+혹시나 싶어서
+정지완 — 2025. 8. 24. 오후 10:15
+develop에서는 되
+됨
+윤수오 — 2025. 8. 24. 오후 10:16
+okay
+정지완 — 2025. 8. 24. 오후 10:40
+내일 아침에 PR들 한번에 종합하고 작업 시작하시져ㅕㅕ
+윤수오 — 어제 오전 10:33
+11시에
+강사님이 화면 점검하신답니다
+정지완 — 어제 오전 10:34
+그전에 한 번 합치고 싶은데 어렵나요
+정지완 — 어제 오후 2:26
+혹시 채팅 관련해서 작업한 거 충돌은 없는데 붙여도 되나여
+공통적으로 영향 갈 만한 건 footer 제거 했고 전체적인 margin-top에 60px 잡혀있던 거 제거 했습니다
+윤수오 — 어제 오후 2:28
+붙이세여
+윤수오 — 어제 오후 2:53
+오류 수정 모두 완료했습니다
+SWCAMP 16기_김지현A — 어제 오후 6:11
+https://github.com/beyond-sw-camp/be16-2nd-1team-MeongNyang-FE/pull/14/
+
+머지했습니다~
+윤수오 — 어제 오후 6:28
+db에 title 제거 명령입니다
+ALTER TABLE post
+DROP COLUMN title;
+윤수오 — 오후 12:21
+다들
+오늘 안오나요
+SWCAMP 16기_김지현A — 오후 1:07
+두시에 갑니당
+우영 — 오후 1:15
+금빙가겟읍니다
+윤수오 — 오후 2:23
+@everyone 각자 사용한 기술스택 취합하겠습니다.
+백엔드 :
+프론트엔드 :
+데이터베이스 :
+30분 내로 디스코드에 올려주세요
+백엔드 : Spring Boot, Java 17, Docker, AWS S3
+프론트엔드 : Vue.js, JavaScript, 
+데이터베이스 : MariaDB, Spring Data JPA, Redis
+이런식으로
+SWCAMP 16기_김지현A — 오후 2:26
+백엔드 : java, spring boot, spring data jpa
+프론트엔드 : vue.js, vuetify, axios, eslint, figma, javascript
+데이터베이스 : mariadb, s3
+윤수오 — 오후 2:34
+그리고
+주요 기술 같은거 정리해서 readme에 올려주세여
+우영 — 오후 2:41
+백엔드: Java, Spring Boot, Spring Security, Spring Data JPA, Redis
+프론트엔드: Vue.js, Vuetify, Axios
+DB: MariaDB, Redis
+정지완 — 오후 6:05
+<img src="https://img.shields.io/badge/gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white">
+우영 — 오후 6:09
+인증/권한 및 네트워크 보안 설계
+인증/권한 및 네트워크 보안 설계(JWT, CORS, STOMP)
+이메일 인증 · 계정 복구 (SMTP)
+우영 — 오후 6:10
+SMTP/Email (인증코드)
+코드 생성/만료
+6자리 난수 생성, TTL(분 단위) 부여, 검증 성공 시 즉시 무효화
+
+저장/제어 (Redis)
+email:code:{email} 키로 코드 보관(TTL 적용)
+재발송 쿨다운 및 시도 횟수 카운터를 Redis로 관리
+최근 발급 코드만 유효하도록 후진 방지 처리
+
+검증 흐름
+입력 코드 비교 → 성공 시 무효화, 실패 누적 시 일시 잠금
+
+발송
+Spring Mail(JavaMailSender)로 SMTP(STARTTLS) 전송
+
+Password Reset (임시 비밀번호)
+발급 트리거: 이메일 소유 확인 후 임시 비밀번호 발급(메일 전송)
+생성/만료: 영문·숫자 혼합 난수, TTL 부여, 1회용(사용/변경 시 즉시 무효화)
+저장 방식: 평문 저장 없음 → 서버에는 해시만 저장, Redis에는 발급 상태/TTL만 보관
+전송: SMTP로 발급 메일 송신(만료 시각 안내 포함)
+로그인 정책: 임시 비밀번호로 로그인 시 즉시 비밀번호 변경 강제
+보호 장치: 재발급 쿨다운, 최대 시도 횟수 제한, 실패 누적 시 일시 잠금
+### SMTP/Email (인증코드)
+
+- **코드 생성/만료**
+  - 6자리 난수 생성, **TTL(분 단위) 부여**, 검증 성공 시 **즉시 무효화**
+
+- **저장/제어 (Redis)**
+  - `email:code:{email}` 키로 코드 보관(**TTL 적용**)
+  - **재발송 쿨다운** 및 **시도 횟수 카운터**를 Redis로 관리
+  - 최근 발급 코드만 유효하도록 **후진 방지** 처리
+
+- **검증 흐름**
+  - 입력 코드 비교 → 성공 시 무효화, 실패 누적 시 **일시 잠금**
+
+- **발송**
+  - Spring Mail(JavaMailSender)로 **SMTP(STARTTLS)** 전송
+
+### Password Reset (임시 비밀번호)
+
+- **발급 트리거**: 이메일 소유 확인 후 임시 비밀번호 발급(메일 전송)
+- **생성/만료**: 영문·숫자 혼합 난수, **TTL 부여**, **1회용**(사용/변경 시 즉시 무효화)
+- **저장 방식**: 평문 저장 없음 → 서버에는 **해시만 저장**, Redis에는 **발급 상태/TTL**만 보관
+- **전송**: SMTP로 발급 메일 송신(만료 시각 안내 포함)
+- **로그인 정책**: 임시 비밀번호로 로그인 시 **즉시 비밀번호 변경 강제**
+- **보호 장치**: **재발급 쿨다운**, **최대 시도 횟수** 제한, 실패 누적 시 **일시 잠금**
+정지완 — 오후 8:36
 HELP.md
 .gradle
 build/
@@ -38,3 +235,113 @@ out/
 application.yml
 application-local.yml
 application-prod.yml
+
+### macOS ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### macOS Patch ###
+# iCloud generated files
+*.icloud
+접기
+message.txt
+1KB
+ㅊ
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+application.yml
+application-local.yml
+application-prod.yml
+
+### macOS ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### macOS Patch ###
+# iCloud generated files
+*.icloud
