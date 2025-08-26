@@ -24,7 +24,8 @@
 </table>
 <br>
 
-## 기술 스택
+## 주요 사용 기술 소개
+
 ## 화면 설계서
 <div style="font-size: 1.5em; font-weight: bold; margin-top: 20px;">
   <a href='https://www.figma.com/design/9EuV7bZ8gteSS0VeWFtBZj/%EB%A9%94%EC%9D%B8-%ED%8E%98%EC%9D%B4%EC%A7%80?node-id=274-579&t=P1AzF8eUgYE37t51-0' style="text-decoration: none; color: inherit;">
@@ -53,3 +54,48 @@
     ERD
   </a>
 </div>
+
+## ERD
+<div style="font-size: 1.5em; font-weight: bold; margin-top: 20px;">
+  <a href='https://www.erdcloud.com/d/fRviLvokK3rgCy2iS' style="text-decoration: none; color: inherit;">
+    ERD
+  </a>
+</div>
+
+## 테스트 결과서
+<details>
+  <summary>일기</summary>
+  <details><summary>홈 화면(전체 일기 목록)</summary>
+    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/20271e9c-20bf-414e-b01a-ad45ef1204eb" />
+  </details>
+
+  <details><summary>대시보드</summary>
+    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/d95b9355-75be-4f31-84d0-fa3ba9e32ac6" />
+  </details>
+
+  <details><summary>내 일기 목록</summary>
+      <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/e9288040-431e-451c-acfe-479b9dd2bb3c" />
+  </details>
+
+  <details><summary>내 일기 작성</summary>
+    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+  </details>
+  <details><summary>내 일기 </summary>
+    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+  </details>
+  <details><summary>회원 탈퇴</summary>
+    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+  </details>
+  <details><summary>회원 탈퇴</summary>
+    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+  </details>
+  <details><summary>회원 탈퇴</summary>
+    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+  </details>
+  <details><summary>회원 탈퇴</summary>
+    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+  </details>
+  <details><summary>회원 탈퇴</summary>
+    <img src="https://github.com/user-attachments/assets/e875af3b-45e4-446f-90ab-2a9a21cf4e33" width="800">
+  </details>
+</details>
