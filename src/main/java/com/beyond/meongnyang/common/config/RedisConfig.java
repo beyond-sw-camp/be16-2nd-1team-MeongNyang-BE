@@ -164,8 +164,8 @@ public class RedisConfig {
                                                                      @Qualifier("sseListenerAdapter") MessageListenerAdapter listenerAdapter) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        container.addMessageListener(listenerAdapter, new PatternTopic("ordering"));
-        container.addMessageListener(listenerAdapter, new PatternTopic("block"));
+        container.addMessageListener(listenerAdapter, new PatternTopic("notification_*"));
+        container.addMessageListener(listenerAdapter, new PatternTopic("block_*"));
         return container;
     }
 
