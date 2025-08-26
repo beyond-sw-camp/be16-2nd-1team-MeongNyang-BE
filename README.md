@@ -386,3 +386,140 @@ https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
   </details>
 
 </details>
+<details>
+    <summary>로그인</summary>
+     <details><summary>로그인 화면</summary>
+     <img width="830" height="744" alt="로그인화면" src="https://github.com/user-attachments/assets/f0cf6c4e-3adb-48eb-be0f-0863ef8d2d3b" />
+      </details>
+    <details>
+       <summary>임시비밀번호 프로세스(계정잠금)</summary>
+        <details><summary>로그인 시도 실패</summary>
+     <img width="605" height="782" alt="로그인 시도 실패" src="https://github.com/user-attachments/assets/cf5132c6-924f-4457-8f10-1a3466d83c3a" />
+      </details>
+        <details><summary>계정 잠금처리</summary>
+     <img width="509" height="772" alt="5번 실패시 계정 잠금처리" src="https://github.com/user-attachments/assets/528a6ae7-2177-4ea0-93b6-9a2c82234352" />
+      </details>
+         <details><summary>계정 잠금해제 화면</summary>
+        <img width="587" height="652" alt="계정 잠금해제 화면" src="https://github.com/user-attachments/assets/ea16f65c-43fb-4fc6-85e4-1835ec538931" />
+      </details>
+        <details><summary>임시비밀번호 발급 화면</summary>
+        <img width="575" height="544" alt="임시비번 발급" src="https://github.com/user-attachments/assets/5ade6c58-97ce-46f6-9481-788ee7322787" />
+      </details>
+        <details><summary>임시비밀번호 발급 내용(이메일)</summary>
+        <img width="463" height="220" alt="임시비밀번호 발급내용" src="https://github.com/user-attachments/assets/c9894723-327a-4ceb-8051-16fbbf00be91" />
+      </details>
+    </details>
+        <details><summary>일반 회원가입 유저의 소셜로그인 연동</summary>
+        <img width="647" height="535" alt="같은 이메일 소셜로그인 이용시 계정 연동" src="https://github.com/user-attachments/assets/6288addd-3940-4580-8b25-fffd1756a1df" />
+        </details>
+        <details><summary>탈퇴한 계정으로 로그인 시도</summary>
+                <summary>탈퇴한 일반회원가입 계정으로 로그인 시도</summary>
+        <img width="531" height="451" alt="탈퇴한 계정으로 로그인 시도" src="https://github.com/user-attachments/assets/74b6b3a5-72f6-459a-bae5-234a7aee5a4d" />
+                <summary>탈퇴한 소셜 연동 계정으로 로그인 시도</summary>
+        <img width="520" height="439" alt="탈퇴한 소셜 로그인 계정으로 로그인 시도" src="https://github.com/user-attachments/assets/1d4faea0-680a-45b8-89a7-92fb3052a1a4" />
+        </details>
+
+</details>
+
+
+</details>
+<details>
+  <summary>회원가입</summary>
+      <details>
+        <summary>회원가입 화면</summary>
+        <img width="830" alt="회원가입 화면" src="https://github.com/user-attachments/assets/f0cf6c4e-3adb-48eb-be0f-0863ef8d2d3b" />
+      </details>
+<details>
+  <summary>회원가입 프로세스</summary>
+  <details>
+    <summary>① 회원가입 후 인증 화면</summary>
+    <img width="666" alt="회원가입 후 인증" src="https://github.com/user-attachments/assets/7838d9a9-d364-47af-94d6-f6af067678c4" />
+  </details>
+
+  <details>
+    <summary>② 이메일 인증 코드</summary>
+    <img width="448" alt="이메일 인증 코드" src="https://github.com/user-attachments/assets/e2c27c85-2b91-4542-8702-a6e544eeb429" />
+  </details>
+
+  <details>
+    <summary>③ 인증 후 추가정보 기입</summary>
+    <img width="482" alt="인증 후 추가정보 기입" src="https://github.com/user-attachments/assets/e1c9a539-a1c9-431f-8618-55d9e67dd07a" />
+  </details>
+
+  <details>
+    <summary>④ 인증 후 추가정보 기입 2</summary>
+    <img width="486" alt="인증 후 추가정보 기입 2" src="https://github.com/user-attachments/assets/493ae383-877a-478c-b635-222c62cb367e" />
+  </details>
+</details>
+</details>
+<details>
+    <summary>마이페이지</summary>
+    <details>
+        <summary>화면</summary>
+        <summary>마이페이지 화면1</summary>
+        <img width="730" height="735" alt="프로필 화면1" src="https://github.com/user-attachments/assets/d25e2f0c-8a48-4dc0-b5c4-184b010b2512" />
+        <summary>마이페이지 화면2</summary>
+        <img width="823" height="661" alt="프로필 화면2" src="https://github.com/user-attachments/assets/99be8cf5-5e77-4147-89cc-7cd6d46c8bf6" />
+    </details>
+    <details>
+        <summary>로그인 별 연동계정</summary>
+        <summary>카카오</summary>
+        <img width="832" height="267" alt="카카오 로그인  정보" src="https://github.com/user-attachments/assets/0da07cb9-8082-45a2-830d-62e51ca3975d" />
+        <summary>구글</summary>
+        <img width="748" height="238" alt="구글 로그인 정보" src="https://github.com/user-attachments/assets/68751ba0-9955-499a-adde-0b182e318245" />
+        <summary>일반 회원가입</summary>
+        <img width="718" height="199" alt="일반 로그인 정보" src="https://github.com/user-attachments/assets/b3b18f6c-3cea-4dcb-bd88-9a4b10448bcd" />
+    </details>
+    <details>
+        <summary>계정 탈퇴</summary>
+        <img width="944" height="552" alt="계정탈퇴" src="https://github.com/user-attachments/assets/96cf8ec3-6da9-4502-8953-b59296444205" />
+    </details>
+    <details>
+        <summary>프로필 수정</summary>
+        <img width="655" height="746" alt="프로필 수정 화면" src="https://github.com/user-attachments/assets/5c52812d-2abf-4a92-b885-31b87b83c2c4" />
+    </details>
+    <details>
+        <summary>비밀번호 변경</summary>
+        <img width="627" height="580" alt="비밀번호 변경 화면" src="https://github.com/user-attachments/assets/216982e8-f4c0-4c54-9832-05bf188fd7c3" />
+    </details>
+
+</details>
+
+<details>
+    <summary>반려동물</summary>
+    <details>
+        <summary>반려동물 관리 화면</summary>
+        <summary>등록 전</summary>
+        <img width="1105" height="775" alt="내 반려동물" src="https://github.com/user-attachments/assets/da368c5d-2930-4459-b5d9-72142437d3e7" />
+         <summary>등록 후</summary>
+        <img width="1026" height="771" alt="반려동물 리스트" src="https://github.com/user-attachments/assets/99f0fd44-de75-4f90-9ae9-59d7537fe7e8" />
+    </details>
+    <details>
+        <summary>반려동물 추가, 수정</summary>
+        <details>
+            <summary>반려동물 추가</summary>
+            <summary>반려동물 추가1</summary>
+            <img width="686" height="764" alt="반려동물 추가1" src="https://github.com/user-attachments/assets/cc852488-a06d-4e7e-b565-c2783c1e5859" />
+            <summary>반려동물 추가2</summary>
+            <img width="798" height="714" alt="반려동물 추가 2" src="https://github.com/user-attachments/assets/58d222fd-697b-4200-8853-f26024655e0b" />
+            <summary>반려동물 등록</summary>
+            <img width="750" height="783" alt="반려동물 등록" src="https://github.com/user-attachments/assets/a22cf15d-eabe-49eb-a53d-ddf2b395dc53" />
+            <summary>반려동물 수정</summary>
+            <img width="835" height="745" alt="반려동물 수정 화면(등록과 동일)" src="https://github.com/user-attachments/assets/ffa19734-d171-483a-aaea-cc88cc9c5840" />
+        </details>
+    </details>
+    <details>
+        <summary>반려동물 삭제</summary>
+        <summary>반려동물 삭제 전</summary>
+        <img width="1012" height="799" alt="반려동물 삭제 전" src="https://github.com/user-attachments/assets/b1cb5044-5145-482a-9130-676564848d89" />
+        <summary>반려동물 삭제 후</summary>
+        <img width="976" height="671" alt="반려동물 삭제 후" src="https://github.com/user-attachments/assets/c54c11ea-4b3b-4866-b4cc-3c6cd39dec17" />
+    </details>
+    <details>
+        <summary>대표동물 설정</summary>
+        <summary>대표동물 변경 전</summary>
+        <img width="1316" height="807" alt="대표동물 변경 전" src="https://github.com/user-attachments/assets/524cf1bf-aae7-4692-b03d-815df7f175f4" />
+        <summary>대표동물 변경 후</summary>
+        <img width="1321" height="850" alt="대표동물 변경 후" src="https://github.com/user-attachments/assets/51c842eb-c946-44be-a80f-9e700c3770b1" />
+    </details>
+</details>
