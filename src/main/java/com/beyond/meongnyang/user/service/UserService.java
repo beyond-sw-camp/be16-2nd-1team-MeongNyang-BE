@@ -201,10 +201,7 @@ public class UserService {
 
     // 비밀번호 변경
     public void changePassword (UserChangePasswordReq req) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = this.userRepository.findByEmail(email).orElseThrow(
-                () -> new EntityNotFoundException("등록된 회원정보가 없습니다.")
-        );
+        User user = commonService.getCurrentUser();
         if (user.getPassword() == null || user.getSocialType() != SocialType.COMMON) {
             throw new EntityExistsException("소셜 계정은 비밀번호 변경이 불가합니다.");
         }
@@ -347,8 +344,7 @@ public class UserService {
     /* ****************마이페이지&설정 관련-(pet) ********************* */
     // 대표동물 설정
         public Long setMainPet(Long petId) {
-            String email = SecurityContextHolder.getContext().getAuthentication().getName();
-            User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 사용자입니다."));
+            User user = commonService.getCurrentUser();
             Pet pet = this.petRepository.findById(petId).orElseThrow(() -> new EntityNotFoundException("펫 정보가 없습니다."));
             if(!user.getId().equals(pet.getUser().getId())){
                 throw new AccessDeniedException("본인 소유의 반려동물만 대표동물로 등록할 수 있습니다.");
@@ -357,8 +353,7 @@ public class UserService {
             return petId;
     }
     public MyPageRes enterMyPage() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 사용자입니다."));
+        User user = commonService.getCurrentUser();
         Pet mainPet = null;
         // 펫을 등록하지 않은 사용자일 수도 있음
         if(user.getMainPetId() != null) {
@@ -377,10 +372,7 @@ public class UserService {
     }
 
     public ProfileUpdateRes updateProfile(ProfileUpdateReq request) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = this.userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-
+        User user = commonService.getCurrentUser();
         // 이름과 닉네임 업데이트
         user.updateProfile(request);
 
