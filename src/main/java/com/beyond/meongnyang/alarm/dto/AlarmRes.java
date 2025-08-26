@@ -14,6 +14,7 @@ public class AlarmRes {
     private String alarmType;
     private Long targetId;
     private Bool isRead;
+    private String createdAt;
 
     public static AlarmRes fromEntity(Alarm alarm) {
         return AlarmRes.builder()
@@ -22,6 +23,7 @@ public class AlarmRes {
                 .alarmType(alarm.getAlarmType().toString())
                 .targetId(alarm.getTargetId())
                 .isRead(alarm.getIsRead())
+                .createdAt(alarm.getCreatedAt().toString())
                 .build();
     }
 }
