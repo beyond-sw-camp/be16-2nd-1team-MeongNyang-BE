@@ -105,16 +105,16 @@
 ## 팀원별 주요 사용 기술 소개
 <details>
     <summary>윤수오</summary>
-    <details><summary>🔐 SSE를 이용한 사용자 차단/차단해제</summary>
+    <details><summary>🔐 SSE를 이용한 사용자 서비스 접근 차단/차단해제</summary>
         
 ### 서비스 개요
-사용자가 **차단 요청**을 하면, 서버는 **DB에서 대상 사용자 ID를 조회**한 뒤, **Enum 상태값**을 변경하여 차단 상태로 전환합니다.  
+관리자가 서버에 **차단 요청**을 보내면, 서버는 **DB에서 대상 사용자 ID를 조회**한 뒤, **Enum 상태값**을 변경하여 차단 상태로 전환합니다.  
 이후 이벤트를 **Redis Pub/Sub**과 **SSE(Server-Sent Events)** 를 통해 실시간으로 프론트엔드에 전달합니다.  
 프론트엔드는 이벤트를 수신하면 즉시 **Access Token을 재발급**받아 새로운 권한을 반영하고, 차단된 사용자는 서비스 접근이 제한됩니다.  
 
 ### 주요 기술 스택
 - **Spring Boot**: REST API 및 SSE 엔드포인트 제공
-- **JPA & Enum**: 사용자 상태 관리 (`ACTIVE`, `BLOCKED` 등)
+- **JPA & Enum**: 사용자 상태 관리 (`TEMPORARY_BLOCK`, `PERMANENT_BLOCK` 등)
 - **Redis Pub/Sub**: 이벤트 브로드캐스팅
 - **SSE (Server-Sent Events)**: 실시간 권한 변경 알림
 - **JWT**: Access/Refresh Token 기반 인증
