@@ -1,4 +1,4 @@
-package com.beyond.meongnyang.alarm.entity;
+package com.beyond.meongnyang.notification.entity;
 
 import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.domain.CommonAt;
@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "alarm")
-public class Alarm extends CommonAt {
+@Table(name = "notification")
+public class Notification extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -29,7 +29,7 @@ public class Alarm extends CommonAt {
     private String content;
     @Enumerated(EnumType.STRING)
     @Column(name = "alarm_type")
-    private AlarmType alarmType;
+    private NotificationType notificationType;
     @Column(name = "target_id")
     private Long targetId;
 
