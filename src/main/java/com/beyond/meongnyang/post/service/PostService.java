@@ -170,6 +170,7 @@ public class PostService {
         try {
             // DB 행 생성(목록/감사용)
             Like like = Like.builder().post(post).user(user).build();
+            likeRepository.save(like);
             String content = user.getName()+"님이 회원님의 게시글을 좋아합니다.";
             if(!post.getUser().getId().equals(user.getId())){
                 notificationService.create(post.getId(), post.getUser(), content, NotificationType.POST_LIKE);

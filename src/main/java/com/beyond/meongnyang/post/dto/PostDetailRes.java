@@ -19,7 +19,7 @@ import java.util.List;
 @Builder
 public class PostDetailRes {
     private Long id;
-    private String petName;
+    private String userName;
     private String petImage;
     private Long userId;
     private String content;
@@ -34,7 +34,7 @@ public class PostDetailRes {
 
         return PostDetailRes.builder()
                 .id(post.getId())
-                .petName(pet.getName())
+                .userName(post.getUser().getName())
                 .petImage(pet.getPetProfileUrl())
                 .userId(post.getUser().getId())
                 .content(post.getContent())

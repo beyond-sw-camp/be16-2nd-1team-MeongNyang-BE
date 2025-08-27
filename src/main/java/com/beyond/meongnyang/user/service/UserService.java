@@ -288,7 +288,7 @@ public class UserService {
     }
 
 
-    // 나를 팔로우하는 사람 목록 (followers)
+    // 팔로우하는 사람 목록 (followers)
     public Page<UserFollowRes> getFollowers(Pageable pageable, Long userId) {
         User user;
         if(userId != null){

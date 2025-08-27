@@ -413,7 +413,7 @@ public class UserRestController {
     public ResponseEntity<?> getMyFollowers(
             @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return new ResponseEntity<>(
-                CommonRes.ofSuccess(userService.getFollowings(pageable, null), HttpStatus.OK.value(), "팔로워 목록 조회 완료"),
+                CommonRes.ofSuccess(userService.getFollowers(pageable, null), HttpStatus.OK.value(), "팔로워 목록 조회 완료"),
                 HttpStatus.OK
         );
     }
