@@ -408,6 +408,26 @@ public class UserRestController {
         );
     }
 
+    // 내 팔로워 목록 조회
+    @GetMapping("/follows/followers")
+    public ResponseEntity<?> getMyFollowers(
+            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(userService.getFollowings(pageable, null), HttpStatus.OK.value(), "팔로워 목록 조회 완료"),
+                HttpStatus.OK
+        );
+    }
+
+    // 내 팔로잉 목록 조회
+    @GetMapping("/follows/followings")
+    public ResponseEntity<?> getMyFollowings(
+            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(userService.getFollowings(pageable, null), HttpStatus.OK.value(), "팔로잉 목록 조회 완료"),
+                HttpStatus.OK
+        );
+    }
+
     // 팔로워 목록 조회
         @GetMapping("/{id}/follows/followers")
     public ResponseEntity<?> getFollowers(
