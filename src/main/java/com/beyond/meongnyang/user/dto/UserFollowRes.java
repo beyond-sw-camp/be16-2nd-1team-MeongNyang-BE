@@ -17,26 +17,21 @@ import java.util.Optional;
 public class UserFollowRes {
     private Long userId;
     private String profileImage;
-    private String petName;
     private String userName;
     private String userEmail;
 
     public static UserFollowRes fromEntity(User user) {
         String profileImage = "";
-        String petName = "";
-      
         Optional<Pet> petOptional = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst();
 
         if (petOptional.isPresent()) {
             Pet pet = petOptional.get();
             profileImage = pet.getPetProfileUrl();
-            petName = pet.getName();
         }
 
         return UserFollowRes.builder()
                 .userId(user.getId())
                 .profileImage(profileImage)
-                .petName(petName)
                 .userName(user.getName())
                 .userEmail(user.getEmail())
                 .build();

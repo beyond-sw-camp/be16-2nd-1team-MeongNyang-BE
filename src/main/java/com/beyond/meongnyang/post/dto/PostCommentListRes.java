@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Optional;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,11 +30,13 @@ public class PostCommentListRes {
     public static PostCommentListRes fromEntity(Comment comment, List<PostCommentReplyRes> replies) {
         User user = comment.getUser();
         String profileImage = "";
-        Pet pet = user.getPets().stream()
-                .filter(p -> p.getId().equals(user.getMainPetId()))
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("펫을 찾을 수 없습니다."));
-        profileImage = pet.getPetProfileUrl();
+
+        Optional<Pet> petOptional = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst();
+
+        if (petOptional.isPresent()) {
+            Pet pet = petOptional.get();
+            profileImage = pet.getPetProfileUrl();
+        }
         return PostCommentListRes.builder()
                 .commentId(comment.getId())
                 .userId(user.getId())

@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class PostSearchRes {
     private Long id;
     private String petProfile;
-    private String petName;
+    private String userName;
     private String title;
     private String content;
 
@@ -22,7 +22,7 @@ public class PostSearchRes {
         return PostSearchRes.builder()
                 .id(post.getId())
                 .petProfile(pet.getPetProfileUrl())
-                .petName(pet.getName())
+                .userName(post.getUser().getName())
                 .content(post.getContent())
                 .build();
     }
