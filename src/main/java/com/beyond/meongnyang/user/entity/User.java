@@ -6,7 +6,6 @@ import com.beyond.meongnyang.pet.entity.Pet;
 import com.beyond.meongnyang.user.dto.ProfileUpdateReq;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -107,8 +106,9 @@ public class User extends CommonAt {
     @Builder.Default
     private List<Pet> pets = new ArrayList<>();
 
-    @Column(name = "main_pet_id", nullable = true)
-    private Long mainPetId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "main_pet_id", nullable = true)
+    private Pet mainPet;
 
     /* ******************메소드******************* */
     // 계정 삭제
@@ -137,8 +137,8 @@ public class User extends CommonAt {
     }
 
     // 대표동물 설정
-    public void changeMainPet(Long petId) {
-        this.mainPetId = petId;
+    public void changeMainPet(Pet mainPet) {
+        this.mainPet = mainPet;
     }
 
     // 소셜 id update

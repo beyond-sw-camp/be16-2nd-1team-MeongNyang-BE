@@ -23,18 +23,10 @@ public class PostLikeListRes {
     private String date;
 
     public static PostLikeListRes fromEntity(Post post, User user){
-        String profileImage = "";
-
-        Optional<Pet> petOptional = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst();
-
-        if (petOptional.isPresent()) {
-            Pet pet = petOptional.get();
-            profileImage = pet.getPetProfileUrl();
-        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일 hh:mm");
         return PostLikeListRes.builder()
                 .userId(user.getId())
-                .profileImage(profileImage)
+                .profileImage(user.getMainPet() == null ? "" : user.getMainPet().getPetProfileUrl())
                 .userName(user.getName())
                 .date(post.getCreatedAt().format(formatter))
                 .build();
