@@ -22,21 +22,13 @@ public class PostCommentReplyRes {
     private String createdAt;
 
     public static PostCommentReplyRes fromEntity(CommentTag tag) {
-        String profileImage = "";
-
-        Optional<Pet> petOptional = tag.getReplyUser().getPets().stream().filter(pet -> pet.getId().equals(tag.getReplyUser().getMainPetId())).findFirst();
-
-        if (petOptional.isPresent()) {
-            Pet pet = petOptional.get();
-            profileImage = pet.getPetProfileUrl();
-        }
         return PostCommentReplyRes.builder()
                 .id(tag.getComment().getId())  // CommentTag의 ID가 아닌 Comment의 ID를 반환
                 .userId(tag.getReplyUser().getId())
                 .mentionUserId(tag.getCommentUser().getId())
                 .replyUserName(tag.getReplyUser().getName())
                 .mentionUserName(tag.getCommentUser().getName())
-                .profileImage(profileImage)
+                .profileImage(tag.getReplyUser().getMainPet() == null ? "" : tag.getReplyUser().getMainPet().getPetProfileUrl())
                 .content(tag.getComment().getContent())
                 .createdAt(tag.getCreatedAt().toString())
                 .build();

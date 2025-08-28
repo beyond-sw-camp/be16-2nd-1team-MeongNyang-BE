@@ -229,10 +229,9 @@ public class UserService {
         User targetUser = userRepository.findByEmail(targetEmail).orElseThrow(
                 () -> new EntityNotFoundException("해당 사용자가 없습니다.")
         );
-        String targetImageUrl =  petRepository.findPetProfileUrlById(targetUser.getMainPetId()).orElse(null);
 
         return UserProfileImageRes.builder()
-                .petProfileUrl(targetImageUrl)
+                .petProfileUrl(targetUser.getMainPet() == null ? "" : targetUser.getMainPet().getPetProfileUrl())
                 .build();
     }
   
@@ -343,22 +342,22 @@ public class UserService {
     }
     /* ****************마이페이지&설정 관련-(pet) ********************* */
     // 대표동물 설정
-    public Long setMainPet() {
+
+    public Long changeMainPet(Long petId) {
         User user = commonService.getCurrentUser();
-        Pet pet = commonService.findPet(user);
-        if(!user.getId().equals(pet.getUser().getId())){
-            throw new AccessDeniedException("본인 소유의 반려동물만 대표동물로 등록할 수 있습니다.");
-        }
-        user.changeMainPet(pet.getId());
+        Pet pet = this.petRepository.findById(petId).orElseThrow(() -> new EntityNotFoundException("펫 정보가 없습니다."));
+
+        if (!pet.getUser().getId().equals(user.getId())) throw new AccessDeniedException("내 펫이 아닙니다.");
+
+        user.changeMainPet(pet);
+
         return pet.getId();
     }
+
     public MyPageRes enterMyPage() {
         User user = commonService.getCurrentUser();
-        Pet mainPet = null;
-        // 펫을 등록하지 않은 사용자일 수도 있음
-        if(user.getMainPetId() != null) {
-            mainPet = this.petRepository.findById(user.getMainPetId()).orElse(null);
-        }
+        Pet mainPet = user.getMainPet();
+
         return MyPageRes.builder()
                 .name(user.getName())
                 .userId(user.getId())

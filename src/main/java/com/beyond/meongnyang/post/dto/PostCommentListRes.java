@@ -29,18 +29,11 @@ public class PostCommentListRes {
 
     public static PostCommentListRes fromEntity(Comment comment, List<PostCommentReplyRes> replies) {
         User user = comment.getUser();
-        String profileImage = "";
 
-        Optional<Pet> petOptional = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst();
-
-        if (petOptional.isPresent()) {
-            Pet pet = petOptional.get();
-            profileImage = pet.getPetProfileUrl();
-        }
         return PostCommentListRes.builder()
                 .commentId(comment.getId())
                 .userId(user.getId())
-                .profileImage(profileImage)
+                .profileImage(user.getMainPet() == null ? "" : user.getMainPet().getPetProfileUrl())
                 .userName(user.getName())
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt().toString())

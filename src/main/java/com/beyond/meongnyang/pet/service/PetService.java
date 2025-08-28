@@ -43,8 +43,8 @@ public class PetService {
         req.setUrl(imageUrl);
 
         Pet pet = petRepository.save(req.toEntity(user, species));
-        if(user.getMainPetId() == null) {
-            user.changeMainPet(pet.getId());
+        if(user.getMainPet() == null) {
+            user.changeMainPet(pet);
         }
     }
 
@@ -106,7 +106,7 @@ public class PetService {
     // 펫 등록된 상태인지 확인
     public Boolean checkPetExist(){
         User user = commonService.getCurrentUser();
-        if (user.getMainPetId() == null) {
+        if (user.getMainPet() == null) {
             throw new AccessDeniedException("등록된 펫이 없습니다. 펫 등록 후 사용 가능합니다.");
         } else {
             return true;

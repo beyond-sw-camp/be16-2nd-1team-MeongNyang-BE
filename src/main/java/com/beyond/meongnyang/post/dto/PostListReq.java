@@ -24,19 +24,8 @@ public class PostListReq {
     private String thumbnail;
 
     public static PostListReq fromEntity(Post post){
-        String petName = "";
-        User user = post.getUser();
-        Pet pet = user.getPets().stream()
-                .filter(p -> p.getId().equals(user.getMainPetId()))
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("펫을 찾을 수 없습니다."));
-        petName = pet.getName();
-        if(petName != null && petName.isEmpty()){
-            petName = user.getName();
-        }
         return PostListReq.builder()
             .id(post.getId())
-//            .petName(petName)
             .hashTagList(
                     post.getHashtags().stream()
                             .map(ht -> ht.getTag().getName()) // Tag → name

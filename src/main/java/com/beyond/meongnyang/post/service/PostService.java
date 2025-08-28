@@ -125,7 +125,7 @@ public class PostService {
     public Page<PostDetailRes> allPosts(Pageable pageable) {
         Page<Post> posts = postRepository.findAllByDelYnFalse(pageable);
         return posts.map(post -> {
-            Pet pet = commonService.findPet(post.getUser());
+            Pet pet = commonService.findMainPet(post.getUser());
             long likeCount = likeRepository.countByPostId(post.getId());
             boolean isLiked = checkIsLiked(post);
             return PostDetailRes.fromEntity(post, pet, likeCount, isLiked);
@@ -147,7 +147,7 @@ public class PostService {
     // 일기 상세 조회
     public PostDetailRes findByPostId(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("해당 일기가 존재하지 않습니다"));
-        Pet pet = commonService.findPet(post.getUser());
+        Pet pet = commonService.findMainPet(post.getUser());
         long likeCount = countLike(post.getId());
         boolean isLiked = checkIsLiked(post);
         return PostDetailRes.fromEntity(post, pet, likeCount, isLiked);
@@ -300,10 +300,8 @@ public class PostService {
         };
         return postRepository.findAll(spec, pageable)
                 .map(post -> {
-                    Pet pet = petRepository.findById(
-                            post.getUser().getMainPetId()
-                    ).orElseThrow(() -> new EntityNotFoundException("해당 펫이 존재하지 않습니다"));
-                    return PostSearchRes.fromEntity(post, pet);
+                    if (post.getUser().getMainPet() == null) throw new EntityNotFoundException("해당 펫이 존재하지 않습니다");
+                    return PostSearchRes.fromEntity(post, post.getUser().getMainPet());
                 });
     }
 

@@ -47,14 +47,6 @@ public class MarketPostDetailRes {
                 .map(ProductImage::getImageUrl)
                 .toList();
 
-        String profileUrl = "";
-        Optional<Pet> petOptional = post.getSeller().getPets().stream().filter(pet -> pet.getId().equals(post.getSeller().getMainPetId())).findFirst();
-
-        if (petOptional.isPresent()) {
-            Pet pet = petOptional.get();
-            profileUrl = pet.getPetProfileUrl();
-        }
-
         return MarketPostDetailRes.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -73,7 +65,7 @@ public class MarketPostDetailRes {
                 .description(post.getDescription())
                 .sellerNickname(post.getSeller().getNickname())  // 판매자의 nickName가져오기
                 .isLiked(isLiked)
-                .sellerProfileUrl(profileUrl)
+                .sellerProfileUrl(post.getSeller().getMainPet() == null ? "" : post.getSeller().getMainPet().getPetProfileUrl())
                 .sellerEmail(post.getSeller().getEmail())
                 .build();
     }
