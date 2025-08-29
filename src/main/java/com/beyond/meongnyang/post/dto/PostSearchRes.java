@@ -7,23 +7,27 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
 public class PostSearchRes {
     private Long id;
-    private String petProfile;
-    private String userName;
-    private String title;
-    private String content;
+    private List<String> hashTagList;
+    private String thumbnail;
 
-    public static PostSearchRes fromEntity(Post post, Pet pet) {
+    public static PostSearchRes fromEntity(Post post){
         return PostSearchRes.builder()
                 .id(post.getId())
-                .petProfile(pet.getPetProfileUrl())
-                .userName(post.getUser().getName())
-                .content(post.getContent())
+                .hashTagList(
+                        post.getHashtags().stream()
+                                .map(ht -> ht.getTag().getName()) // Tag → name
+                                .toList()
+                )
+                .thumbnail(
+                        post.getMediaList().get(0).getUrl())
                 .build();
     }
 }

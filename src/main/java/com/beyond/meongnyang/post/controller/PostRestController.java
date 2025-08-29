@@ -45,7 +45,7 @@ public class PostRestController {
     // 일기 수정
     @PatchMapping("/{id}")
     @PreAuthorize("@securityCheck.checkUserAccess()")
-    public ResponseEntity<?> postUpdate(@PathVariable("id") Long id, @RequestPart PostEditReq postEditReq, @RequestPart List<MultipartFile> files) throws AccessDeniedException {
+    public ResponseEntity<?> postUpdate(@PathVariable("id") Long id, @RequestPart PostEditReq postEditReq, @RequestPart(required = false) List<MultipartFile> files) throws AccessDeniedException {
         postService.updatePost(id, postEditReq, files);
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
@@ -224,13 +224,38 @@ public class PostRestController {
         );
     }
 
-    // 검색
+    // 전체 검색
     @GetMapping("/search")
-    public ResponseEntity<?> postComments(@RequestParam SearchType searchType, @RequestParam String keyword,
+    public ResponseEntity<?> searchPost(@RequestParam SearchType searchType, @RequestParam String keyword,
                                           @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
                         postService.searchPost(searchType, keyword, pageable),
+                        HttpStatus.OK.value(),
+                        "성공"
+                ), HttpStatus.OK
+        );
+    }
+
+    // 내 글 검색
+    @GetMapping("/search/me")
+    public ResponseEntity<?> searchMyPost(@RequestParam SearchType searchType, @RequestParam String keyword,
+                                              @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.searchMyPost(searchType, keyword, pageable),
+                        HttpStatus.OK.value(),
+                        "성공"
+                ), HttpStatus.OK
+        );
+    }
+
+    // 상위 해시태그 5개 가져오기
+    @GetMapping("/rank-hashtag")
+    public ResponseEntity<?> getHashTagByRank(){
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        postService.rankHashtags(),
                         HttpStatus.OK.value(),
                         "성공"
                 ), HttpStatus.OK

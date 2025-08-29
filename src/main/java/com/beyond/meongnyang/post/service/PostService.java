@@ -17,8 +17,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -42,6 +44,7 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final CommentTagRepository commentTagRepository;
     private final ReportRepository reportRepository;
+    private final HashTagRepository hashTagRepository;
     private final S3UploadService s3UploadService;
     private final CommonService commonService;
     private final EntityManager em;
@@ -53,7 +56,7 @@ public class PostService {
     private String userKey(Long postId, Long userId) { return "post:" + postId + ":like:user:" + userId; }
     private String countKey(Long postId)             { return "post:" + postId + ":like:count"; }
 
-    public PostService(PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository, PetRepository petRepository, LikeRepository likeRepository, CommentRepository commentRepository, CommentTagRepository commentTagRepository, ReportRepository reportRepository, S3UploadService s3UploadService, CommonService commonService, EntityManager em, RedisTemplate<String, String> likeRedisTemplate, NotificationService notificationService) {
+    public PostService(PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository, PetRepository petRepository, LikeRepository likeRepository, CommentRepository commentRepository, CommentTagRepository commentTagRepository, ReportRepository reportRepository, HashTagRepository hashTagRepository, S3UploadService s3UploadService, CommonService commonService, EntityManager em, RedisTemplate<String, String> likeRedisTemplate, NotificationService notificationService) {
         this.postRepository = postRepository;
         this.tagRepository = tagRepository;
         this.userRepository = userRepository;
@@ -62,6 +65,7 @@ public class PostService {
         this.commentRepository = commentRepository;
         this.commentTagRepository = commentTagRepository;
         this.reportRepository = reportRepository;
+        this.hashTagRepository = hashTagRepository;
         this.s3UploadService = s3UploadService;
         this.commonService = commonService;
         this.em = em;
@@ -270,20 +274,22 @@ public class PostService {
 
     // 검색
     public Page<PostSearchRes> searchPost(SearchType type, String keyword, Pageable pageable) {
-            if (keyword == null || keyword.trim().isEmpty()) {
-            // 키워드 없으면 빈 결과 반환(또는 IllegalArgumentException 던져도 됨)
+        if (keyword == null || keyword.trim().isEmpty()) {
             throw new IllegalArgumentException("지원하지 않는 검색 타입입니다.");
         }
-        final String like = "%" + keyword.trim() + "%";
+
+        final String trimmed = keyword.trim();
+        final String like = "%" + trimmed + "%";
+        final String lowered = trimmed.toLowerCase(Locale.ROOT);
 
         Specification<Post> spec = (root, query, cb) -> {
             query.distinct(true); // hashtag 조인 시 중복 제거
+
             switch (type) {
                 case CONTENT -> {
                     return cb.like(root.get("content"), like);
                 }
                 case USER -> {
-                    // user.name / user.nickname 등 실제 필드명으로 교체
                     Join<Post, User> user = root.join("user", JoinType.INNER);
                     return cb.or(
                             cb.like(user.get("name"), like),
@@ -291,22 +297,89 @@ public class PostService {
                     );
                 }
                 case HASHTAG -> {
+                    // 입력이 "#테스트" 형태여도 "테스트"로 정규화
+                    String normalized = lowered.startsWith("#") ? lowered.substring(1) : lowered;
+
                     Join<Post, HashTag> hashTag = root.join("hashtags", JoinType.INNER);
                     Join<HashTag, Tag> tag = hashTag.join("tag", JoinType.INNER);
-                    return cb.like(tag.get("name"), like);
+
+                    // ① 정확일치 (대/소문자 무시)
+                    return cb.equal(cb.lower(tag.get("name")), normalized);
+
+                    // ※ 만약 접두 일치가 필요하면 아래처럼 변경:
+                    // return cb.like(cb.lower(tag.get("name")), normalized + "%");
                 }
                 default -> throw new IllegalArgumentException("지원하지 않는 검색 타입입니다.");
             }
         };
+
         return postRepository.findAll(spec, pageable)
-                .map(post -> {
-                    Pet pet = petRepository.findById(
-                            post.getUser().getMainPetId()
-                    ).orElseThrow(() -> new EntityNotFoundException("해당 펫이 존재하지 않습니다"));
-                    return PostSearchRes.fromEntity(post, pet);
-                });
+                .map(PostSearchRes::fromEntity);
+    }
+    // 내 검색
+    public Page<PostSearchRes> searchMyPost(SearchType type, String keyword, Pageable pageable) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new IllegalArgumentException("지원하지 않는 검색 타입입니다.");
+        }
+        final String trimmed = keyword.trim();
+        final String like = "%" + trimmed + "%";
+        final String lowered = trimmed.toLowerCase(Locale.ROOT);
+
+        User currentUser = commonService.getCurrentUser();
+
+        Specification<Post> spec = (root, query, cb) -> {
+            query.distinct(true); // hashtag 조인 시 중복 제거
+
+            // 기본 조건: 현재 로그인한 유저의 게시글만
+            Predicate byUser = cb.equal(root.get("user"), currentUser);
+            Predicate condition;
+            switch (type) {
+                case CONTENT -> {
+                    condition = cb.like(root.get("content"), like);
+                }
+                case HASHTAG -> {
+                    String normalized = lowered.startsWith("#") ? lowered.substring(1) : lowered;
+
+                    Join<Post, HashTag> hashTag = root.join("hashtags", JoinType.INNER);
+                    Join<HashTag, Tag> tag = hashTag.join("tag", JoinType.INNER);
+
+                    // ① 정확일치 (대/소문자 무시)
+                    return cb.equal(cb.lower(tag.get("name")), normalized);
+                }
+                default -> throw new IllegalArgumentException("지원하지 않는 검색 타입입니다.");
+            }
+
+            return cb.and(byUser, condition);
+        };
+
+        return postRepository.findAll(spec, pageable)
+                .map(PostSearchRes::fromEntity);
     }
 
+        public List<HashtagRankRes> rankHashtags() {
+            // 1) DB에서 count 내림차순으로 상위 5개만 가져옴
+            List<Object[]> rows = hashTagRepository.findTopTagCounts(PageRequest.of(0, 5));
+
+            // 2) LinkedHashMap으로 순서 유지 (tagId -> count)
+            Map<Long, Long> countMap = new LinkedHashMap<>();
+            for (Object[] row : rows) {
+                countMap.put(((Number) row[0]).longValue(),
+                        ((Number) row[1]).longValue());
+            }
+
+            // 3) Tag 엔티티 조회
+            List<Tag> tags = tagRepository.findAllById(countMap.keySet());
+            Map<Long, String> nameMap = tags.stream()
+                    .collect(Collectors.toMap(Tag::getId, Tag::getName));
+
+            // 4) fromEntity 패턴으로 DTO 변환 (입력 순서 그대로)
+            return countMap.entrySet().stream()
+                    .map(e -> HashtagRankRes.fromEntity(
+                            new Tag(e.getKey(), nameMap.get(e.getKey()), null), // 간단 객체
+                            e.getValue()
+                    ))
+                    .toList();
+        }
     // 일기 신고하기
     public void reportPost(Long postId, PostReportCreateReq postReportCreateReq) {
         User reportUser = commonService.getCurrentUser();
