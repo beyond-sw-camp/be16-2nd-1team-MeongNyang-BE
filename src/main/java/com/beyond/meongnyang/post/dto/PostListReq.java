@@ -19,6 +19,7 @@ import java.util.List;
 @Builder
 public class PostListReq {
     private Long id;
+//    private String petName;
     private List<String> hashTagList;
     private String thumbnail;
 
