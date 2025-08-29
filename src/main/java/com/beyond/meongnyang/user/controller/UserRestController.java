@@ -355,6 +355,7 @@ public class UserRestController {
     @PutMapping("/main-pet/{petId}")
     public ResponseEntity<?> changeMainPet(@PathVariable Long petId) {
         Long mainPetId = userService.changeMainPet(petId);
+
         return new ResponseEntity<>(CommonRes.ofSuccess(
                 "mainPetId :" + mainPetId, HttpStatus.OK.value(), "대표동물 설정"
         ), HttpStatus.OK);
