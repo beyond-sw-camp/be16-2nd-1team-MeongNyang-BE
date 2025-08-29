@@ -21,18 +21,10 @@ public class UserFollowRes {
     private String userEmail;
 
     public static UserFollowRes fromEntity(User user) {
-        String profileImage = "";
-        Optional<Pet> petOptional = user.getPets().stream().filter(pet -> pet.getId().equals(user.getMainPetId())).findFirst();
-
-        if (petOptional.isPresent()) {
-            Pet pet = petOptional.get();
-            profileImage = pet.getPetProfileUrl();
-        }
-
         return UserFollowRes.builder()
                 .userId(user.getId())
-                .profileImage(profileImage)
-                .userName(user.getName())
+                .profileImage(user.getMainPet() == null ? "" : user.getMainPet().getPetProfileUrl())
+                .userName(user.getNickname()) // 프론트 코드가 전부 userName을 받고 있는 중이라 임시로 대체했습니다.
                 .userEmail(user.getEmail())
                 .build();
     }
