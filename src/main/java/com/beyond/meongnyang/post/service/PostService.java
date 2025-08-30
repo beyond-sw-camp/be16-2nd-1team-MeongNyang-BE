@@ -53,7 +53,7 @@ public class PostService {
     private String userKey(Long postId, Long userId) { return "post:" + postId + ":like:user:" + userId; }
     private String countKey(Long postId)             { return "post:" + postId + ":like:count"; }
 
-    public PostService(PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository, PetRepository petRepository, LikeRepository likeRepository, CommentRepository commentRepository, CommentTagRepository commentTagRepository, ReportRepository reportRepository, S3UploadService s3UploadService, CommonService commonService, EntityManager em, RedisTemplate<String, String> likeRedisTemplate, NotificationService notificationService) {
+    public PostService(PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository, PetRepository petRepository, LikeRepository likeRepository, CommentRepository commentRepository, CommentTagRepository commentTagRepository, ReportRepository reportRepository, S3UploadService s3UploadService, CommonService commonService, EntityManager em, @Qualifier("likeRedisTemplate")RedisTemplate<String, String> likeRedisTemplate, NotificationService notificationService) {
         this.postRepository = postRepository;
         this.tagRepository = tagRepository;
         this.userRepository = userRepository;

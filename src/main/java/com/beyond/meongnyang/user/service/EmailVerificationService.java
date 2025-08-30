@@ -15,9 +15,9 @@ import java.util.concurrent.TimeUnit;
 public class EmailVerificationService {
 
     @Qualifier("emailCodeInventory")
-    private final RedisTemplate<String, String>  emailCodeRedisTemplate;
+    private final RedisTemplate<String, String> emailCodeRedisTemplate;
 
-    public EmailVerificationService(RedisTemplate<String, String> emailCodeRedisTemplate) {
+    public EmailVerificationService(@Qualifier("emailCodeRedisTemplate") RedisTemplate<String, String> emailCodeRedisTemplate) {
         this.emailCodeRedisTemplate = emailCodeRedisTemplate;
     }
 
