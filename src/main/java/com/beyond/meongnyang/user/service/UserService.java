@@ -371,6 +371,23 @@ public class UserService {
                 .build();
     }
 
+    public MyPageRes enterOthersPage(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("없는 유저입니다."));
+        Pet mainPet = user.getMainPet();
+
+        return MyPageRes.builder()
+                .name(user.getName())
+                .userId(user.getId())
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .createdAt(user.getCreatedAt())
+                .mainPetId(mainPet != null ? mainPet.getId() : null)
+                .mainPetImage(mainPet != null ? mainPet.getPetProfileUrl() : null)
+                .socialType(user.getSocialType())
+                .userStatus(user.getUserStatus())
+                .build();
+    }
+
     public ProfileUpdateRes updateProfile(ProfileUpdateReq request) {
         User user = commonService.getCurrentUser();
         // 이름과 닉네임 업데이트
