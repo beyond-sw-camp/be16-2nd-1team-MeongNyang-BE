@@ -19,6 +19,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -49,11 +50,12 @@ public class PostService {
     @Qualifier("likeInventory")
     private final RedisTemplate<String, String> likeRedisTemplate;
     private final NotificationService notificationService;
+    private final HashTagRepository hashTagRepository;
 
     private String userKey(Long postId, Long userId) { return "post:" + postId + ":like:user:" + userId; }
     private String countKey(Long postId)             { return "post:" + postId + ":like:count"; }
 
-    public PostService(PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository, PetRepository petRepository, LikeRepository likeRepository, CommentRepository commentRepository, CommentTagRepository commentTagRepository, ReportRepository reportRepository, S3UploadService s3UploadService, CommonService commonService, EntityManager em, RedisTemplate<String, String> likeRedisTemplate, NotificationService notificationService) {
+    public PostService(PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository, PetRepository petRepository, LikeRepository likeRepository, CommentRepository commentRepository, CommentTagRepository commentTagRepository, ReportRepository reportRepository, S3UploadService s3UploadService, CommonService commonService, EntityManager em, RedisTemplate<String, String> likeRedisTemplate, NotificationService notificationService, HashTagRepository hashTagRepository) {
         this.postRepository = postRepository;
         this.tagRepository = tagRepository;
         this.userRepository = userRepository;
@@ -67,6 +69,7 @@ public class PostService {
         this.em = em;
         this.likeRedisTemplate = likeRedisTemplate;
         this.notificationService = notificationService;
+        this.hashTagRepository = hashTagRepository;
     }
 
     // 일기 작성
@@ -364,5 +367,15 @@ public class PostService {
             return likeRepository.existsByPostIdAndUserId(post.getId(), user.getId());
         }
         return false;
+    }
+
+    public List<TrendHashTagRes> findTop5TagNamesWithCount() {
+        Pageable topFive = PageRequest.of(0, 5);
+        List<Object[]> topTags = hashTagRepository.findTop5TagNamesWithCount(topFive);
+
+        return topTags.stream().map(tag -> TrendHashTagRes.builder()
+                .tagName((String) tag[0])
+                .tagCount((Long) tag[1])
+                .build()).toList();
     }
 }

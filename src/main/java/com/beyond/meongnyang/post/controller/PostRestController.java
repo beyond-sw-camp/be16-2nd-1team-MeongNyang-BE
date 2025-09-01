@@ -250,4 +250,16 @@ public class PostRestController {
                 ), HttpStatus.OK
         );
     }
+
+    @GetMapping("/trend-hashtags")
+    public ResponseEntity<?> postTrendHashtags(){
+        List<TrendHashTagRes> top5TagNamesWithCount = postService.findTop5TagNamesWithCount();
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        top5TagNamesWithCount,
+                        HttpStatus.OK.value(),
+                        "상위 5개 해시태그 조회 완료"
+                ), HttpStatus.OK
+        );
+    }
 }
