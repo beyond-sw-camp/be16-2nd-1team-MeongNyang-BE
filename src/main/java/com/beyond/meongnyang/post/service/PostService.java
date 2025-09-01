@@ -373,12 +373,6 @@ public class PostService {
         Pageable topFive = PageRequest.of(0, 5);
         List<Object[]> topTags = hashTagRepository.findTop5TagNamesWithCount(topFive);
 
-        for (Object[] row : topTags) {
-            String tagName = (String) row[0];
-            Long count = (Long) row[1];
-            System.out.println(tagName + " 사용 횟수: " + count);
-        }
-
         return topTags.stream().map(tag -> TrendHashTagRes.builder()
                 .tagName((String) tag[0])
                 .tagCount((Long) tag[1])
