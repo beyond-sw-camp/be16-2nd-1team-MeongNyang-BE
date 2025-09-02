@@ -16,15 +16,15 @@
 ## 👥 팀원 소개
 <table>
     <tr>
-    <td align="center"> 윤수오(팀장)</td>
-    <td align="center"> 정지완(리뷰어)</td>
+    <td align="center"> 정지완(팀장)</td>
+    <td align="center"> 윤수오(팀원)</td>
     <td align="center"> 김지현(팀원)</td>
     <td align="center"> 이우영(팀원)</td>
   </tr>
   <tr>
+      <td align="center"><a href="https://github.com/FOJF" target="_blank"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/></a>
     <td align="center"><a href="https://github.com/SuOhYoon" target="_blank"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/></a>
     </td>
-    <td align="center"><a href="https://github.com/FOJF" target="_blank"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/></a>
     </td>
     <td align="center"><a href="https://github.com/userkimjihyeon" target="_blank"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/></a> 
     </td>
