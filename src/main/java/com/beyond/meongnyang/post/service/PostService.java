@@ -198,14 +198,13 @@ public class PostService {
         Boolean removed = likeRedisTemplate.delete(uk);
         // DB에서도 삭제(이미 없으면 조용히 통과)
         likeRepository.deleteByPostIdAndUserId(postId, user.getId());
-
         return postId;
     }
 
     // 좋아요 목록
     public Page<PostLikeListRes> postLikeList(Long postId, Pageable pageable) {
         return likeRepository.findAllByPostId(postId, pageable)
-                .map(like -> PostLikeListRes.fromEntity(like.getPost(), like.getUser()));
+                .map(like -> PostLikeListRes.fromEntity(like));
     }
 
     // 댓글 달기
@@ -272,7 +271,7 @@ public class PostService {
     }
 
     // 검색
-    public Page<PostSearchRes> searchPost(SearchType type, String keyword, Pageable pageable) {
+    public Page<PostDetailRes> searchPost(SearchType type, String keyword, Pageable pageable) {
             if (keyword == null || keyword.trim().isEmpty()) {
             // 키워드 없으면 빈 결과 반환(또는 IllegalArgumentException 던져도 됨)
             throw new IllegalArgumentException("지원하지 않는 검색 타입입니다.");
@@ -301,11 +300,13 @@ public class PostService {
                 default -> throw new IllegalArgumentException("지원하지 않는 검색 타입입니다.");
             }
         };
-        return postRepository.findAll(spec, pageable)
-                .map(post -> {
-                    if (post.getUser().getMainPet() == null) throw new EntityNotFoundException("해당 펫이 존재하지 않습니다");
-                    return PostSearchRes.fromEntity(post, post.getUser().getMainPet());
-                });
+
+        return postRepository.findAll(spec, pageable).map(post -> {
+            Pet pet = post.getUser().getMainPet();
+            long likeCount = likeRepository.countByPostId(post.getId());
+            boolean isLiked = checkIsLiked(post);
+            return PostDetailRes.fromEntity(post, pet, likeCount, isLiked);
+        });
     }
 
     // 일기 신고하기
