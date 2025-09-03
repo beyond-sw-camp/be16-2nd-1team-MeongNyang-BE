@@ -24,7 +24,7 @@ public class PostLikeListRes {
     private String date;
 
     public static PostLikeListRes fromEntity(Like like){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일 hh:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일 a h:mm");
         User user = like.getUser();
         return PostLikeListRes.builder()
                 .userId(user.getId())
