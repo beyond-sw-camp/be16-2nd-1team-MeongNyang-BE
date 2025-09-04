@@ -21,15 +21,17 @@ public class PostLikeListRes {
     private Long userId;
     private String profileImage;
     private String userName;
+    private Boolean isFollowing;
     private String date;
 
-    public static PostLikeListRes fromEntity(Like like){
+    public static PostLikeListRes fromEntity(Like like, boolean isFollowing){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일 a h:mm");
         User user = like.getUser();
         return PostLikeListRes.builder()
                 .userId(user.getId())
                 .profileImage(user.getMainPet() == null ? "" : user.getMainPet().getPetProfileUrl())
                 .userName(user.getName())
+                .isFollowing(isFollowing)
                 .date(like.getCreatedAt().format(formatter))
                 .build();
     }
