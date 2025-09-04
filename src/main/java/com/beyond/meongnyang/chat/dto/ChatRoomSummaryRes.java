@@ -16,6 +16,7 @@ public class ChatRoomSummaryRes {
     private String roomName;
     private String lastMessage;
     private String lastMessageTime;
+    private Long marketPostId;
     private Integer newMessageCount;
 
     public static ChatRoomSummaryRes fromEntity(ChatRoom chatRoom, int newMessageCount) {
@@ -33,6 +34,7 @@ public class ChatRoomSummaryRes {
                 .lastMessage(lastMessage)
                 .newMessageCount(newMessageCount)
                 .lastMessageTime(lastMessageTime)
+                .marketPostId(chatRoom.getMarketPost() == null ? null : chatRoom.getMarketPost().getId())
                 .build();
     }
 }

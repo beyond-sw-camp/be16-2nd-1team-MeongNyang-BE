@@ -98,4 +98,13 @@ public class ChatController {
                 CommonRes.ofSuccess(fileUrls, HttpStatus.CREATED.value(), "upload files")
         );
     }
+
+    @PatchMapping("/{roomId}/approval-status")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
+    public ResponseEntity<?> updateIsPurchaseApproved(@PathVariable Long roomId) {
+        Boolean isPurchaseApproved = chatService.updateIsPurchaseApproved(roomId);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                CommonRes.ofSuccess(isPurchaseApproved, HttpStatus.OK.value(), "approval status updated")
+        );
+    }
 }

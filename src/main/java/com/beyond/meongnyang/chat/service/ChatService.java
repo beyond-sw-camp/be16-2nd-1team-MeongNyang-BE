@@ -9,6 +9,11 @@ import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
 import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.S3UploadService;
 import com.beyond.meongnyang.common.domain.Bool;
+import com.beyond.meongnyang.market.entity.MarketPost;
+import com.beyond.meongnyang.market.entity.SaleStatus;
+import com.beyond.meongnyang.market.repository.MarketPostRepository;
+import com.beyond.meongnyang.notification.entity.NotificationType;
+import com.beyond.meongnyang.notification.service.NotificationService;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,6 +42,8 @@ public class ChatService {
     private final ReportRepository reportRepository;
     private final S3UploadService s3UploadService;
     private final CommonService commonService;
+    private final MarketPostRepository marketPostRepository;
+    private final NotificationService notificationService;
 
 //    @Autowired
 //    public ChatService(UserRepository userRepository, ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, ChatParticipantRepository chatParticipantRepository) {
@@ -97,6 +105,7 @@ public class ChatService {
         // 채팅방 객체 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(chatRoomCreateReq.getRoomName())
+                .marketPost(marketPostRepository.findById(chatRoomCreateReq.getMarketPostId()).orElse(null))
                 .build();
 
         // 채팅방 참여자 객체 생성
@@ -110,8 +119,6 @@ public class ChatService {
             chatRoom.getChatParticipantList().add(chatParticipant);
         });
 
-        // 참여자가 2명을 넘기면 그룹챗으로 상태 변경
-        if (chatRoom.getChatParticipantList().size() > 2) chatRoom.updateIsGroupChat(Bool.TRUE);
 
         // 채팅방 참여자 저장
         chatRoomRepository.save(chatRoom);
@@ -144,6 +151,8 @@ public class ChatService {
     public List<ChatParticipantAddRes> inviteUsers(Long roomId, List<ChatParticipantAddReq> chatParticipantAddReqList) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
 
+        if (chatRoom.getMarketPost() != null) throw new AccessDeniedException("중고거래 채팅방은 초대 불가능");
+
         User inviter = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
 
         // 채팅 참여자 목록
@@ -167,8 +176,6 @@ public class ChatService {
                 chatRoom.getChatParticipantList().add(chatParticipant);
             }
         });
-
-        if (chatRoom.getChatParticipantList().size() > 2) chatRoom.updateIsGroupChat(Bool.TRUE);
 
         return chatParticipantAddReqList.stream()
                 .map(req ->
@@ -228,7 +235,7 @@ public class ChatService {
 //        chatParticipant.read(chatRoom.getChatParticipantList().get(chatRoom.getChatMessageList().size() - 1).getLastReadMessage());
 //    }
 
-    public void readMessages(Long roomId,String userEmail) {
+    public void readMessages(Long roomId, String userEmail) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
         ChatParticipant chatParticipant = chatParticipantRepository.findByUserEmailAndChatRoom(userEmail, chatRoom).orElseThrow(() -> new EntityNotFoundException("participant not found"));
 
@@ -247,7 +254,33 @@ public class ChatService {
     // ToDo : 컨트롤러 부분만 설계 부탁드립니다.
     public void reportChatMessage(Long chatMessageId, ChatMessageReportCreateReq chatMessageReportCreateReq) {
         User reportUser = commonService.getCurrentUser();
-        ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId).orElseThrow(()-> new EntityNotFoundException("해당 채팅 메시지가 존재하지 않습니다."));
+        ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId).orElseThrow(() -> new EntityNotFoundException("해당 채팅 메시지가 존재하지 않습니다."));
         reportRepository.save(chatMessageReportCreateReq.ReportToEntity(chatMessage, reportUser));
+    }
+
+    public Boolean updateIsPurchaseApproved(Long roomId) {
+        User seller = commonService.getCurrentUser();
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+
+        // 판매 방인지 검증
+        if (chatRoom.getMarketPost() == null) throw new IllegalArgumentException("판매하는 물건이 없습니다.");
+
+        // 판매 여부 검증
+        if (chatRoom.getMarketPost().getSaleStatus() == SaleStatus.SOLD) throw new IllegalArgumentException("이미 판매한 물건입니다.");
+
+        // 판매자인지 검증
+        if (!chatRoom.getMarketPost().getSeller().getId().equals(seller.getId())) throw new AccessDeniedException("판매자가 아닙니다.");
+
+        // 구매하려는 사람이 채팅방에 있는 지 확인하면서 가져오기
+        User buyer = chatRoom.getChatParticipantList().stream()
+                .filter(cp -> !cp.getUser().getId().equals(seller.getId()))
+                .findFirst().orElseThrow(() -> new EntityNotFoundException("구매자가 없습니다."))
+                .getUser();
+
+        String title = chatRoom.getMarketPost().getTitle().length() > 5 ? chatRoom.getMarketPost().getTitle().substring(0, 5) + "..." : chatRoom.getMarketPost().getTitle();
+        String notificationContent = title + "을 구매할 수 있습니다!";
+        notificationService.create(chatRoom.getId(), buyer, notificationContent, NotificationType.TRADE_APPROVED_PURCHASE);
+
+        return chatRoom.updateIsPurchaseApproved();
     }
 }

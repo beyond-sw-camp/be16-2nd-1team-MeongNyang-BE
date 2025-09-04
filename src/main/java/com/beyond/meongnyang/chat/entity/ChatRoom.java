@@ -2,6 +2,7 @@ package com.beyond.meongnyang.chat.entity;
 
 import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.domain.CommonAt;
+import com.beyond.meongnyang.market.entity.MarketPost;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,10 +24,14 @@ public class ChatRoom extends CommonAt {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name = "market_post_id")
+    private MarketPost marketPost;
+
     @Builder.Default
-    @Column(name = "is_group_chat", nullable = false)
+    @Column(name = "is_purchase_approved", nullable = false)
     @Enumerated(EnumType.STRING)
-    private Bool isGroupChat = Bool.FALSE;
+    private Bool isPurchaseApproved = Bool.FALSE;
 
     @Builder.Default
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -36,7 +41,8 @@ public class ChatRoom extends CommonAt {
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChatMessage> chatMessageList = new ArrayList<>();
 
-    public void updateIsGroupChat(Bool isGroupChat) {
-        this.isGroupChat = isGroupChat;
+    public Boolean updateIsPurchaseApproved() {
+        this.isPurchaseApproved = this.isPurchaseApproved == Bool.TRUE ? Bool.FALSE : Bool.TRUE;
+        return this.isPurchaseApproved == Bool.TRUE;
     }
 }
