@@ -45,8 +45,8 @@ public class PostRestController {
     // 일기 수정
     @PatchMapping("/{id}")
     @PreAuthorize("@securityCheck.checkUserAccess()")
-    public ResponseEntity<?> postUpdate(@PathVariable("id") Long id, @RequestPart PostEditReq postEditReq, @RequestPart List<MultipartFile> files) throws AccessDeniedException {
-        postService.updatePost(id, postEditReq, files);
+    public ResponseEntity<?> postUpdate(@PathVariable("id") Long id, @ModelAttribute PostEditReq postEditReq) throws AccessDeniedException {
+        postService.updatePost(id, postEditReq);
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
                         id,

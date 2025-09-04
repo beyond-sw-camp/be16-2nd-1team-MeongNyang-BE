@@ -12,6 +12,7 @@ import com.beyond.meongnyang.post.entity.*;
 import com.beyond.meongnyang.post.repository.*;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
+import com.beyond.meongnyang.user.service.UserService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -51,11 +52,26 @@ public class PostService {
     private final RedisTemplate<String, String> likeRedisTemplate;
     private final NotificationService notificationService;
     private final HashTagRepository hashTagRepository;
+    private final UserService userService;
 
     private String userKey(Long postId, Long userId) { return "post:" + postId + ":like:user:" + userId; }
     private String countKey(Long postId)             { return "post:" + postId + ":like:count"; }
 
-    public PostService(PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository, PetRepository petRepository, LikeRepository likeRepository, CommentRepository commentRepository, CommentTagRepository commentTagRepository, ReportRepository reportRepository, S3UploadService s3UploadService, CommonService commonService, EntityManager em, RedisTemplate<String, String> likeRedisTemplate, NotificationService notificationService, HashTagRepository hashTagRepository) {
+    public PostService(PostRepository postRepository,
+                       TagRepository tagRepository,
+                       UserRepository userRepository,
+                       PetRepository petRepository,
+                       LikeRepository likeRepository,
+                       CommentRepository commentRepository,
+                       CommentTagRepository commentTagRepository,
+                       ReportRepository reportRepository,
+                       S3UploadService s3UploadService,
+                       CommonService commonService,
+                       EntityManager em,
+                       RedisTemplate<String, String> likeRedisTemplate,
+                       NotificationService notificationService,
+                       HashTagRepository hashTagRepository,
+                       UserService userService) {
         this.postRepository = postRepository;
         this.tagRepository = tagRepository;
         this.userRepository = userRepository;
@@ -70,6 +86,7 @@ public class PostService {
         this.likeRedisTemplate = likeRedisTemplate;
         this.notificationService = notificationService;
         this.hashTagRepository = hashTagRepository;
+        this.userService = userService;
     }
 
     // 일기 작성
@@ -87,16 +104,14 @@ public class PostService {
 
 
     // 일기 수정
-    public void updatePost(Long id, PostEditReq postEditReq, List<MultipartFile> files) throws AccessDeniedException {
-        User user = commonService.getCurrentUser();
-
+    public void updatePost(Long id, PostEditReq postEditReq) throws AccessDeniedException {
         // 원래 일기를 가져온다
         Post post = postRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("글이 존재하지 않습니다."));
 
         // 작성자 확인
-        if (!Objects.equals(user.getId(), post.getUser().getId())) {
-            throw new AccessDeniedException("작성자 또는 관리자만 수정 가능합니다.");
-        }
+        User user = commonService.getCurrentUser();
+        if (!user.getId().equals(post.getUser().getId())) throw new AccessDeniedException("작성자 또는 관리자만 수정 가능합니다.");
+
         // 해시태그 변경 감지
         String content = postEditReq.getContent();
         if (content != null && !content.equals(post.getContent())) {
@@ -105,10 +120,12 @@ public class PostService {
             em.flush();
             handleHashtags(post, content);
         }
+
+        post.getMediaList().forEach(m -> s3UploadService.delete(m.getUrl()));
         post.getMediaList().clear();
         em.flush();
         post.updatePost(postEditReq.getContent());
-        handleFileUpload(post, files); // 새 파일들만 추가
+        handleFileUpload(post, postEditReq.getFileList());
     }
 
     // 일기 삭제(soft-delete)
@@ -138,7 +155,7 @@ public class PostService {
     // 내 일기 또는 다른 사용자의 일기 목록 조회
     public Page<PostListReq> posts(Pageable pageable, Long userId) {
         User user;
-        if(userId != null){
+        if (userId != null) {
             user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
         } else {
             user = commonService.getCurrentUser();
@@ -174,8 +191,8 @@ public class PostService {
             // DB 행 생성(목록/감사용)
             Like like = Like.builder().post(post).user(user).build();
             likeRepository.save(like);
-            String content = user.getName()+"님이 회원님의 게시글을 좋아합니다.";
-            if(!post.getUser().getId().equals(user.getId())){
+            String content = user.getName() + "님이 회원님의 게시글을 좋아합니다.";
+            if (!post.getUser().getId().equals(user.getId())) {
                 notificationService.create(post.getId(), post.getUser(), content, NotificationType.POST_LIKE);
             }
             return like.getId();
@@ -204,7 +221,7 @@ public class PostService {
     // 좋아요 목록
     public Page<PostLikeListRes> postLikeList(Long postId, Pageable pageable) {
         return likeRepository.findAllByPostId(postId, pageable)
-                .map(like -> PostLikeListRes.fromEntity(like));
+                .map(like -> PostLikeListRes.fromEntity(like, userService.checkFollowStatus(like.getUser().getId())));
     }
 
     // 댓글 달기
@@ -242,6 +259,7 @@ public class PostService {
             return PostCommentListRes.fromEntity(comment, replies);
         });
     }
+
     // 댓글 수정
     public Long editComment(Long commentId, PostCommentEditReq postCommentEditReq) throws AccessDeniedException {
         User user = commonService.getCurrentUser();
@@ -272,7 +290,7 @@ public class PostService {
 
     // 검색
     public Page<PostDetailRes> searchPost(SearchType type, String keyword, Pageable pageable) {
-            if (keyword == null || keyword.trim().isEmpty()) {
+        if (keyword == null || keyword.trim().isEmpty()) {
             // 키워드 없으면 빈 결과 반환(또는 IllegalArgumentException 던져도 됨)
             throw new IllegalArgumentException("지원하지 않는 검색 타입입니다.");
         }
@@ -343,15 +361,9 @@ public class PostService {
     // 일기 생성, 수정, 식제 시 파일 처리
     private void handleFileUpload(Post post, List<MultipartFile> files) {
         if (files != null && !files.isEmpty()) {
-            List<String> urls = s3UploadService.upload(files);
-            for (String url : urls) {
-                Media media = Media.builder()
-                        .url(url)
-                        .post(post)
-                        .build();
-
-                post.addMedia(media);
-            }
+            post.getMediaList().addAll(s3UploadService.upload(files).stream().map(url ->
+                    Media.builder().url(url).post(post).build()
+            ).toList());
         }
     }
 
@@ -362,9 +374,9 @@ public class PostService {
     }
 
     // 현재 사용자의 좋아요 여부 확인
-    public boolean checkIsLiked(Post post){
+    public boolean checkIsLiked(Post post) {
         User user = commonService.getCurrentUser();
-        if(user != null){
+        if (user != null) {
             return likeRepository.existsByPostIdAndUserId(post.getId(), user.getId());
         }
         return false;
