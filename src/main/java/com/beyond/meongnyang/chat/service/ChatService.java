@@ -6,6 +6,7 @@ import com.beyond.meongnyang.chat.entity.*;
 import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
+import com.beyond.meongnyang.common.customexception.AlreadySoldException;
 import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.S3UploadService;
 import com.beyond.meongnyang.common.domain.Bool;
@@ -123,7 +124,7 @@ public class ChatService {
         // 채팅방 참여자 저장
         chatRoomRepository.save(chatRoom);
 
-        return ChatRoomSummaryRes.fromEntity(chatRoom, 0);
+        return ChatRoomSummaryRes.fromEntity(chatRoom, 0, Boolean.FALSE);
     }
 
     public List<ChatRoomSummaryRes> getMyChatRooms() {
@@ -140,7 +141,11 @@ public class ChatService {
                         .filter(createdAt -> createdAt.isAfter(lastReadMessage.getCreatedAt()))
                         .count();
 
-            return ChatRoomSummaryRes.fromEntity(myChatParticipant.getChatRoom(), newMessageCount);
+            MarketPost marketPost = myChatParticipant.getChatRoom().getMarketPost();
+            Boolean isSold = marketPost != null
+                    && marketPost.getSaleStatus() == SaleStatus.SOLD;
+
+            return ChatRoomSummaryRes.fromEntity(myChatParticipant.getChatRoom(), newMessageCount, isSold);
         }).toList();
 //        return myChatParticipantList.stream()
 //                .map(ChatParticipant::getChatRoom)
@@ -263,13 +268,15 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
 
         // 판매 방인지 검증
-        if (chatRoom.getMarketPost() == null) throw new IllegalArgumentException("판매하는 물건이 없습니다.");
+        if (chatRoom.getMarketPost() == null) throw new EntityNotFoundException("판매하는 물건이 없습니다.");
 
         // 판매 여부 검증
-        if (chatRoom.getMarketPost().getSaleStatus() == SaleStatus.SOLD) throw new IllegalArgumentException("이미 판매한 물건입니다.");
+        if (chatRoom.getMarketPost().getSaleStatus() == SaleStatus.SOLD)
+            throw new AlreadySoldException("이미 판매한 물건입니다.");
 
         // 판매자인지 검증
-        if (!chatRoom.getMarketPost().getSeller().getId().equals(seller.getId())) throw new AccessDeniedException("판매자가 아닙니다.");
+        if (!chatRoom.getMarketPost().getSeller().getId().equals(seller.getId()))
+            throw new AccessDeniedException("판매자가 아닙니다.");
 
         // 구매하려는 사람이 채팅방에 있는 지 확인하면서 가져오기
         User buyer = chatRoom.getChatParticipantList().stream()
@@ -277,8 +284,10 @@ public class ChatService {
                 .findFirst().orElseThrow(() -> new EntityNotFoundException("구매자가 없습니다."))
                 .getUser();
 
-        String title = chatRoom.getMarketPost().getTitle().length() > 5 ? chatRoom.getMarketPost().getTitle().substring(0, 5) + "..." : chatRoom.getMarketPost().getTitle();
+        String title = chatRoom.getMarketPost().getTitle().length() > 5 ?
+                chatRoom.getMarketPost().getTitle().substring(0, 5) + "..." : chatRoom.getMarketPost().getTitle();
         String notificationContent = title + "을 구매할 수 있습니다!";
+
         notificationService.create(chatRoom.getId(), buyer, notificationContent, NotificationType.TRADE_APPROVED_PURCHASE);
 
         return chatRoom.updateIsPurchaseApproved();

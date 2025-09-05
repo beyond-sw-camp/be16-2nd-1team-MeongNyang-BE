@@ -2,6 +2,7 @@ package com.beyond.meongnyang.chat.dto;
 
 import com.beyond.meongnyang.chat.entity.ChatMessage;
 import com.beyond.meongnyang.chat.entity.ChatRoom;
+import com.beyond.meongnyang.common.domain.Bool;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -16,10 +17,12 @@ public class ChatRoomSummaryRes {
     private String roomName;
     private String lastMessage;
     private String lastMessageTime;
-    private Long marketPostId;
     private Integer newMessageCount;
+    private Long marketPostId;
+    private Boolean isPurchaseApproved;
+    private Boolean isSold;
 
-    public static ChatRoomSummaryRes fromEntity(ChatRoom chatRoom, int newMessageCount) {
+    public static ChatRoomSummaryRes fromEntity(ChatRoom chatRoom, int newMessageCount, Boolean isSold) {
         String lastMessage = "메세지를 보내 채팅을 시작해보세요!";
         String lastMessageTime = chatRoom.getCreatedAt().toString();
 
@@ -34,6 +37,8 @@ public class ChatRoomSummaryRes {
                 .lastMessage(lastMessage)
                 .newMessageCount(newMessageCount)
                 .lastMessageTime(lastMessageTime)
+                .isPurchaseApproved(chatRoom.getIsPurchaseApproved() == Bool.TRUE)
+                .isSold(isSold)
                 .marketPostId(chatRoom.getMarketPost() == null ? null : chatRoom.getMarketPost().getId())
                 .build();
     }

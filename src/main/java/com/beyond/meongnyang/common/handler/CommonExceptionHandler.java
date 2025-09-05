@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.common.handler;
 
+import com.beyond.meongnyang.common.customexception.AlreadySoldException;
 import com.beyond.meongnyang.common.customexception.BlockDeniedException;
 import com.beyond.meongnyang.common.dto.CommonRes;
 import jakarta.persistence.EntityExistsException;
@@ -81,5 +82,11 @@ public class CommonExceptionHandler {
     public ResponseEntity<?> handleBlockDeniedException(BlockDeniedException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonRes.ofFailure(HttpStatus.FORBIDDEN.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(AlreadySoldException.class)
+    public ResponseEntity<?> handleAlreadySoldException(AlreadySoldException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(CommonRes.ofFailure(HttpStatus.CONFLICT.value(), e.getMessage()));
     }
 }
