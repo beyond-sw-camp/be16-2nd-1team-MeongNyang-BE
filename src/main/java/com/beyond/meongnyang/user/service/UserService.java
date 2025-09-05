@@ -191,11 +191,17 @@ public class UserService {
         if(user.getDelYn().equals("Y")) {
             throw new IllegalArgumentException("이미 탈퇴한 계정입니다.");
         }
-        userLockedService.resetFailedCount(user.getId());
-        user.unlockedAccount();
-        String tempPassword = userLockedService.generateTempPassword();
-        user.updatePassword(passwordEncoder.encode(tempPassword));
-        sendEmailService.sendTemporaryPassword(req.getEmail(), tempPassword);
+        user.updateCount(0);                                            // 실패시도 직접 초기화
+        user.unlockedAccount();                                         // 잠금 처리 초기화
+        String tempPassword = userLockedService.generateTempPassword(); // 임시비밀번호 발급
+        user.updatePassword(passwordEncoder.encode(tempPassword));      // 임시비밀번호 암호화
+
+        userRepository.saveAndFlush(user);
+
+        // 커밋 후 메일 발송 예약
+        System.out.println("[DEBUG] queuing mail for " + user.getEmail());
+        sendEmailService.queueTemporaryPassword(user.getEmail(), tempPassword);
+        // 메서드 종료 시 트랜잭션 커밋 → 그 다음 리스너가 발송
 
     }
 
