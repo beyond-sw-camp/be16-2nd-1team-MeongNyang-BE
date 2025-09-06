@@ -10,7 +10,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@ToString
 public class ProductImage extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,5 +21,4 @@ public class ProductImage extends CommonAt {
 
     @Column(length = 255, nullable = false)
     private String imageUrl;
-
 }

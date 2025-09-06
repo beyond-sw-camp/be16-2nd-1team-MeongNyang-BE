@@ -5,6 +5,7 @@ import com.beyond.meongnyang.chat.service.ChatRedisService;
 import com.beyond.meongnyang.chat.service.ChatService;
 import com.beyond.meongnyang.common.dto.CommonRes;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/chat-rooms")
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class ChatController {
     @PostMapping("")
     @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> createChatRoom(@RequestBody ChatRoomCreateReq chatRoomCreateReq) {
+        log.info("createChatRoom:{}", chatRoomCreateReq.getMarketPostId());
         ChatRoomSummaryRes chatRoomSummaryRes = chatService.createChatRoom(chatRoomCreateReq);
         chatRedisService.publishNewChatRoomToRedis(chatRoomSummaryRes);
         return ResponseEntity.status(HttpStatus.CREATED).body(
@@ -103,6 +106,7 @@ public class ChatController {
     @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> updateIsPurchaseApproved(@PathVariable Long roomId) {
         Boolean isPurchaseApproved = chatService.updateIsPurchaseApproved(roomId);
+        chatRedisService.publishApprovalStatusToRedis(roomId, isPurchaseApproved);
         return ResponseEntity.status(HttpStatus.OK).body(
                 CommonRes.ofSuccess(isPurchaseApproved, HttpStatus.OK.value(), "approval status updated")
         );

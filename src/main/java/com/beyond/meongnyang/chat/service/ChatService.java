@@ -7,9 +7,9 @@ import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
 import com.beyond.meongnyang.common.customexception.AlreadySoldException;
+import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.S3UploadService;
-import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.market.entity.MarketPost;
 import com.beyond.meongnyang.market.entity.SaleStatus;
 import com.beyond.meongnyang.market.repository.MarketPostRepository;
@@ -19,6 +19,7 @@ import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -103,10 +105,23 @@ public class ChatService {
     }
 
     public ChatRoomSummaryRes createChatRoom(ChatRoomCreateReq chatRoomCreateReq) {
+        MarketPost marketPost = null;
+        if (chatRoomCreateReq.getMarketPostId() != null)
+            marketPost = marketPostRepository.findById(chatRoomCreateReq.getMarketPostId()).orElse(null);
+
+        log.info("createChatRoom:{}", marketPost);
+
+        if (marketPost != null) {
+            Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findByMarketPostIdAndParticipant(marketPost.getId(), commonService.getCurrentUser().getId());
+            if (optionalChatRoom.isPresent()) {
+                // 어차피 거래글 상세 페이지에서 버튼을 누르고 응답을 받으니까 newMessageCount가 의미 없음 -> 그냥 0으로 보내버림
+                return ChatRoomSummaryRes.fromEntity(optionalChatRoom.get(), 0);
+            }
+        }
         // 채팅방 객체 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(chatRoomCreateReq.getRoomName())
-                .marketPost(marketPostRepository.findById(chatRoomCreateReq.getMarketPostId()).orElse(null))
+                .marketPost(marketPost)
                 .build();
 
         // 채팅방 참여자 객체 생성
@@ -124,29 +139,16 @@ public class ChatService {
         // 채팅방 참여자 저장
         chatRoomRepository.save(chatRoom);
 
-        return ChatRoomSummaryRes.fromEntity(chatRoom, 0, Boolean.FALSE);
+        return ChatRoomSummaryRes.fromEntity(chatRoom, 0);
     }
 
     public List<ChatRoomSummaryRes> getMyChatRooms() {
         User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
         List<ChatParticipant> myChatParticipantList = chatParticipantRepository.findAllByUser(user);
 
-        return myChatParticipantList.stream().map(myChatParticipant -> {
-            int newMessageCount = myChatParticipant.getChatRoom().getChatMessageList().size();
-            ChatMessage lastReadMessage = myChatParticipant.getLastReadMessage();
-
-            if (lastReadMessage != null)
-                newMessageCount = (int) myChatParticipant.getChatRoom().getChatMessageList().stream()
-                        .map(ChatMessage::getCreatedAt)
-                        .filter(createdAt -> createdAt.isAfter(lastReadMessage.getCreatedAt()))
-                        .count();
-
-            MarketPost marketPost = myChatParticipant.getChatRoom().getMarketPost();
-            Boolean isSold = marketPost != null
-                    && marketPost.getSaleStatus() == SaleStatus.SOLD;
-
-            return ChatRoomSummaryRes.fromEntity(myChatParticipant.getChatRoom(), newMessageCount, isSold);
-        }).toList();
+        return myChatParticipantList.stream().map(myChatParticipant ->
+                ChatRoomSummaryRes.fromEntity(myChatParticipant.getChatRoom(), getNewMessageCount(myChatParticipant))
+        ).toList();
 //        return myChatParticipantList.stream()
 //                .map(ChatParticipant::getChatRoom)
 //                .map(ChatRoomSummaryRes::fromEntity)
@@ -244,7 +246,8 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
         ChatParticipant chatParticipant = chatParticipantRepository.findByUserEmailAndChatRoom(userEmail, chatRoom).orElseThrow(() -> new EntityNotFoundException("participant not found"));
 
-        chatParticipant.read(chatRoom.getChatMessageList().get(chatRoom.getChatMessageList().size() - 1));
+        if (!chatRoom.getChatMessageList().isEmpty())
+            chatParticipant.read(chatRoom.getChatMessageList().get(chatRoom.getChatMessageList().size() - 1));
     }
 
     public List<String> uploadFiles(Long roomId, List<MultipartFile> files) {
@@ -284,12 +287,27 @@ public class ChatService {
                 .findFirst().orElseThrow(() -> new EntityNotFoundException("구매자가 없습니다."))
                 .getUser();
 
-        String title = chatRoom.getMarketPost().getTitle().length() > 5 ?
-                chatRoom.getMarketPost().getTitle().substring(0, 5) + "..." : chatRoom.getMarketPost().getTitle();
-        String notificationContent = title + "을 구매할 수 있습니다!";
+        if (chatRoom.getIsPurchaseApproved() == Bool.FALSE) {
+            String title = chatRoom.getMarketPost().getTitle().length() > 5 ?
+                    chatRoom.getMarketPost().getTitle().substring(0, 5) + "..." : chatRoom.getMarketPost().getTitle();
+            String notificationContent = title + "을 구매할 수 있습니다!";
 
-        notificationService.create(chatRoom.getId(), buyer, notificationContent, NotificationType.TRADE_APPROVED_PURCHASE);
+            notificationService.create(chatRoom.getId(), buyer, notificationContent, NotificationType.TRADE_APPROVED_PURCHASE);
+        }
 
         return chatRoom.updateIsPurchaseApproved();
+    }
+
+    private int getNewMessageCount(ChatParticipant myChatParticipant) {
+        int newMessageCount = myChatParticipant.getChatRoom().getChatMessageList().size();
+        ChatMessage lastReadMessage = myChatParticipant.getLastReadMessage();
+
+        if (lastReadMessage != null)
+            newMessageCount = (int) myChatParticipant.getChatRoom().getChatMessageList().stream()
+                    .map(ChatMessage::getCreatedAt)
+                    .filter(createdAt -> createdAt.isAfter(lastReadMessage.getCreatedAt()))
+                    .count();
+
+        return newMessageCount;
     }
 }

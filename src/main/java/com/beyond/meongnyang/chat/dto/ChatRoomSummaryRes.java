@@ -20,9 +20,8 @@ public class ChatRoomSummaryRes {
     private Integer newMessageCount;
     private Long marketPostId;
     private Boolean isPurchaseApproved;
-    private Boolean isSold;
 
-    public static ChatRoomSummaryRes fromEntity(ChatRoom chatRoom, int newMessageCount, Boolean isSold) {
+    public static ChatRoomSummaryRes fromEntity(ChatRoom chatRoom, int newMessageCount) {
         String lastMessage = "메세지를 보내 채팅을 시작해보세요!";
         String lastMessageTime = chatRoom.getCreatedAt().toString();
 
@@ -38,7 +37,6 @@ public class ChatRoomSummaryRes {
                 .newMessageCount(newMessageCount)
                 .lastMessageTime(lastMessageTime)
                 .isPurchaseApproved(chatRoom.getIsPurchaseApproved() == Bool.TRUE)
-                .isSold(isSold)
                 .marketPostId(chatRoom.getMarketPost() == null ? null : chatRoom.getMarketPost().getId())
                 .build();
     }
