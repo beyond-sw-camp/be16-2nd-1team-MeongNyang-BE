@@ -39,6 +39,7 @@ public class MarketPostDetailRes {
     private boolean isLiked;
     private String sellerProfileUrl;
     private String sellerEmail;
+    private String delYN;
 
     public static MarketPostDetailRes fromEntity(MarketPost post, boolean isLiked) {
 //        List<ProductImage>에서 각 요소(ProductImage 인스턴스)에 대해 getImageUrl() 메서드를 호출
@@ -67,6 +68,7 @@ public class MarketPostDetailRes {
                 .isLiked(isLiked)
                 .sellerProfileUrl(post.getSeller().getMainPet() == null ? "" : post.getSeller().getMainPet().getPetProfileUrl())
                 .sellerEmail(post.getSeller().getEmail())
+                .delYN(post.getDelYn())
                 .build();
     }
 }

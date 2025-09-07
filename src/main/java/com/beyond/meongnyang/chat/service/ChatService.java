@@ -277,6 +277,9 @@ public class ChatService {
         if (chatRoom.getMarketPost().getSaleStatus() == SaleStatus.SOLD)
             throw new AlreadySoldException("이미 판매한 물건입니다.");
 
+        if (chatRoom.getMarketPost().getDelYn().equals("Y"))
+            throw new EntityNotFoundException("삭제된 중고거래 글입니다.");
+
         // 판매자인지 검증
         if (!chatRoom.getMarketPost().getSeller().getId().equals(seller.getId()))
             throw new AccessDeniedException("판매자가 아닙니다.");
