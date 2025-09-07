@@ -10,6 +10,8 @@ import com.beyond.meongnyang.market.entity.Wishlist;
 import com.beyond.meongnyang.market.repository.MarketPostRepository;
 import com.beyond.meongnyang.market.repository.ProductImageRepository;
 import com.beyond.meongnyang.market.repository.WishlistRepository;
+import com.beyond.meongnyang.notification.entity.NotificationType;
+import com.beyond.meongnyang.notification.service.NotificationService;
 import com.beyond.meongnyang.user.entity.Role;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
@@ -36,6 +38,7 @@ public class MarketService {
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
     private final WishlistRepository wishlistRepository;
+    private final NotificationService notificationService;
 
     //    거래글 생성
     public Long createMarketPost(MarketPostCreateReq marketPostCreateReq,
@@ -132,7 +135,7 @@ public class MarketService {
             throw new AccessDeniedException("작성자 또는 관리자만 삭제 가능합니다.");
         }
         marketPost.deleteMarketPost("Y");
-    }
+        wishlistRepository.deleteByUserAndMarketPost(user ,marketPost);    }
 
     //    거래글 목록조회
     @Transactional(readOnly = true)
@@ -236,6 +239,10 @@ public class MarketService {
 
 //        5. save 및 wishlist 리턴
         wishlistRepository.save(wishlist);
+        if (!user.getId().equals(marketPost.getSeller().getId())) {
+            notificationService.create(user.getId(), marketPost.getSeller(),
+                    user.getName() + "님이 " + marketPost.getTitle() +"를 찜했습니다." , NotificationType.ADD_FOLLOW);
+        }
         return wishlist.getId();
     }
 
