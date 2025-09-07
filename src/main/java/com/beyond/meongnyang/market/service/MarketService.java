@@ -135,7 +135,8 @@ public class MarketService {
             throw new AccessDeniedException("작성자 또는 관리자만 삭제 가능합니다.");
         }
         marketPost.deleteMarketPost("Y");
-        wishlistRepository.deleteByUserAndMarketPost(user ,marketPost);    }
+        wishlistRepository.deleteAllByMarketPost(marketPost);
+    }
 
     //    거래글 목록조회
     @Transactional(readOnly = true)
