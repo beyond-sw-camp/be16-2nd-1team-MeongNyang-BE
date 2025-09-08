@@ -1,7 +1,9 @@
 package com.beyond.meongnyang.common.handler;
 
 import com.beyond.meongnyang.common.customexception.AlreadySoldException;
+import com.beyond.meongnyang.common.customexception.AmountMismatchException;
 import com.beyond.meongnyang.common.customexception.BlockDeniedException;
+import com.beyond.meongnyang.common.customexception.TossPaymentException;
 import com.beyond.meongnyang.common.dto.CommonRes;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -88,5 +90,19 @@ public class CommonExceptionHandler {
     public ResponseEntity<?> handleAlreadySoldException(AlreadySoldException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(CommonRes.ofFailure(HttpStatus.CONFLICT.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(TossPaymentException.class)
+    public ResponseEntity<?> handleTossPaymentException(TossPaymentException e) {
+        log.error(e.getMessage());
+
+        return ResponseEntity.status(e.getStatusCode()).body(CommonRes.ofFailure(e.getStatusCode().value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(AmountMismatchException.class)
+    public ResponseEntity<?> handleAmountMismatchException(AmountMismatchException e) {
+        log.error(e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonRes.ofFailure(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
     }
 }

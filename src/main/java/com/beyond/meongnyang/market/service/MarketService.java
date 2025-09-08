@@ -3,7 +3,10 @@ package com.beyond.meongnyang.market.service;
 import com.beyond.meongnyang.admin.repository.ReportRepository;
 import com.beyond.meongnyang.chat.entity.ChatRoom;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
+import com.beyond.meongnyang.chat.service.ChatRedisService;
 import com.beyond.meongnyang.common.customexception.AlreadySoldException;
+import com.beyond.meongnyang.common.customexception.AmountMismatchException;
+import com.beyond.meongnyang.common.customexception.TossPaymentException;
 import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.S3UploadService;
@@ -17,8 +20,7 @@ import com.beyond.meongnyang.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.RequiredArgsConstructor;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -26,20 +28,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.time.LocalDateTime;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -58,6 +56,7 @@ public class MarketService {
 
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
+    private final ChatRedisService chatRedisService;
 
     @Value("${toss.secret-key}")
     private String tossSecretKey;
@@ -360,7 +359,7 @@ public class MarketService {
         if (marketPost.getSaleStatus() == SaleStatus.SOLD) throw new AlreadySoldException("이미 판매된 제품입니다.");
 
         // 결제 금액 검증
-        if (marketPost.getPrice() != req.getAmount()) throw new BadCredentialsException("판매자가 설정한 금액과 다릅니다.");
+        if (marketPost.getPrice() != req.getAmount()) throw new AmountMismatchException("판매자가 설정한 금액과 다릅니다.");
 
         // 1. Toss API 요청 헤더 준비
         HttpHeaders headers = new HttpHeaders();
@@ -372,11 +371,16 @@ public class MarketService {
 
         // 3. Toss 결제 승인 API 호출
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<PaymentConfirmRes> response = restTemplate.postForEntity(
-                "https://api.tosspayments.com/v1/payments/confirm",
-                entity,
-                PaymentConfirmRes.class
-        );
+        ResponseEntity<PaymentConfirmRes> response = null;
+        try {
+            response = restTemplate.postForEntity(
+                    "https://api.tosspayments.com/v1/payments/confirm",
+                    entity,
+                    PaymentConfirmRes.class
+            );
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            throw new TossPaymentException(e.getStatusCode(), e.getResponseBodyAsString(), e);
+        }
         PaymentConfirmRes result = response.getBody();
 
         // 4. 판매자 포인트 적립
@@ -399,6 +403,8 @@ public class MarketService {
         String notificationContent = title + "이 판매되었습니다!";
 
         notificationService.create(marketPost.getId(), marketPost.getSeller(), notificationContent, NotificationType.TRADE_SOLD);
+
+        chatRoomRepository.findByMarketPost(marketPost).forEach(cr -> chatRedisService.publishSaleStatusToRedis(cr.getId(), SaleStatus.SOLD));
 
         return result;
     }
