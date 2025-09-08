@@ -6,13 +6,20 @@ import com.beyond.meongnyang.chat.entity.*;
 import com.beyond.meongnyang.chat.repository.ChatMessageRepository;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
+import com.beyond.meongnyang.common.customexception.AlreadySoldException;
+import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.S3UploadService;
-import com.beyond.meongnyang.common.domain.Bool;
+import com.beyond.meongnyang.market.entity.MarketPost;
+import com.beyond.meongnyang.market.entity.SaleStatus;
+import com.beyond.meongnyang.market.repository.MarketPostRepository;
+import com.beyond.meongnyang.notification.entity.NotificationType;
+import com.beyond.meongnyang.notification.service.NotificationService;
 import com.beyond.meongnyang.user.entity.User;
 import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -21,10 +28,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -36,6 +45,8 @@ public class ChatService {
     private final ReportRepository reportRepository;
     private final S3UploadService s3UploadService;
     private final CommonService commonService;
+    private final MarketPostRepository marketPostRepository;
+    private final NotificationService notificationService;
 
 //    @Autowired
 //    public ChatService(UserRepository userRepository, ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, ChatParticipantRepository chatParticipantRepository) {
@@ -94,9 +105,23 @@ public class ChatService {
     }
 
     public ChatRoomSummaryRes createChatRoom(ChatRoomCreateReq chatRoomCreateReq) {
+        MarketPost marketPost = null;
+        if (chatRoomCreateReq.getMarketPostId() != null)
+            marketPost = marketPostRepository.findById(chatRoomCreateReq.getMarketPostId()).orElse(null);
+
+        log.info("createChatRoom:{}", marketPost);
+
+        if (marketPost != null) {
+            Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findByMarketPostIdAndParticipant(marketPost.getId(), commonService.getCurrentUser().getId());
+            if (optionalChatRoom.isPresent()) {
+                // 어차피 거래글 상세 페이지에서 버튼을 누르고 응답을 받으니까 newMessageCount가 의미 없음 -> 그냥 0으로 보내버림
+                return ChatRoomSummaryRes.fromEntity(optionalChatRoom.get(), 0);
+            }
+        }
         // 채팅방 객체 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(chatRoomCreateReq.getRoomName())
+                .marketPost(marketPost)
                 .build();
 
         // 채팅방 참여자 객체 생성
@@ -110,8 +135,6 @@ public class ChatService {
             chatRoom.getChatParticipantList().add(chatParticipant);
         });
 
-        // 참여자가 2명을 넘기면 그룹챗으로 상태 변경
-        if (chatRoom.getChatParticipantList().size() > 2) chatRoom.updateIsGroupChat(Bool.TRUE);
 
         // 채팅방 참여자 저장
         chatRoomRepository.save(chatRoom);
@@ -123,18 +146,9 @@ public class ChatService {
         User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
         List<ChatParticipant> myChatParticipantList = chatParticipantRepository.findAllByUser(user);
 
-        return myChatParticipantList.stream().map(myChatParticipant -> {
-            int newMessageCount = myChatParticipant.getChatRoom().getChatMessageList().size();
-            ChatMessage lastReadMessage = myChatParticipant.getLastReadMessage();
-
-            if (lastReadMessage != null)
-                newMessageCount = (int) myChatParticipant.getChatRoom().getChatMessageList().stream()
-                        .map(ChatMessage::getCreatedAt)
-                        .filter(createdAt -> createdAt.isAfter(lastReadMessage.getCreatedAt()))
-                        .count();
-
-            return ChatRoomSummaryRes.fromEntity(myChatParticipant.getChatRoom(), newMessageCount);
-        }).toList();
+        return myChatParticipantList.stream().map(myChatParticipant ->
+                ChatRoomSummaryRes.fromEntity(myChatParticipant.getChatRoom(), getNewMessageCount(myChatParticipant))
+        ).toList();
 //        return myChatParticipantList.stream()
 //                .map(ChatParticipant::getChatRoom)
 //                .map(ChatRoomSummaryRes::fromEntity)
@@ -143,6 +157,8 @@ public class ChatService {
 
     public List<ChatParticipantAddRes> inviteUsers(Long roomId, List<ChatParticipantAddReq> chatParticipantAddReqList) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+
+        if (chatRoom.getMarketPost() != null) throw new AccessDeniedException("중고거래 채팅방은 초대 불가능");
 
         User inviter = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
 
@@ -167,8 +183,6 @@ public class ChatService {
                 chatRoom.getChatParticipantList().add(chatParticipant);
             }
         });
-
-        if (chatRoom.getChatParticipantList().size() > 2) chatRoom.updateIsGroupChat(Bool.TRUE);
 
         return chatParticipantAddReqList.stream()
                 .map(req ->
@@ -228,11 +242,12 @@ public class ChatService {
 //        chatParticipant.read(chatRoom.getChatParticipantList().get(chatRoom.getChatMessageList().size() - 1).getLastReadMessage());
 //    }
 
-    public void readMessages(Long roomId,String userEmail) {
+    public void readMessages(Long roomId, String userEmail) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
         ChatParticipant chatParticipant = chatParticipantRepository.findByUserEmailAndChatRoom(userEmail, chatRoom).orElseThrow(() -> new EntityNotFoundException("participant not found"));
 
-        chatParticipant.read(chatRoom.getChatMessageList().get(chatRoom.getChatMessageList().size() - 1));
+        if (!chatRoom.getChatMessageList().isEmpty())
+            chatParticipant.read(chatRoom.getChatMessageList().get(chatRoom.getChatMessageList().size() - 1));
     }
 
     public List<String> uploadFiles(Long roomId, List<MultipartFile> files) {
@@ -247,7 +262,55 @@ public class ChatService {
     // ToDo : 컨트롤러 부분만 설계 부탁드립니다.
     public void reportChatMessage(Long chatMessageId, ChatMessageReportCreateReq chatMessageReportCreateReq) {
         User reportUser = commonService.getCurrentUser();
-        ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId).orElseThrow(()-> new EntityNotFoundException("해당 채팅 메시지가 존재하지 않습니다."));
+        ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId).orElseThrow(() -> new EntityNotFoundException("해당 채팅 메시지가 존재하지 않습니다."));
         reportRepository.save(chatMessageReportCreateReq.ReportToEntity(chatMessage, reportUser));
+    }
+
+    public Boolean updateIsPurchaseApproved(Long roomId) {
+        User seller = commonService.getCurrentUser();
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
+
+        // 판매 방인지 검증
+        if (chatRoom.getMarketPost() == null) throw new EntityNotFoundException("판매하는 물건이 없습니다.");
+
+        // 판매 여부 검증
+        if (chatRoom.getMarketPost().getSaleStatus() == SaleStatus.SOLD)
+            throw new AlreadySoldException("이미 판매한 물건입니다.");
+
+        if (chatRoom.getMarketPost().getDelYn().equals("Y"))
+            throw new EntityNotFoundException("삭제된 중고거래 글입니다.");
+
+        // 판매자인지 검증
+        if (!chatRoom.getMarketPost().getSeller().getId().equals(seller.getId()))
+            throw new AccessDeniedException("판매자가 아닙니다.");
+
+        // 구매하려는 사람이 채팅방에 있는 지 확인하면서 가져오기
+        User buyer = chatRoom.getChatParticipantList().stream()
+                .filter(cp -> !cp.getUser().getId().equals(seller.getId()))
+                .findFirst().orElseThrow(() -> new EntityNotFoundException("구매자가 없습니다."))
+                .getUser();
+
+        if (chatRoom.getIsPurchaseApproved() == Bool.FALSE) {
+            String title = chatRoom.getMarketPost().getTitle().length() > 5 ?
+                    chatRoom.getMarketPost().getTitle().substring(0, 5) + "..." : chatRoom.getMarketPost().getTitle();
+            String notificationContent = title + "을 구매할 수 있습니다!";
+
+            notificationService.create(chatRoom.getId(), buyer, notificationContent, NotificationType.TRADE_APPROVED_PURCHASE);
+        }
+
+        return chatRoom.updateIsPurchaseApproved();
+    }
+
+    private int getNewMessageCount(ChatParticipant myChatParticipant) {
+        int newMessageCount = myChatParticipant.getChatRoom().getChatMessageList().size();
+        ChatMessage lastReadMessage = myChatParticipant.getLastReadMessage();
+
+        if (lastReadMessage != null)
+            newMessageCount = (int) myChatParticipant.getChatRoom().getChatMessageList().stream()
+                    .map(ChatMessage::getCreatedAt)
+                    .filter(createdAt -> createdAt.isAfter(lastReadMessage.getCreatedAt()))
+                    .count();
+
+        return newMessageCount;
     }
 }

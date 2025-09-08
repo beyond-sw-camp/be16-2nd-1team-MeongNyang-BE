@@ -15,7 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@ToString
 public class MarketPost extends CommonAt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
