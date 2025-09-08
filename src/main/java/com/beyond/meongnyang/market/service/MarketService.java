@@ -240,8 +240,8 @@ public class MarketService {
 //        5. save 및 wishlist 리턴
         wishlistRepository.save(wishlist);
         if (!user.getId().equals(marketPost.getSeller().getId())) {
-            notificationService.create(user.getId(), marketPost.getSeller(),
-                    user.getName() + "님이 " + marketPost.getTitle() +"를 찜했습니다." , NotificationType.ADD_FOLLOW);
+            notificationService.create(marketPost.getId(), marketPost.getSeller(),
+                    user.getName() + "님이 " + marketPost.getTitle() +"를 찜했습니다." , NotificationType.LIKE);
         }
         return wishlist.getId();
     }
