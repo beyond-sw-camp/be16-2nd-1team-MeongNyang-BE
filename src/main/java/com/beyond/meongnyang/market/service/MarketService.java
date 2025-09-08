@@ -4,25 +4,31 @@ import com.beyond.meongnyang.admin.repository.ReportRepository;
 import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.S3UploadService;
 import com.beyond.meongnyang.market.dto.*;
-import com.beyond.meongnyang.market.entity.MarketPost;
-import com.beyond.meongnyang.market.entity.ProductImage;
-import com.beyond.meongnyang.market.entity.Wishlist;
-import com.beyond.meongnyang.market.repository.MarketPostRepository;
-import com.beyond.meongnyang.market.repository.ProductImageRepository;
-import com.beyond.meongnyang.market.repository.WishlistRepository;
+import com.beyond.meongnyang.market.entity.*;
+import com.beyond.meongnyang.market.repository.*;
 import com.beyond.meongnyang.user.entity.Role;
 import com.beyond.meongnyang.user.entity.User;
-import com.beyond.meongnyang.user.repository.UserRepository;
 import jakarta.persistence.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -33,9 +39,15 @@ public class MarketService {
     private final ProductImageRepository productImageRepository;
     private final S3UploadService s3UploadService;
     private final CommonService commonService;
-    private final UserRepository userRepository;
     private final ReportRepository reportRepository;
     private final WishlistRepository wishlistRepository;
+    private final TransactionRepository transactionRepository;
+    private final PointTransactionRepository pointTransactionRepository;
+    @Qualifier("paymentInventory")
+    private final RedisTemplate<String, String> paymentRedisTemplate;
+
+    @Value("${toss.secret-key}")
+    private String tossSecretKey;
 
     //    거래글 생성
     public Long createMarketPost(MarketPostCreateReq marketPostCreateReq,
@@ -168,7 +180,6 @@ public class MarketService {
         return MarketPostDetailRes.fromEntity(marketPost, alreadyLiked);
     }
 
-    //    TODO : 결제기능 구현 후에 buyer 세팅 가능
 //    구매목록 조회
     @Transactional(readOnly = true)
     public Page<MarketPostListRes> findPurchases(Pageable pageable) {
@@ -191,7 +202,7 @@ public class MarketService {
         });
     }
 
-    //    판매목록 조회
+//    판매목록 조회
     @Transactional(readOnly = true)
     public Page<MarketPostListRes> findSales(Pageable pageable) {
 //        1. 로그인한 사용자 정보 가져오기
@@ -301,4 +312,69 @@ public class MarketService {
         });
     }
 
+    // 금액 임시 저장
+    public void saveAmount(SaveAmountReq req) {
+        paymentRedisTemplate.opsForValue().set(req.getOrderId(), String.valueOf(req.getAmount()));
+    }
+
+    // 결제 금액 검증
+        public void verifyAmount(SaveAmountReq req) {
+        String savedAmount = paymentRedisTemplate.opsForValue().get(req.getOrderId());
+
+        if (savedAmount == null || !savedAmount.equals(String.valueOf(req.getAmount()))) {
+            throw new IllegalStateException("결제 금액이 불일치합니다");
+        }
+
+        paymentRedisTemplate.delete(req.getOrderId());
+    }
+
+    // 결제 승인
+    public PaymentConfirmRes confirmPayment(PaymentConfirmReq req) {
+        // 1. Toss API 요청 헤더 준비
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(tossSecretKey, "");
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // 2. Toss API 요청 바디 준비
+        Map<String, Object> body = new HashMap<>();
+        body.put("paymentKey", req.getPaymentKey());
+        body.put("orderId", req.getOrderId());
+        body.put("amount", req.getAmount());
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+        // 3. Toss 결제 승인 API 호출
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<PaymentConfirmRes> response = restTemplate.postForEntity(
+                "https://api.tosspayments.com/v1/payments/confirm",
+                entity,
+                PaymentConfirmRes.class
+        );
+        PaymentConfirmRes result = response.getBody();
+
+        // 4. orderName = "상품명 (post-123)" → postId 추출
+        String orderName = result.getOrderName();
+        Long postId = Long.parseLong(orderName.substring(orderName.lastIndexOf("(post-") + 6, orderName.length() - 1));
+
+        MarketPost post = marketPostRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("없는 거래글입니다."));
+
+        // 5. 판매자 포인트 적립
+        User seller = post.getSeller();
+        seller.earnPoints(post.getPrice());
+
+        // 6. 포인트 적립 내역 기록
+        PointTransaction pointTransaction = PointTransaction.earn(seller, post.getPrice());
+        pointTransactionRepository.save(pointTransaction);
+
+        // 7. 구매자 정보 세팅 + 판매 상태 변경
+        User buyer = commonService.getCurrentUser();
+        post.markSold(buyer);
+
+        // 8. Transaction 저장
+        Transaction transaction = Transaction.create(post, buyer, req.getPaymentKey(), result.getMethod());
+        transactionRepository.save(transaction);
+
+        return result;
+    }
 }

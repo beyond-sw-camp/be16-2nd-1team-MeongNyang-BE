@@ -1,9 +1,7 @@
 package com.beyond.meongnyang.market.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
-import com.beyond.meongnyang.market.dto.MarketPostCreateReq;
-import com.beyond.meongnyang.market.dto.MarketPostListRes;
-import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
+import com.beyond.meongnyang.market.dto.*;
 import com.beyond.meongnyang.market.service.MarketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -117,8 +115,8 @@ public class MarketController {
         );
     }
 
-    //    찜하기
-    @PostMapping("/{id}/like")
+    // 찜하기
+    @PostMapping("/{id}/likes")
     @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> likeMarketPost(@PathVariable("id") Long postId) {
         Long wishListId = marketService.likeMarketPost(postId);
@@ -131,8 +129,8 @@ public class MarketController {
         );
     }
 
-    //    찜 취소
-    @DeleteMapping("/{id}/like")
+    // 찜 취소
+    @DeleteMapping("/{id}/likes")
     @PreAuthorize("@securityCheck.checkUserAccess()")
     public ResponseEntity<?> unlikeMarketPost(@PathVariable("id") Long postId) {
         marketService.unlikeMarketPost(postId);
@@ -145,10 +143,53 @@ public class MarketController {
         );
     }
 
-    //    찜 목록조회
-    @GetMapping("/like")
+    // 찜 목록조회
+    @GetMapping("/likes")
     public ResponseEntity<?> findWishlist(@PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<MarketPostListRes> page = marketService.findWishlist(pageable);
         return ResponseEntity.ok(page);
+    }
+
+    // 금액 임시 저장
+    @PostMapping("/payments/saveAmount")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
+    public ResponseEntity<?> saveAmount(@RequestBody SaveAmountReq req) {
+        marketService.saveAmount(req);
+        return new ResponseEntity<>(
+            CommonRes.ofSuccess(
+                    null,
+                    HttpStatus.OK.value(),
+                    "금액 임시저장에 성공했습니다."),
+            HttpStatus.OK
+        );
+    }
+
+    // 결제 금액 검증
+    @PostMapping("/payments/verifyAmount")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
+    public ResponseEntity<?> verifyAmount(@RequestBody SaveAmountReq req) {
+        marketService.verifyAmount(req);
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        null,
+                        HttpStatus.OK.value(),
+                        "금액 검증에 성공했습니다."
+                ),
+                HttpStatus.OK
+        );
+    }
+
+    // 결제 승인
+    @PostMapping("/payments/confirm")
+    @PreAuthorize("@securityCheck.checkUserAccess()")
+    public ResponseEntity<?> confirmPayment(@RequestBody PaymentConfirmReq req) {
+        PaymentConfirmRes res = marketService.confirmPayment(req);
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        res,
+                        HttpStatus.OK.value(),
+                        "결제 승인 완료했습니다."),
+                HttpStatus.OK
+        );
     }
 }
