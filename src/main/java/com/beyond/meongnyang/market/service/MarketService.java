@@ -1,29 +1,44 @@
 package com.beyond.meongnyang.market.service;
 
 import com.beyond.meongnyang.admin.repository.ReportRepository;
+import com.beyond.meongnyang.chat.entity.ChatRoom;
+import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
+import com.beyond.meongnyang.common.customexception.AlreadySoldException;
+import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.S3UploadService;
 import com.beyond.meongnyang.market.dto.*;
-import com.beyond.meongnyang.market.entity.MarketPost;
-import com.beyond.meongnyang.market.entity.ProductImage;
-import com.beyond.meongnyang.market.entity.Wishlist;
-import com.beyond.meongnyang.market.repository.MarketPostRepository;
-import com.beyond.meongnyang.market.repository.ProductImageRepository;
-import com.beyond.meongnyang.market.repository.WishlistRepository;
+import com.beyond.meongnyang.market.entity.*;
+import com.beyond.meongnyang.market.repository.*;
+import com.beyond.meongnyang.notification.entity.NotificationType;
+import com.beyond.meongnyang.notification.service.NotificationService;
 import com.beyond.meongnyang.user.entity.Role;
 import com.beyond.meongnyang.user.entity.User;
-import com.beyond.meongnyang.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.RequiredArgsConstructor;
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.*;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Objects;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +48,19 @@ public class MarketService {
     private final ProductImageRepository productImageRepository;
     private final S3UploadService s3UploadService;
     private final CommonService commonService;
-    private final UserRepository userRepository;
     private final ReportRepository reportRepository;
     private final WishlistRepository wishlistRepository;
+    private final TransactionRepository transactionRepository;
+    private final PointTransactionRepository pointTransactionRepository;
+    @Qualifier("paymentInventory")
+    private final RedisTemplate<String, String> paymentRedisTemplate;
+    private final ChatRoomRepository chatRoomRepository;
+
+    private final ObjectMapper objectMapper;
+    private final NotificationService notificationService;
+
+    @Value("${toss.secret-key}")
+    private String tossSecretKey;
 
     //    거래글 생성
     public Long createMarketPost(MarketPostCreateReq marketPostCreateReq,
@@ -50,7 +75,7 @@ public class MarketService {
         marketPost.setSeller(user);
 
 //        4. 이미지 컬럼 저장
-        if(imageFiles != null && !imageFiles.isEmpty()){
+        if (imageFiles != null && !imageFiles.isEmpty()) {
 //            이미지 업로드 - s3
             List<String> urls = s3UploadService.upload(imageFiles);
 //            이미지 업로드 - db
@@ -79,7 +104,7 @@ public class MarketService {
 //        1. 로그인한 사용자 정보 가져오기
         User user = commonService.getCurrentUser();
 //        2. 거래글 찾아오기
-        MarketPost marketPost =  marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 거래글입니다."));
+        MarketPost marketPost = marketPostRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("없는 거래글입니다."));
 
 //        작성자 확인
         if (!Objects.equals(user.getId(), marketPost.getSeller().getId())) {
@@ -90,7 +115,7 @@ public class MarketService {
         marketPost.updateMarketPost(marketPostUpdateReq);
 
 //        4. 이미지 업데이트
-        if(imageFiles != null && !imageFiles.isEmpty()) {
+        if (imageFiles != null && !imageFiles.isEmpty()) {
 //            기존 이미지 S3 삭제
             List<ProductImage> productImageList = marketPost.getProductImageList();
             for (ProductImage productImage : productImageList) {
@@ -125,7 +150,7 @@ public class MarketService {
         User user = commonService.getCurrentUser();
 
 //        2. 거래글 찾아오기
-        MarketPost marketPost =  marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 거래글입니다."));
+        MarketPost marketPost = marketPostRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("없는 거래글입니다."));
 
         // 작성자 확인 (로그인한 사용자, 거래글 작성자)
         if (!Objects.equals(user.getId(), marketPost.getSeller().getId()) && user.getRole() != Role.ADMIN) {
@@ -160,7 +185,7 @@ public class MarketService {
     @Transactional(readOnly = true)
     public MarketPostDetailRes marketPostDetail(Long id) {
         User user = commonService.getCurrentUser();
-        MarketPost marketPost = marketPostRepository.findById(id).orElseThrow(()->new EntityNotFoundException("없는 거래글입니다."));
+        MarketPost marketPost = marketPostRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("없는 거래글입니다."));
 
         // 찜여부 확인
         boolean alreadyLiked = wishlistRepository.existsByUserAndMarketPost(user, marketPost);
@@ -168,8 +193,7 @@ public class MarketService {
         return MarketPostDetailRes.fromEntity(marketPost, alreadyLiked);
     }
 
-    //    TODO : 결제기능 구현 후에 buyer 세팅 가능
-//    구매목록 조회
+    //    구매목록 조회
     @Transactional(readOnly = true)
     public Page<MarketPostListRes> findPurchases(Pageable pageable) {
 //        1. 로그인한 사용자 정보 가져오기
@@ -224,7 +248,7 @@ public class MarketService {
 
 //        3. 중복 찜 여부 확인하기
         boolean alreadLiked = wishlistRepository.existsByUserAndMarketPost(user, marketPost);
-        if(alreadLiked) {
+        if (alreadLiked) {
             throw new IllegalStateException("이미 찜한 거래글입니다.");
         }
 
@@ -277,7 +301,7 @@ public class MarketService {
     // 거래글 신고하기
     public void reportMarketPost(Long marketPostId, MarketReportCreateReq marketReportCreateReq) {
         User reportUser = commonService.getCurrentUser();
-        MarketPost marketPost = marketPostRepository.findById(marketPostId).orElseThrow(()-> new EntityNotFoundException("해당 거래글이 존재하지 않습니다."));
+        MarketPost marketPost = marketPostRepository.findById(marketPostId).orElseThrow(() -> new EntityNotFoundException("해당 거래글이 존재하지 않습니다."));
         reportRepository.save(marketReportCreateReq.ReportToEntity(marketPost, reportUser));
     }
 
@@ -301,4 +325,81 @@ public class MarketService {
         });
     }
 
+    // 금액 임시 저장
+    public void saveAmount(SaveAmountReq req) {
+        paymentRedisTemplate.opsForValue().set(req.getOrderId(), String.valueOf(req.getAmount()));
+    }
+
+    // 결제 금액 검증
+    public void verifyAmount(SaveAmountReq req) {
+        String savedAmount = paymentRedisTemplate.opsForValue().get(req.getOrderId());
+
+        if (savedAmount == null || !savedAmount.equals(String.valueOf(req.getAmount()))) {
+            throw new IllegalStateException("결제 금액이 불일치합니다");
+        }
+
+        paymentRedisTemplate.delete(req.getOrderId());
+    }
+
+    // 결제 승인
+    public PaymentConfirmRes confirmPayment(PaymentConfirmReq req) {
+        User buyer = commonService.getCurrentUser();
+        String[] orderSplit = req.getOrderId().split("_");
+        Long roomId = Long.parseLong(orderSplit[2]);
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException(""));
+        MarketPost marketPost = chatRoom.getMarketPost();
+
+        // 허가받은 채팅방에 소속되어 있는지 구매 요청을 받았는 지 검증
+        if (chatRoom.getChatParticipantList().stream().noneMatch(cp -> cp.getUser().getId().equals(buyer.getId())))
+            throw new AccessDeniedException("채팅방에 구매자로 속해 있지 않습니다.");
+
+        if (chatRoom.getIsPurchaseApproved() == Bool.FALSE)
+            throw new AccessDeniedException("판매자가 결제요청을 하지 않았습니다.");
+
+        // 이미 판매되었는 지 검증
+        if (marketPost.getSaleStatus() == SaleStatus.SOLD) throw new AlreadySoldException("이미 판매된 제품입니다.");
+
+        // 결제 금액 검증
+        if (marketPost.getPrice() != req.getAmount()) throw new BadCredentialsException("판매자가 설정한 금액과 다릅니다.");
+
+        // 1. Toss API 요청 헤더 준비
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(tossSecretKey, "");
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // 2. Toss API 요청 바디 준비
+        HttpEntity<PaymentConfirmReq> entity = new HttpEntity<>(req, headers);
+
+        // 3. Toss 결제 승인 API 호출
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<PaymentConfirmRes> response = restTemplate.postForEntity(
+                "https://api.tosspayments.com/v1/payments/confirm",
+                entity,
+                PaymentConfirmRes.class
+        );
+        PaymentConfirmRes result = response.getBody();
+
+        // 4. 판매자 포인트 적립
+        User seller = marketPost.getSeller();
+        seller.earnPoints(marketPost.getPrice());
+
+        // 5. 포인트 적립 내역 기록
+        PointTransaction pointTransaction = PointTransaction.earn(seller, marketPost.getPrice());
+        pointTransactionRepository.save(pointTransaction);
+
+        // 6. 구매자 정보 세팅 + 판매 상태 변경
+        marketPost.markSold(buyer);
+
+        // 7. Transaction 저장
+        Transaction transaction = Transaction.create(marketPost, buyer, req.getPaymentKey(), result.getMethod());
+        transactionRepository.save(transaction);
+
+        String title = chatRoom.getMarketPost().getTitle().length() > 5 ?
+                chatRoom.getMarketPost().getTitle().substring(0, 5) + "..." : chatRoom.getMarketPost().getTitle();
+        String notificationContent = title + "이 판매되었습니다!";
+
+        notificationService.create(marketPost.getId(), marketPost.getSeller(), notificationContent, NotificationType.TRADE_SOLD);
+
+        return result;
+    }
 }

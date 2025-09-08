@@ -8,4 +8,5 @@ public enum NotificationType {
     CHAT, // 채팅방
     NOTICE, // 공지
     TRADE_APPROVED_PURCHASE, // 중고거래
+    TRADE_SOLD
 }
