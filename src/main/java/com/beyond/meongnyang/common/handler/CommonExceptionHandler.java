@@ -93,7 +93,7 @@ public class CommonExceptionHandler {
     }
 
     @ExceptionHandler(TossPaymentException.class)
-    public ResponseEntity<?> handleTossPayementException(TossPaymentException e) {
+    public ResponseEntity<?> handleTossPaymentException(TossPaymentException e) {
         log.error(e.getMessage());
 
         return ResponseEntity.status(e.getStatusCode()).body(CommonRes.ofFailure(e.getStatusCode().value(), e.getMessage()));

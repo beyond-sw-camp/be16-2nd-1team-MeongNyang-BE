@@ -380,20 +380,7 @@ public class MarketService {
                     PaymentConfirmRes.class
             );
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-
-            JsonNode rootNode = null;
-            try {
-                rootNode = objectMapper.readTree(e.getMessage());
-            } catch (JsonProcessingException ex) {
-                throw new RuntimeException(ex);
-            }
-
-            String code = rootNode.path("code").asText();
-            String message = rootNode.path("message").asText();
-
-            log.info(rootNode.toString());
-
-            throw new TossPaymentException(e.getStatusCode(), e.getMessage(), e);
+            throw new TossPaymentException(e.getStatusCode(), e.getResponseBodyAsString(), e);
         }
         PaymentConfirmRes result = response.getBody();
 
