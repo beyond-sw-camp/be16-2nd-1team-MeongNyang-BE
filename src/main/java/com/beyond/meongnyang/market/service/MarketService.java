@@ -3,6 +3,7 @@ package com.beyond.meongnyang.market.service;
 import com.beyond.meongnyang.admin.repository.ReportRepository;
 import com.beyond.meongnyang.chat.entity.ChatRoom;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
+import com.beyond.meongnyang.chat.service.ChatRedisService;
 import com.beyond.meongnyang.common.customexception.AlreadySoldException;
 import com.beyond.meongnyang.common.customexception.TossPaymentException;
 import com.beyond.meongnyang.common.domain.Bool;
@@ -58,6 +59,7 @@ public class MarketService {
 
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
+    private final ChatRedisService chatRedisService;
 
     @Value("${toss.secret-key}")
     private String tossSecretKey;
@@ -404,6 +406,8 @@ public class MarketService {
         String notificationContent = title + "이 판매되었습니다!";
 
         notificationService.create(marketPost.getId(), marketPost.getSeller(), notificationContent, NotificationType.TRADE_SOLD);
+
+        chatRoomRepository.findByMarketPost(marketPost).forEach(cr -> chatRedisService.publishSaleStatusToRedis(cr.getId(), SaleStatus.SOLD));
 
         return result;
     }

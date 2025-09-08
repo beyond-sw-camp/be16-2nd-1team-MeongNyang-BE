@@ -180,6 +180,7 @@ public class RedisConfig {
         container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/chat-online-participants"));
         container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/new"));
         container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/approval-status"));
+        container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/sale-status"));
         return container;
     }
 
