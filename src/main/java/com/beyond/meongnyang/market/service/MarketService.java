@@ -4,6 +4,7 @@ import com.beyond.meongnyang.admin.repository.ReportRepository;
 import com.beyond.meongnyang.chat.entity.ChatRoom;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
 import com.beyond.meongnyang.common.customexception.AlreadySoldException;
+import com.beyond.meongnyang.common.customexception.TossPaymentException;
 import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.S3UploadService;
@@ -14,11 +15,13 @@ import com.beyond.meongnyang.notification.entity.NotificationType;
 import com.beyond.meongnyang.notification.service.NotificationService;
 import com.beyond.meongnyang.user.entity.Role;
 import com.beyond.meongnyang.user.entity.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.RequiredArgsConstructor;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -29,17 +32,14 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.time.LocalDateTime;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -372,11 +372,29 @@ public class MarketService {
 
         // 3. Toss 결제 승인 API 호출
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<PaymentConfirmRes> response = restTemplate.postForEntity(
-                "https://api.tosspayments.com/v1/payments/confirm",
-                entity,
-                PaymentConfirmRes.class
-        );
+        ResponseEntity<PaymentConfirmRes> response = null;
+        try {
+            response = restTemplate.postForEntity(
+                    "https://api.tosspayments.com/v1/payments/confirm",
+                    entity,
+                    PaymentConfirmRes.class
+            );
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+
+            JsonNode rootNode = null;
+            try {
+                rootNode = objectMapper.readTree(e.getMessage());
+            } catch (JsonProcessingException ex) {
+                throw new RuntimeException(ex);
+            }
+
+            String code = rootNode.path("code").asText();
+            String message = rootNode.path("message").asText();
+
+            log.info(rootNode.toString());
+
+            throw new TossPaymentException(e.getStatusCode(), e.getMessage(), e);
+        }
         PaymentConfirmRes result = response.getBody();
 
         // 4. 판매자 포인트 적립

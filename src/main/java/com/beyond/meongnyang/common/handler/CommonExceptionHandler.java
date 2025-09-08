@@ -2,7 +2,9 @@ package com.beyond.meongnyang.common.handler;
 
 import com.beyond.meongnyang.common.customexception.AlreadySoldException;
 import com.beyond.meongnyang.common.customexception.BlockDeniedException;
+import com.beyond.meongnyang.common.customexception.TossPaymentException;
 import com.beyond.meongnyang.common.dto.CommonRes;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -88,5 +90,12 @@ public class CommonExceptionHandler {
     public ResponseEntity<?> handleAlreadySoldException(AlreadySoldException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(CommonRes.ofFailure(HttpStatus.CONFLICT.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(TossPaymentException.class)
+    public ResponseEntity<?> handleTossPayementException(TossPaymentException e) {
+        log.error(e.getMessage());
+
+        return ResponseEntity.status(e.getStatusCode()).body(CommonRes.ofFailure(e.getStatusCode().value(), e.getMessage()));
     }
 }
