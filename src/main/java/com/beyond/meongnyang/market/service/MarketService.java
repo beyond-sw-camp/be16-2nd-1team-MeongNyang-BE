@@ -135,7 +135,6 @@ public class MarketService {
             throw new AccessDeniedException("작성자 또는 관리자만 삭제 가능합니다.");
         }
         marketPost.deleteMarketPost("Y");
-        wishlistRepository.deleteAllByMarketPost(marketPost);
     }
 
     //    거래글 목록조회
@@ -268,7 +267,7 @@ public class MarketService {
         User user = commonService.getCurrentUser();
 
         // 2. 해당 사용자의 찜(Wishlist) 페이지 조회
-        Page<Wishlist> wishlistPage = wishlistRepository.findAllByUser(user, pageable);
+        Page<Wishlist> wishlistPage = wishlistRepository.findAllByUserAndMarketPost_DelYn(user, "N", pageable);
 
         // 3. 각 Wishlist → MarketPost 꺼내서 DTO 변환 + 전체 찜 개수 포함
         return wishlistPage.map(w -> {

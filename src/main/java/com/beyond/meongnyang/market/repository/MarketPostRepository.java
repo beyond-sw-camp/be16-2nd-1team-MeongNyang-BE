@@ -16,4 +16,6 @@ public interface MarketPostRepository extends JpaRepository<MarketPost, Long> {
 
     // 거래글목록 조회(delYn=N)
     Page<MarketPost> findAllByDelYn(String delYn, Pageable pageable);
+
+
 }
