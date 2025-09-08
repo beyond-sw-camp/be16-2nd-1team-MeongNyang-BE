@@ -1,5 +1,6 @@
     package com.beyond.meongnyang.market.entity;
 
+    import com.beyond.meongnyang.common.domain.CommonAt;
     import com.beyond.meongnyang.market.dto.MarketPostUpdateReq;
     import com.beyond.meongnyang.user.entity.User;
     import jakarta.persistence.*;
@@ -16,7 +17,7 @@
     @AllArgsConstructor
     @Getter
     @ToString
-    public class MarketPost {
+    public class MarketPost extends CommonAt {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
@@ -52,9 +53,6 @@
         @Column(nullable = false)
         @Builder.Default
         private SaleStatus saleStatus = SaleStatus.SALE;
-
-        @Column(nullable = false)
-        private LocalDateTime createdAt;
 
         // 관리자 기능 : 게시글 접근 제한 여부
         @Column(nullable = false)
