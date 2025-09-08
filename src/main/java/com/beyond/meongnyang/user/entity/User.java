@@ -133,6 +133,7 @@ public class User extends CommonAt {
     // 잠금 해제
     public void unlockedAccount() {
         this.isLocked = "N";
+        this.isLockedAt = null;
     }
 
     // 비밀번호 변경

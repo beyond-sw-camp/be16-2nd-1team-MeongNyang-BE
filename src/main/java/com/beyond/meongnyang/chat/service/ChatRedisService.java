@@ -197,12 +197,20 @@ public class ChatRedisService implements MessageListener {
     }
 
 
-
-
     public void publishNewChatRoomToRedis(ChatRoomSummaryRes chatRoomSummaryRes) {
         try {
             String data = objectMapper.writeValueAsString(chatRoomSummaryRes);
             chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + chatRoomSummaryRes.getId() + "/new", data);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void publishApprovalStatusToRedis(Long roomId, Boolean approved) {
+        ChatRoomPurchaseRes chatRoomPurchaseRes = ChatRoomPurchaseRes.builder().roomId(roomId).isPurchaseApproved(approved).build();
+        try {
+            String data = objectMapper.writeValueAsString(chatRoomPurchaseRes);
+            chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/approval-status", data);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -220,8 +228,10 @@ public class ChatRedisService implements MessageListener {
                 sendMessageViaSse(roomId, message, "chat-message");
             }
             case "/topic/chat-rooms/*/chat-participants" -> publishChatParticipantsToStompClient(roomId, message);
-            case "/topic/chat-rooms/*/chat-online-participants" -> publishChatOnlineParticipantsToStompClient(roomId, message);
+            case "/topic/chat-rooms/*/chat-online-participants" ->
+                    publishChatOnlineParticipantsToStompClient(roomId, message);
             case "/topic/chat-rooms/*/new" -> sendMessageViaSse(roomId, message, "new-room");
+            case "/topic/chat-rooms/*/approval-status" -> sendMessageViaSse(roomId, message, "approval-status");
         }
     }
 

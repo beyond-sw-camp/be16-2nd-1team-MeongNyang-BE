@@ -1,6 +1,7 @@
 package com.beyond.meongnyang.post.dto;
 
 import com.beyond.meongnyang.pet.entity.Pet;
+import com.beyond.meongnyang.post.entity.Like;
 import com.beyond.meongnyang.post.entity.Post;
 import com.beyond.meongnyang.user.entity.User;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,15 +21,18 @@ public class PostLikeListRes {
     private Long userId;
     private String profileImage;
     private String userName;
+    private Boolean isFollowing;
     private String date;
 
-    public static PostLikeListRes fromEntity(Post post, User user){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일 hh:mm");
+    public static PostLikeListRes fromEntity(Like like, boolean isFollowing){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일 a h:mm");
+        User user = like.getUser();
         return PostLikeListRes.builder()
                 .userId(user.getId())
                 .profileImage(user.getMainPet() == null ? "" : user.getMainPet().getPetProfileUrl())
                 .userName(user.getName())
-                .date(post.getCreatedAt().format(formatter))
+                .isFollowing(isFollowing)
+                .date(like.getCreatedAt().format(formatter))
                 .build();
     }
 }

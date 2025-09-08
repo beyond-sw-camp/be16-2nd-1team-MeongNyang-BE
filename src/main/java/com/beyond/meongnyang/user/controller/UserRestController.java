@@ -368,6 +368,14 @@ public class UserRestController {
         ), HttpStatus.OK);
     }
 
+    @GetMapping("/{id}/page")
+    public ResponseEntity<?> enterOthersPage(@PathVariable Long id) {
+        MyPageRes myPageRes = this.userService.enterOthersPage(id);
+        return new ResponseEntity<>(CommonRes.ofSuccess(
+                myPageRes, HttpStatus.OK.value(), "마이페이지-타인"
+        ), HttpStatus.OK);
+    }
+
     // UserRestController.java에 추가
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@RequestBody ProfileUpdateReq request) {

@@ -45,8 +45,8 @@ public class PostRestController {
     // 일기 수정
     @PatchMapping("/{id}")
     @PreAuthorize("@securityCheck.checkUserAccess()")
-    public ResponseEntity<?> postUpdate(@PathVariable("id") Long id, @RequestPart PostEditReq postEditReq, @RequestPart List<MultipartFile> files) throws AccessDeniedException {
-        postService.updatePost(id, postEditReq, files);
+    public ResponseEntity<?> postUpdate(@PathVariable("id") Long id, @ModelAttribute PostEditReq postEditReq) throws AccessDeniedException {
+        postService.updatePost(id, postEditReq);
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
                         id,
@@ -247,6 +247,18 @@ public class PostRestController {
                         "신고가 완료되었습니다.",
                         HttpStatus.OK.value(),
                         "신고 완료."
+                ), HttpStatus.OK
+        );
+    }
+
+    @GetMapping("/trend-hashtags")
+    public ResponseEntity<?> postTrendHashtags(){
+        List<TrendHashTagRes> top5TagNamesWithCount = postService.findTop5TagNamesWithCount();
+        return new ResponseEntity<>(
+                CommonRes.ofSuccess(
+                        top5TagNamesWithCount,
+                        HttpStatus.OK.value(),
+                        "상위 5개 해시태그 조회 완료"
                 ), HttpStatus.OK
         );
     }
