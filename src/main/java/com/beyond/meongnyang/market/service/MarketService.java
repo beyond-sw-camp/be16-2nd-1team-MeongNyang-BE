@@ -5,6 +5,7 @@ import com.beyond.meongnyang.chat.entity.ChatRoom;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
 import com.beyond.meongnyang.chat.service.ChatRedisService;
 import com.beyond.meongnyang.common.customexception.AlreadySoldException;
+import com.beyond.meongnyang.common.customexception.AmountMismatchException;
 import com.beyond.meongnyang.common.customexception.TossPaymentException;
 import com.beyond.meongnyang.common.domain.Bool;
 import com.beyond.meongnyang.common.service.CommonService;
@@ -16,13 +17,10 @@ import com.beyond.meongnyang.notification.entity.NotificationType;
 import com.beyond.meongnyang.notification.service.NotificationService;
 import com.beyond.meongnyang.user.entity.Role;
 import com.beyond.meongnyang.user.entity.User;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -30,7 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
@@ -362,7 +359,7 @@ public class MarketService {
         if (marketPost.getSaleStatus() == SaleStatus.SOLD) throw new AlreadySoldException("이미 판매된 제품입니다.");
 
         // 결제 금액 검증
-        if (marketPost.getPrice() != req.getAmount()) throw new BadCredentialsException("판매자가 설정한 금액과 다릅니다.");
+        if (marketPost.getPrice() != req.getAmount()) throw new AmountMismatchException("판매자가 설정한 금액과 다릅니다.");
 
         // 1. Toss API 요청 헤더 준비
         HttpHeaders headers = new HttpHeaders();
