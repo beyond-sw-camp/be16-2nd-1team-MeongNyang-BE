@@ -3,6 +3,7 @@ package com.beyond.meongnyang.common.security;
 import com.beyond.meongnyang.common.handler.JwtAuthenticationHandler;
 import com.beyond.meongnyang.common.handler.JwtAuthorizationHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,6 +30,9 @@ public class SecurityConfig {
     private final JwtTokenFilter jwtTokenFilter;
     private final JwtAuthorizationHandler jwtAuthorizationHandler;
     private final JwtAuthenticationHandler jwtAuthenticationHandler;
+
+    @Value("${cors.origin}")
+    private String origin;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -60,7 +64,7 @@ public class SecurityConfig {
 public CorsConfigurationSource corsConfiguration() {
     CorsConfiguration c = new CorsConfiguration();
     c.setAllowCredentials(true);
-    c.setAllowedOriginPatterns(List.of("http://localhost:3000","http://localhost:5173","https://*.mydomain.com"));
+    c.setAllowedOriginPatterns(List.of("http://localhost:3000", origin));
     c.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
     c.setAllowedHeaders(List.of("Authorization","Content-Type","X-Requested-With","X-Refresh-Token"));
     c.setExposedHeaders(List.of("X-Refresh-Token"));
