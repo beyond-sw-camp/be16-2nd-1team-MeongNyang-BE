@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meongnyang-backend-deployment
+  namespace: meongnyang
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: meongnyang-backend
+  template:
+    metadata:
+      labels:
+        app: meongnyang-backend
+    spec:
+      containers:
+      - name: meongnyang-backend-container
+        image: 346903264902.dkr.ecr.ap-northeast-2.amazonaws.com/meongnyang/backend:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1000Mi"
+        env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: DB_HOST
+        - name: DB_PW
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: DB_PW
+        - name: SMTP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: SMTP_USERNAME
+        - name: SMTP_PW
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: SMTP_PW
+        - name: JWT_AT
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: JWT_AT
+        - name: JWT_RT
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: JWT_RT
+        - name: JWT_TMP
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: JWT_TMP
+        - name: AWS_BUCKET
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: AWS_BUCKET
+        - name: AWS_ACCESS
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: AWS_ACCESS
+        - name: AWS_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: AWS_SECRET
+        - name: ADMIN_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: ADMIN_EMAIL
+        - name: ADMIN_PW
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: ADMIN_PW
+        - name: OAUTH_GOOGLE_ID
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: OAUTH_GOOGLE_ID
+        - name: OAUTH_GOOGLE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: OAUTH_GOOGLE_SECRET
+        - name: OAUTH_KAKAO_ID
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: OAUTH_KAKAO_ID
+        - name: TOSS_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: TOSS_SECRET
+        - name: PPLX_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: meongnyang-backend-secrets
+              key: PPLX_API_KEY
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: meongnyang-backend-service
+  namespace: meongnyang
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: meongnyang-backend

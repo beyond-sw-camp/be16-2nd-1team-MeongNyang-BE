@@ -28,9 +28,6 @@ public class InitialDataLoader implements CommandLineRunner {
     @Value("${admin.email}")
     private String email;
 
-    @Value("${admin.phone}")
-    private String phone;
-
     @Override
     public void run(String... args) throws Exception {
         if(this.userRepository.findByEmail(email).isPresent()) {

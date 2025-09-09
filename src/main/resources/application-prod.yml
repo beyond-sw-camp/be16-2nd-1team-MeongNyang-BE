@@ -1,0 +1,88 @@
+server:
+  port: 8080
+
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PW}
+    properties:
+      mail.smtp.auth: true #서버에 인증 필요 여부(name, password)
+      mail.smtp.starttls.enable: true   #TLS 보안 통신을 사용할지 여부
+      mail.smtp.starttls.required: true #서버가 TLS를 강제하도록 설정
+    protocol: smtp
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://${DB_HOST}:3306/meongnyang
+    username: admin
+    password: ${DB_PW}
+  redis:
+    host: meongnyang-redis-service
+    port: 6379
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    show_sql: false
+
+jwt:
+  expirationAt: 100 #10분
+  securityAt: ${JWT_AT}
+  expirationRt: 1000
+  secretKeyRt: ${JWT_RT}
+  tempExpirationRt: 15
+  tempsecretKeyRt: ${JWT_TMP}
+
+
+# 스프링의 로그레벨 설정
+logging:
+  level:
+    #debug, info, error 로그 출력
+    root: info
+
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_BUCKET}
+    credentials:
+      access-key: ${AWS_ACCESS}
+      secret-key: ${AWS_SECRET}
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+admin:
+  name: admin
+  email: ${ADMIN_EMAIL}
+  nickname: admin
+  password: ${ADMIN_PW}
+
+cors:
+  origin: https://www.meongnyang.store/
+
+oauth:
+  google:
+    client-id: ${OAUTH_GOOGLE_ID}
+    client-secret: ${OAUTH_GOOGLE_SECRET}
+    redirect-uri: https://www.meongnyang.store/oauth/google/redirect
+  kakao:
+    client-id: ${OAUTH_KAKAO_ID}
+    redirect-uri: https://www.meongnyang.store/oauth/kakao/redirect
+
+toss:
+  secret-key: ${TOSS_SECRET}
+
+perplexity:
+  api-key: ${PPLX_API_KEY}
+  api-url: https://api.perplexity.ai/chat/completions
