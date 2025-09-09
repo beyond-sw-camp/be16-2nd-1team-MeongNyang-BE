@@ -56,7 +56,6 @@ public class MarketService {
     private final ChatRoomRepository chatRoomRepository;
 
     private final ObjectMapper objectMapper;
-    private final NotificationService notificationService;
     private final ChatRedisService chatRedisService;
 
     @Value("${toss.secret-key}")
@@ -262,7 +261,7 @@ public class MarketService {
         wishlistRepository.save(wishlist);
         if (!user.getId().equals(marketPost.getSeller().getId())) {
             notificationService.create(marketPost.getId(), marketPost.getSeller(),
-                    user.getName() + "님이 " + marketPost.getTitle() +"를 찜했습니다." , NotificationType.LIKE);
+                    user.getNickname() + "님이 " + marketPost.getTitle() +"을(를) 찜했습니다." , NotificationType.POST_LIKE);
         }
         return wishlist.getId();
     }
