@@ -179,6 +179,8 @@ public class RedisConfig {
         container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/chat-participants"));
         container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/chat-online-participants"));
         container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/new"));
+        container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/approval-status"));
+        container.addMessageListener(chatListenerAdapter, new PatternTopic("/topic/chat-rooms/*/sale-status"));
         return container;
     }
 
@@ -194,5 +196,26 @@ public class RedisConfig {
     public MessageListenerAdapter sseListenerAdapter(SseService sseService) {
         // 채널로 부터 수신되는 message 처리를 SseService 객체로 던져주고, SseAlarmService의 onMessage 메서드에서 처리한다.
         return new MessageListenerAdapter(sseService, "onMessage");
+    }
+
+    @Bean
+    @Qualifier("paymentInventory")
+    public RedisConnectionFactory paymentRedisConnectionFactory() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
+        config.setHostName(host);
+        config.setPort(port);
+        config.setDatabase(5);
+        return new LettuceConnectionFactory(config);
+    }
+
+    @Bean
+    @Qualifier("paymentInventory")
+    public RedisTemplate<String, String> paymentRedisTemplate(
+            @Qualifier("paymentInventory") RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        return redisTemplate;
     }
 }

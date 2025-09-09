@@ -101,6 +101,10 @@ public class User extends CommonAt {
     @Column(name = "approved_at", nullable = true)
     private LocalDateTime approvedAt;
 
+    // 중고거래를 위한 포인트
+    @Column(name = "point_balance", nullable = false)
+    private int pointBalance = 0;
+
     /* ******************연관관계***************** */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -186,5 +190,18 @@ public class User extends CommonAt {
     public void updateProfile(ProfileUpdateReq req) {
         this.name = req.getName();
         this.nickname = req.getNickname();
+    }
+
+    // 포인트 증가 (판매 시 사용)
+    public void earnPoints(int amount) {
+        this.pointBalance += amount;
+    }
+
+    // 포인트 차감 (환전 시 사용)
+    public void withdrawPoints(int amount) {
+        if (this.pointBalance < amount) {
+            throw new IllegalStateException("포인트가 부족합니다.");
+        }
+        this.pointBalance -= amount;
     }
 }

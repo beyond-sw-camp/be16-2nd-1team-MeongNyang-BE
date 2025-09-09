@@ -6,6 +6,7 @@ import com.beyond.meongnyang.chat.entity.ChatRoom;
 import com.beyond.meongnyang.chat.repository.ChatParticipantRepository;
 import com.beyond.meongnyang.chat.repository.ChatRoomRepository;
 import com.beyond.meongnyang.common.registry.SseEmitterRegistry;
+import com.beyond.meongnyang.market.entity.SaleStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -197,12 +198,30 @@ public class ChatRedisService implements MessageListener {
     }
 
 
-
-
     public void publishNewChatRoomToRedis(ChatRoomSummaryRes chatRoomSummaryRes) {
         try {
             String data = objectMapper.writeValueAsString(chatRoomSummaryRes);
             chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + chatRoomSummaryRes.getId() + "/new", data);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void publishApprovalStatusToRedis(Long roomId, Boolean approved) {
+        ChatRoomPurchaseRes chatRoomPurchaseRes = ChatRoomPurchaseRes.builder().roomId(roomId).isPurchaseApproved(approved).build();
+        try {
+            String data = objectMapper.writeValueAsString(chatRoomPurchaseRes);
+            chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/approval-status", data);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void publishSaleStatusToRedis(Long roomId, SaleStatus saleStatus) {
+        ChatRoomSaleStatusRes chatRoomSaleStatusRes = ChatRoomSaleStatusRes.builder().roomId(roomId).saleStatus(saleStatus).build();
+        try {
+            String data = objectMapper.writeValueAsString(chatRoomSaleStatusRes);
+            chatPubsubRedisTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/sale-status", data);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -220,12 +239,15 @@ public class ChatRedisService implements MessageListener {
                 sendMessageViaSse(roomId, message, "chat-message");
             }
             case "/topic/chat-rooms/*/chat-participants" -> publishChatParticipantsToStompClient(roomId, message);
-            case "/topic/chat-rooms/*/chat-online-participants" -> publishChatOnlineParticipantsToStompClient(roomId, message);
+            case "/topic/chat-rooms/*/chat-online-participants" ->
+                    publishChatOnlineParticipantsToStompClient(roomId, message);
             case "/topic/chat-rooms/*/new" -> sendMessageViaSse(roomId, message, "new-room");
+            case "/topic/chat-rooms/*/approval-status" -> sendMessageViaSse(roomId, message, "approval-status");
+            case "/topic/chat-rooms/*/sale-status" -> publishChatSaleStatusToStompClient(roomId, message);
         }
     }
 
-    public void publishChatMessageToStompClient(String roomId, Message message) {
+    private void publishChatMessageToStompClient(String roomId, Message message) {
         log.info("start publishChatMessageToStompClient : {}", new String(message.getBody()));
         ChatMessageRes chatMessageRes = null;
         try {
@@ -237,7 +259,7 @@ public class ChatRedisService implements MessageListener {
         log.info("end publishChatMessageToStompClient : {}", new String(message.getBody()));
     }
 
-    public void publishChatParticipantsToStompClient(String roomId, Message message) {
+    private void publishChatParticipantsToStompClient(String roomId, Message message) {
         log.info("start publishChatParticipantsToStompClient : {}", new String(message.getBody()));
         List<ChatParticipantRes> chatParticipantResList = new ArrayList<>();
         try {
@@ -252,7 +274,7 @@ public class ChatRedisService implements MessageListener {
         log.info("end publishChatParticipantsToStompClient : {}", new String(message.getBody()));
     }
 
-    public void publishChatOnlineParticipantsToStompClient(String roomId, Message message) {
+    private void publishChatOnlineParticipantsToStompClient(String roomId, Message message) {
         log.info("start publishChatOnlineParticipantsToStompClient : {}", new String(message.getBody()));
         List<ChatOnlineParticipantRes> chatOnlineParticipantResList = new ArrayList<>();
         try {
@@ -267,7 +289,17 @@ public class ChatRedisService implements MessageListener {
         log.info("end publishChatOnlineParticipantsToStompClient : {}", new String(message.getBody()));
     }
 
-    public void sendMessageViaSse(String roomId, Message message, String eventName) {
+    private void publishChatSaleStatusToStompClient(String roomId, Message message) {
+        ChatRoomSaleStatusRes res = null;
+        try {
+            res = objectMapper.readValue(message.getBody(), ChatRoomSaleStatusRes.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        messageTemplate.convertAndSend("/topic/chat-rooms/" + roomId + "/sale-status", res);
+    }
+
+    private void sendMessageViaSse(String roomId, Message message, String eventName) {
         Set<String> emails = getOrLoadParticipantMap(Long.valueOf(roomId)).keySet();
         emails.forEach(email -> {
             SseEmitter emitter = sseEmitterRegistry.getEmitter(email);
