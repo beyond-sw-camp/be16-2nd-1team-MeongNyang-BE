@@ -7,10 +7,10 @@ metadata:
     kubernetes.io/ingress.class: nginx
 
 spec:
-#  tls:
-#  - hosts:
-#    - server.meongnyang.store
-#    secretName: server-meongnyang-store-tls
+  tls:
+  - hosts:
+    - server.meongnyang.store
+    secretName: server-meongnyang-store-tls
   rules:
   - host: server.meongnyang.store  # 설정하려는 도메인 이름.
     http:
