@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fojf-redis-deployment
-  namespace: fojf-namespace
+  name: meongnyang-redis-deployment
+  namespace: meongnyang
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: fojf-redis
+      app: meongnyang-redis
   template:
     metadata:
       # 아래의 labels는 service의 selector.app과 일치해야함
       labels:
-        app: fojf-redis
+        app: meongnyang-redis
     spec:
       containers:
-      - name: fojf-redis
+      - name: meongnyang-redis-container
         image: redis
         ports:
         - containerPort: 6379
@@ -23,12 +23,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: fojf-redis-service
-  namespace: fojf-namespace
+  name: meongnyang-redis-service
+  namespace: meongnyang
 spec:
   type: ClusterIP
   ports:
     - port: 6379
       targetPort: 6379
   selector:
-    app: fojf-redis
+    app: meongnyang-redis

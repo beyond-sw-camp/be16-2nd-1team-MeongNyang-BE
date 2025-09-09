@@ -50,7 +50,8 @@ public class SecurityConfig {
                                 "/users/signup-extra",
                                 "/users/token/refresh",
                                 "/users/logout",
-                                "/users/link/confirm")
+                                "/users/link/confirm",
+                                "/health")
                         .permitAll().anyRequest().authenticated())
                 .build();
     }
