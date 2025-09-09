@@ -2,7 +2,7 @@ package com.beyond.meongnyang.common.service;
 
 import com.beyond.meongnyang.common.dto.PerplexityReq;
 import com.beyond.meongnyang.common.dto.PerplexityRes;
-import com.beyond.meongnyang.common.dto.PetTipRes;
+import com.beyond.meongnyang.common.dto.PetTipReq;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ public class PerplexityService {
     @Value("${perplexity.api-url}")
     private String apiUrl;
 
-    public PerplexityRes getPetTip(PetTipRes res) {
+    public PerplexityRes getPetTip(PetTipReq res) {
         String contextPrompt = "";
         if (!res.getWeather().isBlank() && !res.getTemperature().isBlank()) {
             contextPrompt = "현재 날씨: " + res.getWeather() + ", 온도: " + res.getTemperature() + "°C. ";

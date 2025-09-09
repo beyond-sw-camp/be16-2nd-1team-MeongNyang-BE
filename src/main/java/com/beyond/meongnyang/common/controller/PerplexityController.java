@@ -1,7 +1,7 @@
 package com.beyond.meongnyang.common.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
-import com.beyond.meongnyang.common.dto.PetTipRes;
+import com.beyond.meongnyang.common.dto.PetTipReq;
 import com.beyond.meongnyang.common.service.PerplexityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,7 @@ public class PerplexityController {
     private final PerplexityService perplexityService;
 
     @PostMapping("/pet-tip")
-    public ResponseEntity<?> getPetTip(@RequestBody PetTipRes petTipRes) {
-        return ResponseEntity.ok(CommonRes.ofSuccess(perplexityService.getPetTip(petTipRes), HttpStatus.OK.value(), "AI 전문가 응답 완료"));
+    public ResponseEntity<?> getPetTip(@RequestBody PetTipReq petTipReq) {
+        return ResponseEntity.ok(CommonRes.ofSuccess(perplexityService.getPetTip(petTipReq), HttpStatus.OK.value(), "AI 전문가 응답 완료"));
     }
 }

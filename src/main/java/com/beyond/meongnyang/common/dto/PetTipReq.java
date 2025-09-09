@@ -6,7 +6,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class PetTipRes {
+public class PetTipReq {
     private String weather;
     private String temperature;
     private String petType;
