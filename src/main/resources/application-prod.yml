@@ -21,7 +21,7 @@ spring:
       on-profile: prod
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://${DB_HOST}:3306/meongnyang
+    url: jdbc:mariadb://${DB_HOST}:3306/meongnyang?serverTimezone=Asia/Seoul
     username: admin
     password: ${DB_PW}
   redis:
