@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fojf-ordersystem-deployment
+  namespace: fojf-namespace
+spec:
+  replicas: 1
+  # 아래의 label은 replicaset이 관리해야 할 파드를 결정하는데 사용
+  selector:
+    matchLabels:
+      app: fojf-ordersystem
+  template:
+    metadata:
+      # 아래의 labels는 service의 selector.app과 일치해야함
+      labels:
+        app: fojf-ordersystem
+    spec:
+      containers:
+      - name: fojf-ordersystem
+        image: 346903264902.dkr.ecr.ap-northeast-2.amazonaws.com/fojf-namespace/ordersystem:latest
+        ports:
+        - containerPort: 8080
+        resources:
+        # 컨테이너가 사용할 수 있는 자원의 최대치
+          limits:
+            cpu: "1"
+            memory: "500Mi"
+        # 컨테이너가 최소한으로 필요한 자원(시작될 때 보장받아야하는 최소 자원)
+          requests:
+            cpu: "0.5"
+            memory: "250Mi"
+        env:
+        # 아래의 환경변수들은 application-prod.yml에서 ${}로 참조됨
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: fojf-ordersystem-secrets
+              key: DB_HOST
+        - name: DB_PW
+          valueFrom:
+            secretKeyRef:
+              name: fojf-ordersystem-secrets
+              key: DB_PW
+        # 컨테이너 상태 확인을 통해 롤링업데이트 최적화 
+        readinessProbe:
+          httpGet:
+            # healthcheck 경로
+            path: /health
+            port: 8080
+          # 컨테이너 시작 후 지연
+          initialDelaySeconds: 10
+          # 확인 반복 주기
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fojf-ordersystem-service
+  namespace: fojf-namespace
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: fojf-ordersystem
