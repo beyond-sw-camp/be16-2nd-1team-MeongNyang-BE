@@ -229,8 +229,8 @@ public class PostService {
         User user = commonService.getCurrentUser();
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("게시글 없음"));
         if (!post.getUser().getId().equals(user.getId())) {
-            String content = user.getName() + "님이 댓글을 남겼습니다.";
-            notificationService.create(post.getId(), post.getUser(), content, NotificationType.COMMENT);
+            String content = user.getNickname() + "님이 댓글을 남겼습니다.";
+            notificationService.create(post.getId(), post.getUser(), content, NotificationType.POST_COMMENT);
         }
         return commentRepository.save(postCommentCreateReq.toEntity(user, post)).getId();
     }
@@ -252,7 +252,7 @@ public class PostService {
         // 1) 부모 댓글 작성자에게
         if (!parentComment.getUser().getId().equals(replyUser.getId())) {
             notificationService.create(parentComment.getPost().getId(), parentComment.getUser(),
-                    replyUser.getName() + "님이 대댓글을 남겼습니다.", NotificationType.COMMENT);
+                    replyUser.getNickname() + "님이 대댓글을 남겼습니다.", NotificationType.POST_REPLY);
         }
         return replyComment.getId();
     }
