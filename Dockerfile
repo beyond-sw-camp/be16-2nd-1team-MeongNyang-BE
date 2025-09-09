@@ -14,4 +14,4 @@ FROM openjdk:17-jdk-alpine
 WORKDIR /app
 COPY --from=stage1 /app/build/libs/*.jar app.jar
 
-ENTRYPOINT [ "java", "-jar", "app.jar" ]
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
