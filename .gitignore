@@ -39,6 +39,7 @@ out/
 
 ### Application Config ###
 application-local.yml
+application.yml
 
 ### macOS ###
 .DS_Store
