@@ -1,0 +1,32 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: meongnyang-issuer
+  namespace: meongnyang
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: meongnyang052@gmail.com
+    privateKeySecretRef:
+      name: meongnyang-issuer-account-key
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: server-meongnyang-store-tls
+  namespace: meongnyang
+spec:
+# cert-manager가 아래 secretName에서 지정한 이름으로 Secret을 생성
+  secretName: server-meongnyang-store-tls
+  duration: 2160h #90day
+  renewBefore: 720h #before 30day
+  issuerRef:
+    name: meongnyang-issuer
+    kind: ClusterIssuer
+  commonName: server.meongnyang.store
+  dnsNames:
+  - server.meongnyang.store

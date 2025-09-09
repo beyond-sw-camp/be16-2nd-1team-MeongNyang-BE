@@ -1,3 +1,4 @@
+### Build ###
 HELP.md
 .gradle
 build/
@@ -5,7 +6,7 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### STS ###
+### Spring Tool Suite (STS) ###
 .apt_generated
 .classpath
 .factorypath
@@ -18,7 +19,7 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -35,4 +36,28 @@ out/
 
 ### VS Code ###
 .vscode/
-application.yml
+
+### Application Config ###
+application-local.yml
+
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### macOS Patch (iCloud) ###
+*.icloud

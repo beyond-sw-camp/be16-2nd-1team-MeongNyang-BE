@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: meongnyang-ingress
+  namespace: meongnyang
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
+spec:
+#  tls:
+#  - hosts:
+#    - server.meongnyang.store
+#    secretName: server-meongnyang-store-tls
+  rules:
+  - host: server.meongnyang.store  # 설정하려는 도메인 이름.
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: meongnyang-backend-service # 라우팅할 서비스 이름
+            port:
+              number: 80
