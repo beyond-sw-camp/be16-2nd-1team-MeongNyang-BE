@@ -21,4 +21,8 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
     void deleteByUserAndMarketPost(User user, MarketPost marketPost);
 //    찜 목록 조회
     Page<Wishlist> findAllByUser(User user, Pageable pageable);
+
+    //    게시글 삭제 시 관련된 찜 hide
+    Page<Wishlist> findAllByUserAndMarketPost_DelYn(User user, String delYn, Pageable pageable);
+
 }

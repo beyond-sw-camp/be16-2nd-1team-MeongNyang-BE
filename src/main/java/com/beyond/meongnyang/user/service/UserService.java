@@ -2,6 +2,8 @@ package com.beyond.meongnyang.user.service;
 
 import com.beyond.meongnyang.common.service.CommonService;
 import com.beyond.meongnyang.common.service.SseService;
+import com.beyond.meongnyang.notification.entity.NotificationType;
+import com.beyond.meongnyang.notification.service.NotificationService;
 import com.beyond.meongnyang.user.dto.ProfileUpdateRes;
 import com.beyond.meongnyang.user.entity.*;
 import com.beyond.meongnyang.user.dto.*;
@@ -52,6 +54,7 @@ public class UserService {
     private final SendEmailService sendEmailService;
     private final EmailVerificationService emailVerificationService;
     private final EntityManager em;
+    private final NotificationService notificationService;
 
 
     //회원 가입 시 이메일, 전화번호, 닉네임 각각 인증
@@ -257,6 +260,10 @@ public class UserService {
                 .following(following)
                 .build();
         followRepository.save(userFollow);
+        if (!follower.getId().equals(following.getId())) {
+            notificationService.create(follower.getId(), following,
+                    following.getName() + "님이 팔로우 했습니다." , NotificationType.ADD_FOLLOW);
+        }
     }
 
     // 언팔로우

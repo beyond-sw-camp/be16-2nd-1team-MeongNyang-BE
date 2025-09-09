@@ -48,6 +48,7 @@ public class MarketService {
     private final CommonService commonService;
     private final ReportRepository reportRepository;
     private final WishlistRepository wishlistRepository;
+    private final NotificationService notificationService;
     private final TransactionRepository transactionRepository;
     private final PointTransactionRepository pointTransactionRepository;
     @Qualifier("paymentInventory")
@@ -259,6 +260,10 @@ public class MarketService {
 
 //        5. save 및 wishlist 리턴
         wishlistRepository.save(wishlist);
+        if (!user.getId().equals(marketPost.getSeller().getId())) {
+            notificationService.create(marketPost.getId(), marketPost.getSeller(),
+                    user.getName() + "님이 " + marketPost.getTitle() +"를 찜했습니다." , NotificationType.LIKE);
+        }
         return wishlist.getId();
     }
 
@@ -283,7 +288,7 @@ public class MarketService {
         User user = commonService.getCurrentUser();
 
         // 2. 해당 사용자의 찜(Wishlist) 페이지 조회
-        Page<Wishlist> wishlistPage = wishlistRepository.findAllByUser(user, pageable);
+        Page<Wishlist> wishlistPage = wishlistRepository.findAllByUserAndMarketPost_DelYn(user, "N", pageable);
 
         // 3. 각 Wishlist → MarketPost 꺼내서 DTO 변환 + 전체 찜 개수 포함
         return wishlistPage.map(w -> {

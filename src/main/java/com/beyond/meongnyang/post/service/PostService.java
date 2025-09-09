@@ -228,6 +228,10 @@ public class PostService {
     public Long createComment(Long postId, PostCommentCreateReq postCommentCreateReq) {
         User user = commonService.getCurrentUser();
         Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("게시글 없음"));
+        if (!post.getUser().getId().equals(user.getId())) {
+            String content = user.getName() + "님이 댓글을 남겼습니다.";
+            notificationService.create(post.getId(), post.getUser(), content, NotificationType.COMMENT);
+        }
         return commentRepository.save(postCommentCreateReq.toEntity(user, post)).getId();
     }
 
@@ -245,6 +249,11 @@ public class PostService {
         CommentTag tag = request.CommentTagToEntity(replyComment, mentionUser, replyUser, parentComment);
         commentTagRepository.save(tag);
 
+        // 1) 부모 댓글 작성자에게
+        if (!parentComment.getUser().getId().equals(replyUser.getId())) {
+            notificationService.create(parentComment.getPost().getId(), parentComment.getUser(),
+                    replyUser.getName() + "님이 대댓글을 남겼습니다.", NotificationType.COMMENT);
+        }
         return replyComment.getId();
     }
 
