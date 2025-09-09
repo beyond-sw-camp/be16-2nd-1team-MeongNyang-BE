@@ -34,6 +34,10 @@ spring:
     hibernate:
       ddl-auto: update
     show_sql: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Seoul
 
 jwt:
   expirationAt: 100 #10분
