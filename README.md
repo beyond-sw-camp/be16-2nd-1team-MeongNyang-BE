@@ -138,6 +138,7 @@
   <a href='https://www.erdcloud.com/d/fRviLvokK3rgCy2iS' style="text-decoration: none; color: inherit;">
     ERD
   </a>
+<img width="1400" height="683" alt="Image" src="https://github.com/user-attachments/assets/a8bf5877-8843-4600-ae58-9e038cf243f9" />
 </div>
 
 ## 주요 기능
