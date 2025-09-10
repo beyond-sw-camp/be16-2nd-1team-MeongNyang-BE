@@ -550,7 +550,7 @@ https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
       </details>
     </details>
         <details><summary>일반 회원가입 유저의 소셜로그인 연동</summary>
-        <img width="647" height="535" alt="같은 이메일 소셜로그인 이용시 계정 연동" src="https://github.com/user-attachments/assets/6288addd-3940-4580-8b25-fffd1756a1df" />
+        <img width="454" height="613" alt="스크린샷 2025-09-10 오후 3 53 29" src="https://github.com/user-attachments/assets/5627df31-2cae-4f70-8369-a27ae3f702d1" />
         </details>
         <details><summary>탈퇴한 계정으로 로그인 시도</summary>
                 <summary>탈퇴한 일반회원가입 계정으로 로그인 시도</summary>
@@ -596,19 +596,7 @@ https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
     <summary>마이페이지</summary>
     <details>
         <summary>화면</summary>
-        <summary>마이페이지 화면1</summary>
-        <img width="730" height="735" alt="프로필 화면1" src="https://github.com/user-attachments/assets/d25e2f0c-8a48-4dc0-b5c4-184b010b2512" />
-        <summary>마이페이지 화면2</summary>
-        <img width="823" height="661" alt="프로필 화면2" src="https://github.com/user-attachments/assets/99be8cf5-5e77-4147-89cc-7cd6d46c8bf6" />
-    </details>
-    <details>
-        <summary>로그인 별 연동계정</summary>
-        <summary>카카오</summary>
-        <img width="832" height="267" alt="카카오 로그인  정보" src="https://github.com/user-attachments/assets/0da07cb9-8082-45a2-830d-62e51ca3975d" />
-        <summary>구글</summary>
-        <img width="748" height="238" alt="구글 로그인 정보" src="https://github.com/user-attachments/assets/68751ba0-9955-499a-adde-0b182e318245" />
-        <summary>일반 회원가입</summary>
-        <img width="718" height="199" alt="일반 로그인 정보" src="https://github.com/user-attachments/assets/b3b18f6c-3cea-4dcb-bd88-9a4b10448bcd" />
+        <img width="522" height="796" alt="스크린샷 2025-09-10 오후 5 07 46" src="https://github.com/user-attachments/assets/0c845e95-3d87-4c46-9815-695b70f7d4d0" />
     </details>
     <details>
         <summary>계정 탈퇴</summary>
