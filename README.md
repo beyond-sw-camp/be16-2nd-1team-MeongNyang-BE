@@ -4,15 +4,51 @@
 </p>
 
 ## 📌 프로젝트 기획
-### 1. 프로젝트 개요
-**멍멍냥냥**은 반려동물을 키우는 사람들을 위한 종합 웹 플랫폼입니다.  
-국내 반려동물 양육 가구 수가 꾸준히 증가함에 따라, 반려인들의 다양한 니즈를 충족시킬 수 있는 **올인원(All-in-One) 서비스**를 제공하는 것을 목표로 합니다.  
-일상 기록, 커뮤니티, 중고 거래 등 반려 생활의 모든 측면을 아우르는 서비스를 지원합니다.
 
-### 2. 타겟 사용자
-- **주 타겟**: 20~40대 반려동물 양육자
-- **부 타겟**: 반려동물 입양 예정자, 반려동물 관련 비즈니스 운영자
+### 1. 프로젝트 개요  
+**멍멍냥냥**은 반려인들의 **일상·커뮤니티·거래·소통**을 하나의 플랫폼에 통합한 **반려 생활 올인원 서비스**입니다.  
 
+국내 반려동물 양육 인구는 이미 1,500만 명을 돌파했지만, 현재 서비스는 여전히 분산적입니다.  
+- 일상 기록은 SNS  
+- 정보 공유는 커뮤니티  
+- 거래는 중고마켓  
+- 소통은 메신저  
+
+이처럼 **여러 플랫폼을 동시에 사용해야 하는 불편함**을 해소하고, 반려인들의 모든 니즈를 충족할 수 있는 통합 환경을 제공하는 것이 **멍멍냥냥의 핵심 목표**입니다.  
+
+### 2. 비전과 목표  
+- 🐾 **기록과 추억**: 반려동물의 일상과 성장을 손쉽게 기록  
+- 🐾 **소통과 교류**: 반려인들이 경험과 노하우를 공유하는 커뮤니티  
+- 🐾 **안전한 거래**: 반려동물 용품을 신뢰 기반으로 거래할 수 있는 마켓  
+- 🐾 **실시간 연결**: 채팅·알림을 통해 즉각적인 커뮤니케이션 지원  
+
+👉 단순한 기능 제공을 넘어, **반려동물과 함께하는 라이프스타일 생태계**를 구축합니다.  
+
+
+### 3. 타겟 사용자  
+- **주요 타겟 (20~40대 반려인)**  
+  - 반려동물과의 일상을 기록하고 공유하고 싶은 사용자  
+  - 커뮤니티에서 정보를 얻고 싶은 사용자  
+  - 중고/새 용품을 안전하게 거래하고 싶은 사용자  
+
+- **부 타겟**  
+  - 반려동물 입양을 고려하는 예비 반려인  
+  - 펫샵·동물병원 등 반려동물 관련 비즈니스 운영자  
+
+
+### 4. 기대 효과  
+- 🚀 **사용자 경험 혁신**  
+  - 일상·커뮤니티·거래·소통을 하나로 연결하여 완전한 서비스 제공  
+
+- 🤝 **신뢰 기반 거래**  
+  - 커뮤니티와 연결된 **안전한 거래 환경** 조성  
+
+- 💡 **데이터 기반 확장성**  
+  - 사용자 활동 데이터를 기반으로 **맞춤형 추천 서비스** 제공  
+
+- 🌐 **B2B 협력 기회**  
+  - 반려동물 관련 비즈니스와의 파트너십 및 제휴 가능성 확보
+    
 ## 👥 팀원 소개
 <table>
     <tr>
@@ -359,19 +395,27 @@
 <details>
   <summary>마켓</summary>
   <details><summary>홈 화면(전체 거래글 목록)</summary>
-     <img width="1919" height="867" alt="Image" src="https://github.com/user-attachments/assets/bd58c40e-df87-420a-9277-814a5c17ebbd" />
+     <img width="1919" height="864" alt="Image" src="https://github.com/user-attachments/assets/4cccfa9b-fa97-434a-9bd6-b96f53772c08" />
   </details>
 
   <details><summary>거래글 작성</summary>
-     <img width="1917" height="866" alt="Image" src="https://github.com/user-attachments/assets/c839646a-00cd-4a69-9bcc-ecc4256e349a" />
+     <img width="1919" height="862" alt="Image" src="https://github.com/user-attachments/assets/772f39ad-e559-4666-a5dd-a1cc7a562afd" />
   </details>
 
   <details><summary>거래글 수정/삭제</summary>
-    <img width="1919" height="870" alt="Image" src="https://github.com/user-attachments/assets/4b6476b5-c4af-4454-ab41-5a6935d2b585" />
+    <img width="1919" height="869" alt="Image" src="https://github.com/user-attachments/assets/845698bd-487e-4008-8b85-4bf4e1da67a5" />
   </details>
 
   <details><summary>거래글 상세</summary>
-    <img width="1916" height="868" alt="Image" src="https://github.com/user-attachments/assets/21db1744-c24f-4595-b2eb-ba743969d48e" />
+    <img width="1916" height="864" alt="Image" src="https://github.com/user-attachments/assets/92584abe-1e35-4ec7-b45a-1c0f0bccc21a" />
+  </details>
+  
+  <details><summary>거래내역 조회</summary>
+    <img width="1916" height="863" alt="Image" src="https://github.com/user-attachments/assets/1837cc5e-1199-4192-afbc-67e7857fb37a" />
+  </details>
+  
+  <details><summary>찜목록 조회</summary>
+    <img width="1919" height="864" alt="Image" src="https://github.com/user-attachments/assets/89194667-9aef-4bd5-b8ff-fb382285c997" />
   </details>
 </details>
 
@@ -619,3 +663,12 @@ https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
         <img width="1321" height="850" alt="대표동물 변경 후" src="https://github.com/user-attachments/assets/51c842eb-c946-44be-a80f-9e700c3770b1" />
     </details>
 </details>
+
+## 📝 프로젝트 회고
+
+| 팀원   | 회고 내용 |
+|--------|-----------|
+| 정지완 |           |
+| 윤수오 |           |
+| 김지현 |           |
+| 이우영 |           |

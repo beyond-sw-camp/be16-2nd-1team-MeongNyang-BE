@@ -2,6 +2,7 @@ package com.beyond.meongnyang.market.controller;
 
 import com.beyond.meongnyang.common.dto.CommonRes;
 import com.beyond.meongnyang.market.dto.*;
+import com.beyond.meongnyang.market.entity.Category;
 import com.beyond.meongnyang.market.service.MarketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -69,10 +70,12 @@ public class MarketController {
 
     // 거래글 목록조회
     @GetMapping("/posts")
-    public ResponseEntity<?> marketPostList(@PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<?> marketPostList(@RequestParam(required = false) Category category,
+                                            @PageableDefault(value = 9, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+
         return new ResponseEntity<>(
                 CommonRes.ofSuccess(
-                        marketService.findAllVisible(pageable),
+                        marketService.findAllVisible(category, pageable),
                         HttpStatus.OK.value(),
                         "거래글 목록 조회에 성공했습니다."
                 ), HttpStatus.OK

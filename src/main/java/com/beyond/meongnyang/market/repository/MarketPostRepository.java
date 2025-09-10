@@ -1,5 +1,6 @@
 package com.beyond.meongnyang.market.repository;
 
+import com.beyond.meongnyang.market.entity.Category;
 import com.beyond.meongnyang.market.entity.MarketPost;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,8 +15,8 @@ public interface MarketPostRepository extends JpaRepository<MarketPost, Long> {
     // 판매목록 조회용
     Page<MarketPost> findAllBySellerId(Long sellerId, Pageable pageable);
 
-    // 거래글목록 조회(delYn=N)
+    // 전체 거래글목록 조회
     Page<MarketPost> findAllByDelYn(String delYn, Pageable pageable);
-
-
+    // 카테고리별 거래글목록 조회
+    Page<MarketPost> findAllByDelYnAndCategory(String delYn, Category category, Pageable pageable);
 }
