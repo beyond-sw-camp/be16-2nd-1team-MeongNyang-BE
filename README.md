@@ -650,11 +650,11 @@ https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
     </details>
     <details>
         <summary>프로필 수정</summary>
-        {url}
+        <img width="592" height="696" alt="스크린샷 2025-09-10 오후 6 44 11" src="https://github.com/user-attachments/assets/c81c5d1c-2af2-4b44-9581-eeec25b4860f" />
     </details>
     <details>
         <summary>비밀번호 변경</summary>
-        <img width="627" height="580" alt="비밀번호 변경 화면" src="https://github.com/user-attachments/assets/216982e8-f4c0-4c54-9832-05bf188fd7c3" />
+        <img width="477" height="694" alt="스크린샷 2025-09-10 오후 6 48 06" src="https://github.com/user-attachments/assets/37d1b3d7-ad14-4cd8-87b8-da2b654cf1bb" />
     </details>
 
 </details>
