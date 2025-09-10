@@ -58,7 +58,7 @@ public class NotificationService {
     }
 
     public List<NotificationRes> findMyAlarms() {
-        return notificationRepository.findAllByReceiver(commonService.getCurrentUser()).stream().map(NotificationRes::fromEntity).toList();
+        return notificationRepository.findAllByReceiverOrderByIdDesc(commonService.getCurrentUser()).stream().map(NotificationRes::fromEntity).toList();
     }
 
     public void deleteById(Long id) {
