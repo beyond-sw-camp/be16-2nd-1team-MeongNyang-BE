@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -146,13 +147,18 @@ public class ChatService {
         User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new EntityNotFoundException("User Not Found"));
         List<ChatParticipant> myChatParticipantList = chatParticipantRepository.findAllByUser(user);
 
-        return myChatParticipantList.stream().map(myChatParticipant ->
-                ChatRoomSummaryRes.fromEntity(myChatParticipant.getChatRoom(), getNewMessageCount(myChatParticipant))
-        ).toList();
-//        return myChatParticipantList.stream()
-//                .map(ChatParticipant::getChatRoom)
-//                .map(ChatRoomSummaryRes::fromEntity)
-//                .toList();
+        return myChatParticipantList.stream()
+                .sorted(Comparator.comparing(myChatParticipant -> {
+                    ChatRoom chatRoom = myChatParticipant.getChatRoom();
+                    List<ChatMessage> chatMessageList = chatRoom.getChatMessageList();
+                    if (chatMessageList.isEmpty()) {
+                        return chatRoom.getCreatedAt();
+                    }
+                    return chatMessageList.get(chatMessageList.size() - 1).getCreatedAt();
+                }, Comparator.reverseOrder()))
+                .map(myChatParticipant ->
+                        ChatRoomSummaryRes.fromEntity(myChatParticipant.getChatRoom(), getNewMessageCount(myChatParticipant))
+                ).toList();
     }
 
     public List<ChatParticipantAddRes> inviteUsers(Long roomId, List<ChatParticipantAddReq> chatParticipantAddReqList) {
