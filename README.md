@@ -349,6 +349,52 @@
 - JWT 분리: AT(단기) / RT(중장기), **민감정보 토큰 미포함**
 - RT **Redis 저장·검증**, 로그아웃 시 해당 RT 무효화
 </details>   
+<details><summary>🛒 Toss Payments 기반 결제 아키텍처</summary>
+
+### 서비스 개요
+사용자가 거래글에서 결제를 진행하면 **Toss Payments API**를 통해 안전하게 결제가 처리됩니다.  
+프론트엔드는 결제 시도 후 Toss에서 반환한 `paymentKey`, `orderId`, `amount`를 서버로 전달하고,  
+백엔드는 **confirm API**를 호출해 최종 결제 승인 및 내부 검증을 수행합니다.  
+승인이 완료되면 판매자에게 포인트가 적립되고 상품 상태가 `SOLD`로 변경됩니다.  
+
+---
+
+### 주요 기술 스택
+
+**Frontend**
+- Vue.js & Vuetify: 결제 요청/완료 화면 UI  
+- Toss Payments SDK: 결제창 호출 및 결제 결과 수신  
+- Axios: 결제 데이터 백엔드 전송  
+
+**Backend**
+- Spring Boot: 결제 승인 REST API  
+- Toss Payments Confirm API: 최종 결제 승인 처리  
+- JPA & MariaDB: 거래 내역 및 포인트 저장  
+- Notification Service: 판매자 알림 발송  
+
+---
+
+### 특징
+- **단일 승인 프로세스**: confirm API 하나로 검증과 승인까지 처리  
+- **내부 검증 로직**: 채팅방 참여자 여부, 판매자 승인 여부, 상품 판매 상태, 금액 일치 여부 확인  
+- **즉시 정산 구조**: 승인 완료 시 판매자 포인트 적립 및 거래 상태 갱신  
+- **안전한 결제 처리**: 외부 PG사(Toss)를 통한 안정적인 결제 보장  
+
+---
+
+### 동작 흐름
+1. **사용자**: 결제 수단 선택 후 결제 시도  
+2. **Toss**: 카드사/은행과 통신 → 결제 결과 반환  
+3. **프론트엔드**: 성공 시 `paymentKey`, `orderId`, `amount`를 서버로 전달  
+4. **백엔드**: Toss **confirm API** 호출 + 내부 검증 수행  
+5. **승인 완료 후 처리**:  
+   - 판매자 포인트 적립  
+   - 상품 상태 `SOLD`로 변경  
+   - 거래 내역(Transaction) 저장  
+   - 판매자 알림(Notification) 발송  
+
+</details>
+
 
 ## 테스트 결과서
 <details><summary>전체 시연 영상</summary>
@@ -646,12 +692,3 @@ https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
         <img width="699" height="735" alt="image" src="https://github.com/user-attachments/assets/eb50be17-7559-4158-b3d2-a3490d574f64" />
     </details>
 </details>
-
-## 📝 프로젝트 회고
-
-| 팀원   | 회고 내용 |
-|--------|-----------|
-| 정지완 |           |
-| 윤수오 |           |
-| 김지현 |           |
-| 이우영 |           |
