@@ -395,19 +395,27 @@
 <details>
   <summary>마켓</summary>
   <details><summary>홈 화면(전체 거래글 목록)</summary>
-     <img width="1919" height="867" alt="Image" src="https://github.com/user-attachments/assets/bd58c40e-df87-420a-9277-814a5c17ebbd" />
+     <img width="1919" height="864" alt="Image" src="https://github.com/user-attachments/assets/4cccfa9b-fa97-434a-9bd6-b96f53772c08" />
   </details>
 
   <details><summary>거래글 작성</summary>
-     <img width="1917" height="866" alt="Image" src="https://github.com/user-attachments/assets/c839646a-00cd-4a69-9bcc-ecc4256e349a" />
+     <img width="1919" height="862" alt="Image" src="https://github.com/user-attachments/assets/772f39ad-e559-4666-a5dd-a1cc7a562afd" />
   </details>
 
   <details><summary>거래글 수정/삭제</summary>
-    <img width="1919" height="870" alt="Image" src="https://github.com/user-attachments/assets/4b6476b5-c4af-4454-ab41-5a6935d2b585" />
+    <img width="1919" height="869" alt="Image" src="https://github.com/user-attachments/assets/845698bd-487e-4008-8b85-4bf4e1da67a5" />
   </details>
 
   <details><summary>거래글 상세</summary>
-    <img width="1916" height="868" alt="Image" src="https://github.com/user-attachments/assets/21db1744-c24f-4595-b2eb-ba743969d48e" />
+    <img width="1916" height="864" alt="Image" src="https://github.com/user-attachments/assets/92584abe-1e35-4ec7-b45a-1c0f0bccc21a" />
+  </details>
+  
+  <details><summary>거래내역 조회</summary>
+    <img width="1916" height="863" alt="Image" src="https://github.com/user-attachments/assets/1837cc5e-1199-4192-afbc-67e7857fb37a" />
+  </details>
+  
+  <details><summary>찜목록 조회</summary>
+    <img width="1919" height="864" alt="Image" src="https://github.com/user-attachments/assets/89194667-9aef-4bd5-b8ff-fb382285c997" />
   </details>
 </details>
 
