@@ -600,11 +600,11 @@ https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
     </details>
     <details>
         <summary>계정 탈퇴</summary>
-        <img width="944" height="552" alt="계정탈퇴" src="https://github.com/user-attachments/assets/96cf8ec3-6da9-4502-8953-b59296444205" />
+        <img width="347" height="464" alt="image" src="https://github.com/user-attachments/assets/05b249a2-cc40-48a2-8e48-67d090d494f9" />
     </details>
     <details>
         <summary>프로필 수정</summary>
-        <img width="655" height="746" alt="프로필 수정 화면" src="https://github.com/user-attachments/assets/5c52812d-2abf-4a92-b885-31b87b83c2c4" />
+        {url}
     </details>
     <details>
         <summary>비밀번호 변경</summary>
@@ -626,29 +626,24 @@ https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
         <summary>반려동물 추가, 수정</summary>
         <details>
             <summary>반려동물 추가</summary>
-            <summary>반려동물 추가1</summary>
-            <img width="686" height="764" alt="반려동물 추가1" src="https://github.com/user-attachments/assets/cc852488-a06d-4e7e-b565-c2783c1e5859" />
-            <summary>반려동물 추가2</summary>
-            <img width="798" height="714" alt="반려동물 추가 2" src="https://github.com/user-attachments/assets/58d222fd-697b-4200-8853-f26024655e0b" />
+            <summary>반려동물 추가(사진)</summary>
+            <img width="757" height="769" alt="스크린샷 2025-09-10 오후 5 50 46" src="https://github.com/user-attachments/assets/e25b3bc0-d1ef-4b75-8adc-6bb8ddeab16f" />
+            <summary>반려동물 추가(기본정보)</summary>
+            <img width="451" height="704" alt="image" src="https://github.com/user-attachments/assets/87a676d4-47e9-472f-9246-2441705dfda5" />
+            <summary>반려동물 추가(소개글)</summary>
+            <img width="729" height="784" alt="스크린샷 2025-09-10 오후 5 54 04" src="https://github.com/user-attachments/assets/5e4baff8-c5b6-4f29-b270-1f4942ccd743" />
             <summary>반려동물 등록</summary>
-            <img width="750" height="783" alt="반려동물 등록" src="https://github.com/user-attachments/assets/a22cf15d-eabe-49eb-a53d-ddf2b395dc53" />
+            <img width="1098" height="881" alt="image" src="https://github.com/user-attachments/assets/4dbd5460-a55b-4d71-aa99-931d66d934d5" />
             <summary>반려동물 수정</summary>
-            <img width="835" height="745" alt="반려동물 수정 화면(등록과 동일)" src="https://github.com/user-attachments/assets/ffa19734-d171-483a-aaea-cc88cc9c5840" />
+            <img width="892" height="883" alt="image" src="https://github.com/user-attachments/assets/02222a3b-6f69-4342-8fff-d491f010a300" />
         </details>
-    </details>
-    <details>
-        <summary>반려동물 삭제</summary>
-        <summary>반려동물 삭제 전</summary>
-        <img width="1012" height="799" alt="반려동물 삭제 전" src="https://github.com/user-attachments/assets/b1cb5044-5145-482a-9130-676564848d89" />
-        <summary>반려동물 삭제 후</summary>
-        <img width="976" height="671" alt="반려동물 삭제 후" src="https://github.com/user-attachments/assets/c54c11ea-4b3b-4866-b4cc-3c6cd39dec17" />
     </details>
     <details>
         <summary>대표동물 설정</summary>
         <summary>대표동물 변경 전</summary>
-        <img width="1316" height="807" alt="대표동물 변경 전" src="https://github.com/user-attachments/assets/524cf1bf-aae7-4692-b03d-815df7f175f4" />
+        <img width="668" height="728" alt="스크린샷 2025-09-10 오후 5 56 14" src="https://github.com/user-attachments/assets/80bef9ca-59ba-495c-9622-79157235a13c" />
         <summary>대표동물 변경 후</summary>
-        <img width="1321" height="850" alt="대표동물 변경 후" src="https://github.com/user-attachments/assets/51c842eb-c946-44be-a80f-9e700c3770b1" />
+        <img width="699" height="735" alt="image" src="https://github.com/user-attachments/assets/eb50be17-7559-4158-b3d2-a3490d574f64" />
     </details>
 </details>
 
