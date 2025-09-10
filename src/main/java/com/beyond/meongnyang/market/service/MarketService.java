@@ -261,7 +261,7 @@ public class MarketService {
         wishlistRepository.save(wishlist);
         if (!user.getId().equals(marketPost.getSeller().getId())) {
             notificationService.create(marketPost.getId(), marketPost.getSeller(),
-                    user.getNickname() + "님이 " + marketPost.getTitle() +"을(를) 찜했습니다." , NotificationType.POST_LIKE);
+                    user.getNickname() + "님이 " + marketPost.getTitle() +"을(를) 찜했습니다." , NotificationType.MARKET_WISHLIST);
         }
         return wishlist.getId();
     }

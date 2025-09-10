@@ -262,7 +262,7 @@ public class UserService {
         followRepository.save(userFollow);
         if (!follower.getId().equals(following.getId())) {
             notificationService.create(follower.getId(), following,
-                    following.getNickname() + "님이 팔로우 했습니다." , NotificationType.FOLLOW_ADD_FOLLOWER);
+                    follower.getNickname() + "님이 팔로우 했습니다." , NotificationType.FOLLOW_ADD_FOLLOWER);
         }
     }
 
