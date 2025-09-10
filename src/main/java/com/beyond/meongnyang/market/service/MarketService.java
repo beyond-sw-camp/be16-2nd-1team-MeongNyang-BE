@@ -160,9 +160,16 @@ public class MarketService {
 
     //    거래글 목록조회
     @Transactional(readOnly = true)
-    public Page<MarketPostListRes> findAllVisible(Pageable pageable) {
+    public Page<MarketPostListRes> findAllVisible(Category category, Pageable pageable) {
+
         // 1. 거래글 목록 조회
-        Page<MarketPost> page = marketPostRepository.findAllByDelYn("N", pageable);
+        Page<MarketPost> page;
+
+        if (category == null) {
+            page = marketPostRepository.findAllByDelYn("N", pageable);
+        } else {
+            page = marketPostRepository.findAllByDelYnAndCategory("N", category, pageable);
+        }
 
         // 2. 로그인한 사용자 조회
         User user = commonService.getCurrentUser();
