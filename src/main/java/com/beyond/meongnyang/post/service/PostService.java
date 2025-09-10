@@ -139,6 +139,7 @@ public class PostService {
         }
 
         post.deletePost("Y");
+        post.getHashtags().clear();
     }
 
     // 전체 일기 목록 조회
