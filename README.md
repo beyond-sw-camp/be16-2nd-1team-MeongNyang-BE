@@ -1,4 +1,4 @@
-## 🐾 멍멍냥냥
+## 🐾 멍멍냥냥 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/beyond-sw-camp/be16-2nd-1team-MeongNyang-BE)
 <p align = "center">
     <img width="128" height="128" alt="image" src="https://github.com/user-attachments/assets/ec18fb22-4a1a-439c-92b6-ac0dc3cd1ac7" />
 </p>
