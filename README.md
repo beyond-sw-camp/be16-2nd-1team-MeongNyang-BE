@@ -138,6 +138,7 @@
   <a href='https://www.erdcloud.com/d/fRviLvokK3rgCy2iS' style="text-decoration: none; color: inherit;">
     ERD
   </a>
+<img width="1400" height="683" alt="Image" src="https://github.com/user-attachments/assets/a8bf5877-8843-4600-ae58-9e038cf243f9" />
 </div>
 
 ## 주요 기능
@@ -148,6 +149,27 @@
 - 💬 **채팅**: 실시간 채팅방 기능
 - 👤 **사용자 관리**: 회원가입, 로그인, 프로필 관리
 - 🛡️ **관리자**: 관리자 전용 기능
+
+## 🏗 아키텍처
+### 애플리케이션(개념)
+<p align="center">
+ <img width="611" height="671" alt="image" src="https://github.com/user-attachments/assets/8a0e448f-a005-47d9-a19c-fd9770917981" />
+</p>
+
+### 배포/인프라(EKS)
+<p align="center">
+    <img width="668" height="397" alt="k8s" src="https://github.com/user-attachments/assets/e7e6f075-51e7-4f46-8aac-553d80475b76" />
+</p>
+
+<details>
+<summary>요약(읽기 메모)</summary>
+
+- **클라이언트**: Vue3 · Vuetify · Pinia  
+- **백엔드**: Spring Boot 3.x · Security/JWT · WebSocket/STOMP · SSE  
+- **데이터**: MariaDB(주요 데이터) · Redis(세션/캐시/채팅) · S3(이미지/파일)  
+- **인프라**: EKS · Ingress(ALB) · ECR · Route53 · CloudFront
+</details>
+
 
 ## 주요 사용 기술
 <details><summary>🚫 SSE를 이용한 사용자 서비스 접근 차단/차단해제</summary>
@@ -349,6 +371,52 @@
 - JWT 분리: AT(단기) / RT(중장기), **민감정보 토큰 미포함**
 - RT **Redis 저장·검증**, 로그아웃 시 해당 RT 무효화
 </details>   
+<details><summary>🛒 Toss Payments 기반 결제 아키텍처</summary>
+
+### 서비스 개요
+사용자가 거래글에서 결제를 진행하면 **Toss Payments API**를 통해 안전하게 결제가 처리됩니다.  
+프론트엔드는 결제 시도 후 Toss에서 반환한 `paymentKey`, `orderId`, `amount`를 서버로 전달하고,  
+백엔드는 **confirm API**를 호출해 최종 결제 승인 및 내부 검증을 수행합니다.  
+승인이 완료되면 판매자에게 포인트가 적립되고 상품 상태가 `SOLD`로 변경됩니다.  
+
+---
+
+### 주요 기술 스택
+
+**Frontend**
+- Vue.js & Vuetify: 결제 요청/완료 화면 UI  
+- Toss Payments SDK: 결제창 호출 및 결제 결과 수신  
+- Axios: 결제 데이터 백엔드 전송  
+
+**Backend**
+- Spring Boot: 결제 승인 REST API  
+- Toss Payments Confirm API: 최종 결제 승인 처리  
+- JPA & MariaDB: 거래 내역 및 포인트 저장  
+- Notification Service: 판매자 알림 발송  
+
+---
+
+### 특징
+- **단일 승인 프로세스**: confirm API 하나로 검증과 승인까지 처리  
+- **내부 검증 로직**: 채팅방 참여자 여부, 판매자 승인 여부, 상품 판매 상태, 금액 일치 여부 확인  
+- **즉시 정산 구조**: 승인 완료 시 판매자 포인트 적립 및 거래 상태 갱신  
+- **안전한 결제 처리**: 외부 PG사(Toss)를 통한 안정적인 결제 보장  
+
+---
+
+### 동작 흐름
+1. **사용자**: 결제 수단 선택 후 결제 시도  
+2. **Toss**: 카드사/은행과 통신 → 결제 결과 반환  
+3. **프론트엔드**: 성공 시 `paymentKey`, `orderId`, `amount`를 서버로 전달  
+4. **백엔드**: Toss **confirm API** 호출 + 내부 검증 수행  
+5. **승인 완료 후 처리**:  
+   - 판매자 포인트 적립  
+   - 상품 상태 `SOLD`로 변경  
+   - 거래 내역(Transaction) 저장  
+   - 판매자 알림(Notification) 발송  
+
+</details>
+
 
 ## 테스트 결과서
 <details><summary>전체 시연 영상</summary>
@@ -356,39 +424,37 @@
 <details>
   <summary>일기</summary>
   <details><summary>홈 화면(전체 일기 목록)</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/20271e9c-20bf-414e-b01a-ad45ef1204eb" />
+    <img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 14 03" src="https://github.com/user-attachments/assets/c0ba04da-b531-424b-80bc-d99145276d27" />
   </details>
 
   <details><summary>대시보드</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/d95b9355-75be-4f31-84d0-fa3ba9e32ac6" />
+      <img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 17 33" src="https://github.com/user-attachments/assets/ea01519c-7450-4091-8550-167dbf993ac5" />
   </details>
 
   <details><summary>내 일기 목록</summary>
-      <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/e9288040-431e-451c-acfe-479b9dd2bb3c" />
+    <img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 19 09" src="https://github.com/user-attachments/assets/800d60e8-0bb9-4f47-99c9-f08653779d87" />
   </details>
 
-  <details><summary>내 일기 작성</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/ed698147-87d0-42ee-90d6-2463fe54f47a" />
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/0a1fc5e4-8cc3-4723-8526-0cf1e89e35b7" />
+  <details><summary>내 일기 작성
+  </summary><img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 20 33" src="https://github.com/user-attachments/assets/14dd517d-3faf-4c07-954f-a96e59a77379" />
   </details>
   <details><summary>내 일기 수정</summary>
-      <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/619c5a8a-1d2a-4f16-813f-051ca5b5e2f6" />
+    <img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 21 47" src="https://github.com/user-attachments/assets/a5bb8f5c-974b-44b5-8ae5-f932347dc459" />
   </details>
   <details><summary>일기 상세 조회</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/aa59ea25-0d0a-43fd-baf8-88c37ac20f85" />
+    <img width="896" height="796" alt="스크린샷 2025-09-11 오전 9 22 47" src="https://github.com/user-attachments/assets/2b5745f1-51ec-4f91-9eb5-384457753a14" />
   </details>
   <details><summary>댓글 조회</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/cfd549d0-3e65-4431-b51b-1eb5af8da0f3" />
-
+    <img width="1470" height="795" alt="스크린샷 2025-09-11 오전 9 23 19" src="https://github.com/user-attachments/assets/9720113a-3723-409e-8071-362b9f11c08f" />
   </details>
   <details><summary>좋아요 조회</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/8a47c9ab-1086-423b-a6df-8fbd1906799d" />
+    <img width="952" height="797" alt="image" src="https://github.com/user-attachments/assets/928b4912-5a0a-4c98-b053-9ff862729b1e" />
   </details>
   <details><summary>검색 결과</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/ff76f2d1-acce-4932-940c-78a09bb27ed4" />
+    <img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 26 17" src="https://github.com/user-attachments/assets/dba30c5c-2f4a-454a-9163-0abf10e2593c" />
   </details>
   <details><summary>팔로우 조회</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/5f3e4e26-27cf-43a6-b921-5d3f99010477" />
+    <img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 25 09" src="https://github.com/user-attachments/assets/0a5ec57e-025b-4861-be2a-139674a2e347" />
   </details>
 </details>
 
@@ -550,7 +616,7 @@ https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
       </details>
     </details>
         <details><summary>일반 회원가입 유저의 소셜로그인 연동</summary>
-        <img width="647" height="535" alt="같은 이메일 소셜로그인 이용시 계정 연동" src="https://github.com/user-attachments/assets/6288addd-3940-4580-8b25-fffd1756a1df" />
+        <img width="454" height="613" alt="스크린샷 2025-09-10 오후 3 53 29" src="https://github.com/user-attachments/assets/5627df31-2cae-4f70-8369-a27ae3f702d1" />
         </details>
         <details><summary>탈퇴한 계정으로 로그인 시도</summary>
                 <summary>탈퇴한 일반회원가입 계정으로 로그인 시도</summary>
@@ -596,31 +662,19 @@ https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
     <summary>마이페이지</summary>
     <details>
         <summary>화면</summary>
-        <summary>마이페이지 화면1</summary>
-        <img width="730" height="735" alt="프로필 화면1" src="https://github.com/user-attachments/assets/d25e2f0c-8a48-4dc0-b5c4-184b010b2512" />
-        <summary>마이페이지 화면2</summary>
-        <img width="823" height="661" alt="프로필 화면2" src="https://github.com/user-attachments/assets/99be8cf5-5e77-4147-89cc-7cd6d46c8bf6" />
-    </details>
-    <details>
-        <summary>로그인 별 연동계정</summary>
-        <summary>카카오</summary>
-        <img width="832" height="267" alt="카카오 로그인  정보" src="https://github.com/user-attachments/assets/0da07cb9-8082-45a2-830d-62e51ca3975d" />
-        <summary>구글</summary>
-        <img width="748" height="238" alt="구글 로그인 정보" src="https://github.com/user-attachments/assets/68751ba0-9955-499a-adde-0b182e318245" />
-        <summary>일반 회원가입</summary>
-        <img width="718" height="199" alt="일반 로그인 정보" src="https://github.com/user-attachments/assets/b3b18f6c-3cea-4dcb-bd88-9a4b10448bcd" />
+        <img width="522" height="796" alt="스크린샷 2025-09-10 오후 5 07 46" src="https://github.com/user-attachments/assets/0c845e95-3d87-4c46-9815-695b70f7d4d0" />
     </details>
     <details>
         <summary>계정 탈퇴</summary>
-        <img width="944" height="552" alt="계정탈퇴" src="https://github.com/user-attachments/assets/96cf8ec3-6da9-4502-8953-b59296444205" />
+        <img width="347" height="464" alt="image" src="https://github.com/user-attachments/assets/05b249a2-cc40-48a2-8e48-67d090d494f9" />
     </details>
     <details>
         <summary>프로필 수정</summary>
-        <img width="655" height="746" alt="프로필 수정 화면" src="https://github.com/user-attachments/assets/5c52812d-2abf-4a92-b885-31b87b83c2c4" />
+        <img width="592" height="696" alt="스크린샷 2025-09-10 오후 6 44 11" src="https://github.com/user-attachments/assets/c81c5d1c-2af2-4b44-9581-eeec25b4860f" />
     </details>
     <details>
         <summary>비밀번호 변경</summary>
-        <img width="627" height="580" alt="비밀번호 변경 화면" src="https://github.com/user-attachments/assets/216982e8-f4c0-4c54-9832-05bf188fd7c3" />
+        <img width="477" height="694" alt="스크린샷 2025-09-10 오후 6 48 06" src="https://github.com/user-attachments/assets/37d1b3d7-ad14-4cd8-87b8-da2b654cf1bb" />
     </details>
 
 </details>
@@ -628,47 +682,26 @@ https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
 <details>
     <summary>반려동물</summary>
     <details>
-        <summary>반려동물 관리 화면</summary>
-        <summary>등록 전</summary>
-        <img width="1105" height="775" alt="내 반려동물" src="https://github.com/user-attachments/assets/da368c5d-2930-4459-b5d9-72142437d3e7" />
-         <summary>등록 후</summary>
-        <img width="1026" height="771" alt="반려동물 리스트" src="https://github.com/user-attachments/assets/99f0fd44-de75-4f90-9ae9-59d7537fe7e8" />
-    </details>
-    <details>
         <summary>반려동물 추가, 수정</summary>
         <details>
             <summary>반려동물 추가</summary>
-            <summary>반려동물 추가1</summary>
-            <img width="686" height="764" alt="반려동물 추가1" src="https://github.com/user-attachments/assets/cc852488-a06d-4e7e-b565-c2783c1e5859" />
-            <summary>반려동물 추가2</summary>
-            <img width="798" height="714" alt="반려동물 추가 2" src="https://github.com/user-attachments/assets/58d222fd-697b-4200-8853-f26024655e0b" />
+            <summary>반려동물 추가(사진)</summary>
+            <img width="757" height="769" alt="스크린샷 2025-09-10 오후 5 50 46" src="https://github.com/user-attachments/assets/e25b3bc0-d1ef-4b75-8adc-6bb8ddeab16f" />
+            <summary>반려동물 추가(기본정보)</summary>
+            <img width="451" height="704" alt="image" src="https://github.com/user-attachments/assets/87a676d4-47e9-472f-9246-2441705dfda5" />
+            <summary>반려동물 추가(소개글)</summary>
+            <img width="729" height="784" alt="스크린샷 2025-09-10 오후 5 54 04" src="https://github.com/user-attachments/assets/5e4baff8-c5b6-4f29-b270-1f4942ccd743" />
             <summary>반려동물 등록</summary>
-            <img width="750" height="783" alt="반려동물 등록" src="https://github.com/user-attachments/assets/a22cf15d-eabe-49eb-a53d-ddf2b395dc53" />
+            <img width="1098" height="881" alt="image" src="https://github.com/user-attachments/assets/4dbd5460-a55b-4d71-aa99-931d66d934d5" />
             <summary>반려동물 수정</summary>
-            <img width="835" height="745" alt="반려동물 수정 화면(등록과 동일)" src="https://github.com/user-attachments/assets/ffa19734-d171-483a-aaea-cc88cc9c5840" />
+            <img width="892" height="883" alt="image" src="https://github.com/user-attachments/assets/02222a3b-6f69-4342-8fff-d491f010a300" />
         </details>
-    </details>
-    <details>
-        <summary>반려동물 삭제</summary>
-        <summary>반려동물 삭제 전</summary>
-        <img width="1012" height="799" alt="반려동물 삭제 전" src="https://github.com/user-attachments/assets/b1cb5044-5145-482a-9130-676564848d89" />
-        <summary>반려동물 삭제 후</summary>
-        <img width="976" height="671" alt="반려동물 삭제 후" src="https://github.com/user-attachments/assets/c54c11ea-4b3b-4866-b4cc-3c6cd39dec17" />
     </details>
     <details>
         <summary>대표동물 설정</summary>
         <summary>대표동물 변경 전</summary>
-        <img width="1316" height="807" alt="대표동물 변경 전" src="https://github.com/user-attachments/assets/524cf1bf-aae7-4692-b03d-815df7f175f4" />
+        <img width="668" height="728" alt="스크린샷 2025-09-10 오후 5 56 14" src="https://github.com/user-attachments/assets/80bef9ca-59ba-495c-9622-79157235a13c" />
         <summary>대표동물 변경 후</summary>
-        <img width="1321" height="850" alt="대표동물 변경 후" src="https://github.com/user-attachments/assets/51c842eb-c946-44be-a80f-9e700c3770b1" />
+        <img width="699" height="735" alt="image" src="https://github.com/user-attachments/assets/eb50be17-7559-4158-b3d2-a3490d574f64" />
     </details>
 </details>
-
-## 📝 프로젝트 회고
-
-| 팀원   | 회고 내용 |
-|--------|-----------|
-| 정지완 |           |
-| 윤수오 |           |
-| 김지현 |           |
-| 이우영 |           |

@@ -26,7 +26,7 @@
         @JoinColumn(name = "seller_id", nullable = false)
         private User seller;
 
-        @OneToOne(fetch = FetchType.LAZY)
+        @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "buyer_id", nullable = true)
         private User buyer;
 
