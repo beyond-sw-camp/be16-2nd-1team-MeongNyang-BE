@@ -663,13 +663,6 @@ https://github.com/user-attachments/assets/2218d0a1-10af-4080-8f7b-78abaa612bc9
 <details>
     <summary>반려동물</summary>
     <details>
-        <summary>반려동물 관리 화면</summary>
-        <summary>등록 전</summary>
-        <img width="1105" height="775" alt="내 반려동물" src="https://github.com/user-attachments/assets/da368c5d-2930-4459-b5d9-72142437d3e7" />
-         <summary>등록 후</summary>
-        <img width="1026" height="771" alt="반려동물 리스트" src="https://github.com/user-attachments/assets/99f0fd44-de75-4f90-9ae9-59d7537fe7e8" />
-    </details>
-    <details>
         <summary>반려동물 추가, 수정</summary>
         <details>
             <summary>반려동물 추가</summary>
