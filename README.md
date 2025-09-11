@@ -403,39 +403,37 @@
 <details>
   <summary>일기</summary>
   <details><summary>홈 화면(전체 일기 목록)</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/20271e9c-20bf-414e-b01a-ad45ef1204eb" />
+    <img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 14 03" src="https://github.com/user-attachments/assets/c0ba04da-b531-424b-80bc-d99145276d27" />
   </details>
 
   <details><summary>대시보드</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/d95b9355-75be-4f31-84d0-fa3ba9e32ac6" />
+      <img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 17 33" src="https://github.com/user-attachments/assets/ea01519c-7450-4091-8550-167dbf993ac5" />
   </details>
 
   <details><summary>내 일기 목록</summary>
-      <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/e9288040-431e-451c-acfe-479b9dd2bb3c" />
+    <img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 19 09" src="https://github.com/user-attachments/assets/800d60e8-0bb9-4f47-99c9-f08653779d87" />
   </details>
 
-  <details><summary>내 일기 작성</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/ed698147-87d0-42ee-90d6-2463fe54f47a" />
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/0a1fc5e4-8cc3-4723-8526-0cf1e89e35b7" />
+  <details><summary>내 일기 작성
+  </summary><img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 20 33" src="https://github.com/user-attachments/assets/14dd517d-3faf-4c07-954f-a96e59a77379" />
   </details>
   <details><summary>내 일기 수정</summary>
-      <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/619c5a8a-1d2a-4f16-813f-051ca5b5e2f6" />
+    <img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 21 47" src="https://github.com/user-attachments/assets/a5bb8f5c-974b-44b5-8ae5-f932347dc459" />
   </details>
   <details><summary>일기 상세 조회</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/aa59ea25-0d0a-43fd-baf8-88c37ac20f85" />
+    <img width="896" height="796" alt="스크린샷 2025-09-11 오전 9 22 47" src="https://github.com/user-attachments/assets/2b5745f1-51ec-4f91-9eb5-384457753a14" />
   </details>
   <details><summary>댓글 조회</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/cfd549d0-3e65-4431-b51b-1eb5af8da0f3" />
-
+    <img width="1470" height="795" alt="스크린샷 2025-09-11 오전 9 23 19" src="https://github.com/user-attachments/assets/9720113a-3723-409e-8071-362b9f11c08f" />
   </details>
   <details><summary>좋아요 조회</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/8a47c9ab-1086-423b-a6df-8fbd1906799d" />
+    <img width="952" height="797" alt="image" src="https://github.com/user-attachments/assets/928b4912-5a0a-4c98-b053-9ff862729b1e" />
   </details>
   <details><summary>검색 결과</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/ff76f2d1-acce-4932-940c-78a09bb27ed4" />
+    <img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 26 17" src="https://github.com/user-attachments/assets/dba30c5c-2f4a-454a-9163-0abf10e2593c" />
   </details>
   <details><summary>팔로우 조회</summary>
-    <img width="1440" height="900" alt="image" src="https://github.com/user-attachments/assets/5f3e4e26-27cf-43a6-b921-5d3f99010477" />
+    <img width="1470" height="956" alt="스크린샷 2025-09-11 오전 9 25 09" src="https://github.com/user-attachments/assets/0a5ec57e-025b-4861-be2a-139674a2e347" />
   </details>
 </details>
 
