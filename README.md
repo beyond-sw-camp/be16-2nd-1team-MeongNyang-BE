@@ -150,6 +150,27 @@
 - 👤 **사용자 관리**: 회원가입, 로그인, 프로필 관리
 - 🛡️ **관리자**: 관리자 전용 기능
 
+## 🏗 아키텍처
+### 애플리케이션(개념)
+<p align="center">
+ <img width="611" height="671" alt="image" src="https://github.com/user-attachments/assets/8a0e448f-a005-47d9-a19c-fd9770917981" />
+</p>
+
+### 배포/인프라(EKS)
+<p align="center">
+    <img width="668" height="397" alt="k8s" src="https://github.com/user-attachments/assets/e7e6f075-51e7-4f46-8aac-553d80475b76" />
+</p>
+
+<details>
+<summary>요약(읽기 메모)</summary>
+
+- **클라이언트**: Vue3 · Vuetify · Pinia  
+- **백엔드**: Spring Boot 3.x · Security/JWT · WebSocket/STOMP · SSE  
+- **데이터**: MariaDB(주요 데이터) · Redis(세션/캐시/채팅) · S3(이미지/파일)  
+- **인프라**: EKS · Ingress(ALB) · ECR · Route53 · CloudFront
+</details>
+
+
 ## 주요 사용 기술
 <details><summary>🚫 SSE를 이용한 사용자 서비스 접근 차단/차단해제</summary>
     
